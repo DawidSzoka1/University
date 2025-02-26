@@ -1,4 +1,133 @@
-.Rproj.user
+# History files
 .Rhistory
+.Rapp.history
+
+# Session Data files
 .RData
 .Ruserdata
+
+# RStudio files
+.Rproj.user/
+.Rproj.user
+.Rproj.user/*
+*.Rproj
+
+# R package files
+.Rprofile
+.Rprofile.site
+
+# Compiled files
+*.o
+*.so
+*.dll
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Cache and other R-related files
+__pycache__/
+.Rhistory
+*.rdb
+*.rdx
+*.tar.gz
+*.RDataTmp
+*.RData
+
+# Ignore datasets and large generated files
+data/
+results/
+*.csv
+*.tsv
+*.rds
+*.rda
+
+# Ignore knitr and R Markdown cache
+*_cache/
+cache/
+*.knit.md
+*.utf8.md
+*.html
+*.pdf
+*.docx
+
+# Ignore Python-related files if using reticulate
+*.pyc
+*.pyo
+*.pyd
+__
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+*.log
+*.out
+*.toc
+hs_err_pid*
+replay_pid*
+*.jfr
+
+# IDE / Editor files
+/.idea/
+/.vscode/
+/target/
+/bin/
+/out/
+/.gradle/
+/.mvn/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
+*.swp
+
+# Maven
+.mvn/
+target/
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# JavaScript / Node.js
+node_modules/
+package-lock.json
+yarn.lock
+npm-debug.log*
+pnpm-debug.log*
+*.log
+
+# Build files
+dist/
+build/
+
+# React / Vue / Angular
+.next/
+.nuxt/
+.svelte-kit/
+out/
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Coverage
+coverage/
+*.lcov
+
+# Misc
+*.tmp
+*.cache
