@@ -1,0 +1,39 @@
+1. Pobierz i zainstaluj R Studio
+
+2. Uruchom R Studio i zapoznaj się z interfejsem programu.
+
+3. Wykonując obliczenia warto korzystać ze zmiennych. Dajmy na to, że rozwiązujemy problem "ile waluty mogę kupić za 1000 zł". Wynikiem ma być ilość dolarów lub ilość koron czeskich jaką mogę nabyć. Można to zrobić tak:
+
+utworzyć pomocnicze zmienne:
+
+kwota_zl = 1000
+kurs_usd = 3.7430
+kurs_kc = 0.1666
+w następnym kroku wykonasz obliczenia bazując na tych zmiennych. Dzięki takiemu podejściu, jeśli za kilka dni okaże się, że obliczenia należy wykonać ponownie wystarczy wprowadzić zmiany tylko w tym miejscu, gdzie tworzysz zmienne. Wzory pozostaną takie same i nie trzeba ich modyfikować.
+
+kwota_zl / kurs_usd
+kwota_zl / kurs_kc
+
+
+4. Wykonaj kilka obliczeń:
+
+tak pi razy drzwi - ile jest dni roboczych, a ile dni wolnych w roku kalendarzowym
+
+auto ma 16000 km przebiegu i było wyprodukowane 3 lata temu. Ile średnio przejeżdżało na miesiąc?
+
+miasto ma 20 tys. mieszkańców. 30% mieszkańców nie segreguje śmieci, a 70% segreguje. Opłata za śmieci niesegregowane wynosi 18 zł, a za segregowane 12 zł od osoby. Jaki jest dochód miasta?
+
+3. Wykonaj te same instrukcje, co w poprzedniej lekcji i obejrzyj, jak wykresy prezentują się w RStudio
+
+demo(lm.glm, package='stats')
+demo(image, package='graphics')
+4. W konsoli korzystając z klawiszy strzałek przywołaj poprzednie komendy i uruchom je jeszcze raz
+
+5. Wyświetl dostępną historię komend
+
+6. Zobacz jakie zmienne masz aktualnie utworzone w sesji
+
+7. Zamknij R Studio zapisując zmiany w workspace
+
+8. Otwórz studio ponownie. Czy zmienne są nadal widoczne?
+
