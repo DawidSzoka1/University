@@ -32,15 +32,4 @@ public class BezierCurvesPanel extends JPanel {
         }
     }
 
-
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Multiple Bézier Curves");
-        BezierCurvesPanel panel = new BezierCurvesPanel();
-
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 600);
-        frame.setLayout(new BorderLayout());
-        frame.add(panel, BorderLayout.CENTER);
-        frame.setVisible(true);
-    }
 }
