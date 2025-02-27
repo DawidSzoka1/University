@@ -12,10 +12,6 @@ public class BezierCurvesPanel extends JPanel {
     public BezierCurvesPanel() {
         setLayout(null); // Ustawienie ręcznego rozmieszczania komponentów
         bezierCurve = new BezierCurve(this);
-        // Dodajemy kilka krzywych na start
-        bezierCurve.addBezierCurve(new Point(118, 200), new Point(118, 20), new Point(200, 180), new Point(200, 30));
-        bezierCurve.addBezierCurve(new Point(118, 200), new Point(118, 20), new Point(118, 200), new Point(118, 20));
-
     }
 
 
