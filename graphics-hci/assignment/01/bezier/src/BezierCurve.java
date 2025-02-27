@@ -1,64 +1,67 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 
-public class BezierCurve extends JPanel{
 
-    private int x1, y1, ctrlX1, ctrlY1, ctrlX2, ctrlY2, x2, y2;
+public class BezierCurve {
+    private BezierCurvesPanel panel;
 
-    public BezierCurve(int x1, int y1, int ctrlX1, int ctrlY1, int ctrlX2, int ctrlY2, int x2, int y2) {
-        this.x1 = x1;
-        this.y1 = y1;
-        this.ctrlX1 = ctrlX1;
-        this.ctrlY1 = ctrlY1;
-        this.ctrlX2 = ctrlX2;
-        this.ctrlY2 = ctrlY2;
-        this.x2 = x2;
-        this.y2 = y2;
+    BezierCurve(BezierCurvesPanel panel) {
+        this.panel = panel;
     }
 
-    public void paint(Graphics g) {
-        super.paint(g);
-        Graphics2D g2d = (Graphics2D) g;
+    public void addBezierCurve(Point start, Point end, Point control1, Point control2) {
+        Point[] controlPoints = {start, control1, control2, end};
+        panel.curves.add(controlPoints);
+        JButton[] buttons = new JButton[4];
 
-        g2d.setColor(Color.BLUE);
+        for (int i = 0; i < 4; i++) {
+            JButton button = new RoundButton("");
+            button.setBounds(controlPoints[i].x - 10, controlPoints[i].y - 10, 20, 20);
+            button.setBackground(Color.RED);
+            if (i == 0 || i == 3) {
+                button.setBackground(Color.RED); // Punkty startu i końca
+            } else {
+                button.setBackground(Color.LIGHT_GRAY); // Punkty kontrolne
+            }
+            panel.add(button);
+            buttons[i] = button;
 
-        int prevX = x1, prevY = y1;
-        for (double t = 0; t <= 1; t += 0.01) {
-            double xt = Math.pow(1 - t, 3) * x1 + 3 * Math.pow(1 - t, 2) * t * ctrlX1 +
-                    3 * (1 - t) * Math.pow(t, 2) * ctrlX2 + Math.pow(t, 3) * x2;
-            double yt = Math.pow(1 - t, 3) * y1 + 3 * Math.pow(1 - t, 2) * t * ctrlY1 +
-                    3 * (1 - t) * Math.pow(t, 2) * ctrlY2 + Math.pow(t, 3) * y2;
-
-            g2d.drawLine(prevX, prevY, (int) xt, (int) yt);
-            prevX = (int) xt;
-            prevY = (int) yt;
         }
 
-        g2d.setColor(Color.RED);
-        g2d.fillOval(x1 - 5, y1 - 5, 10, 10);
-        g2d.fillOval(x2 - 5, y2 - 5, 10, 10);
-
-        g2d.setColor(Color.BLACK);
-        g2d.fillOval(ctrlX1 - 5, ctrlY1 - 5, 10, 10);
-        g2d.fillOval(ctrlX2 - 5, ctrlY2 - 5, 10, 10);
+        panel.controlButtons.add(buttons);
+        panel.repaint();
     }
 
+    public void drawBezierCurve(Graphics2D g2, Point[] points){
+        // rysujemy mala linie miedzy dwoma punktami dzieki t1 i t2
+        int steps = 100;
+        for (int i = 0; i < steps; i++) {
+            double t1 = (double) i / steps;
+            double t2 = (double) (i + 1) / steps;
 
-    public static void main(String[] args) {
-        int x1 = Integer.parseInt(JOptionPane.showInputDialog("Enter x1:"));
-        int y1 = Integer.parseInt(JOptionPane.showInputDialog("Enter y1:"));
-        int ctrlX1 = Integer.parseInt(JOptionPane.showInputDialog("Enter ctrlX1:"));
-        int ctrlY1 = Integer.parseInt(JOptionPane.showInputDialog("Enter ctrlY1:"));
-        int ctrlX2 = Integer.parseInt(JOptionPane.showInputDialog("Enter ctrlX2:"));
-        int ctrlY2 = Integer.parseInt(JOptionPane.showInputDialog("Enter ctrlY2:"));
-        int x2 = Integer.parseInt(JOptionPane.showInputDialog("Enter x2:"));
-        int y2 = Integer.parseInt(JOptionPane.showInputDialog("Enter y2:"));
+            Point p1 = bezierPoint(points, t1);
+            Point p2 = bezierPoint(points, t2);
 
-        JFrame frame = new JFrame("Bezier Curve");
-        frame.setSize(400, 300);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(new BezierCurve(x1, y1, ctrlX1, ctrlY1, ctrlX2, ctrlY2, x2, y2));
-        frame.setVisible(true);
+            g2.drawLine(p1.x, p1.y, p2.x, p2.y);
+        }
+        // dodajemy szara linie przerywana do punktow kontrolnych
+        g2.setColor(Color.GRAY);
+        g2.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{5}, 0));
+        g2.drawLine(points[0].x, points[0].y, points[1].x, points[1].y);
+        g2.drawLine(points[2].x, points[2].y, points[3].x, points[3].y);
+    }
+
+    private Point bezierPoint(Point[] controlPoints, double t) {
+        double x = Math.pow(1 - t, 3) * controlPoints[0].x +
+                3 * Math.pow(1 - t, 2) * t * controlPoints[1].x +
+                3 * (1 - t) * Math.pow(t, 2) * controlPoints[2].x +
+                Math.pow(t, 3) * controlPoints[3].x;
+
+        double y = Math.pow(1 - t, 3) * controlPoints[0].y +
+                3 * Math.pow(1 - t, 2) * t * controlPoints[1].y +
+                3 * (1 - t) * Math.pow(t, 2) * controlPoints[2].y +
+                Math.pow(t, 3) * controlPoints[3].y;
+
+        return new Point((int) x, (int) y);
     }
 }
