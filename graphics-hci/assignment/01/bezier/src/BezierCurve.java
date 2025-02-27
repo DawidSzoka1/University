@@ -1,5 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 
 
 public class BezierCurve {
@@ -18,6 +21,16 @@ public class BezierCurve {
             JButton button = new RoundButton("");
             button.setBounds(controlPoints[i].x - 10, controlPoints[i].y - 10, 20, 20);
             button.setBackground(Color.RED);
+            int index = i;
+            button.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    Point newPoint = SwingUtilities.convertPoint(button, e.getPoint(), panel);
+                    controlPoints[index].setLocation(newPoint.getLocation());
+                    button.setBounds(newPoint.x - 10, newPoint.y - 10, button.getWidth(), button.getHeight());
+                    panel.repaint();
+                }
+            });
             if (i == 0 || i == 3) {
                 button.setBackground(Color.RED); // Punkty startu i końca
             } else {
@@ -34,7 +47,7 @@ public class BezierCurve {
 
     public void drawBezierCurve(Graphics2D g2, Point[] points){
         // rysujemy mala linie miedzy dwoma punktami dzieki t1 i t2
-        int steps = 100;
+        int steps = 1000;
         for (int i = 0; i < steps; i++) {
             double t1 = (double) i / steps;
             double t2 = (double) (i + 1) / steps;
