@@ -3,7 +3,6 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
-
 public class BezierCurve {
     private BezierCurvesPanel panel;
 
@@ -44,7 +43,7 @@ public class BezierCurve {
         panel.repaint();
     }
 
-    public void drawBezierCurve(Graphics2D g2, Point[] points){
+    public void drawBezierCurve(Graphics2D g2, Point[] points) {
         // rysujemy mala linie miedzy dwoma punktami dzieki t1 i t2
         int steps = 1000;
         for (int i = 0; i < steps; i++) {

@@ -129,5 +129,16 @@ coverage/
 *.lcov
 
 # Misc
-*.tmp
 *.cache
+
+# Pliki tymczasowe Visual Studio
+.vs/
+*.suo
+*.user
+
+# Foldery kompilacji
+bin/
+obj/
+
+# Pliki generowane przez NuGet
+packages/

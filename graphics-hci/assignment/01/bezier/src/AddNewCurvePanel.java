@@ -14,22 +14,23 @@ public class AddNewCurvePanel extends JPanel {
     JLabel labelpk1 = new JLabel("pk1 np 10:20");
     JButton create = new JButton("Add curve");
 
-    public Point convertStringToPoint(String point){
-        try{
+    public Point convertStringToPoint(String point) {
+        try {
             String[] tab = point.split(":");
-            if(tab.length != 2){
+            if (tab.length != 2) {
                 throw new Exception("Must by x:y");
             }
             int x = Integer.parseInt(tab[0]);
             int y = Integer.parseInt(tab[1]);
             return new Point(x, y);
-        }catch (Exception e){
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(this, e.getMessage());
             return null;
         }
 
     }
-    AddNewCurvePanel(BezierCurvesPanel panel){
+
+    AddNewCurvePanel(BezierCurvesPanel panel) {
         setLayout(new FlowLayout());
         add(labelp0);
         add(p0);

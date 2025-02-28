@@ -3,7 +3,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class BezierCurvesPanel extends JPanel {
     final List<Point[]> curves = new ArrayList<>();
     final List<JButton[]> controlButtons = new ArrayList<>();
@@ -13,7 +12,6 @@ public class BezierCurvesPanel extends JPanel {
         setLayout(null); // Ustawienie ręcznego rozmieszczania komponentów
         bezierCurve = new BezierCurve(this);
     }
-
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -27,5 +25,4 @@ public class BezierCurvesPanel extends JPanel {
             bezierCurve.drawBezierCurve(g2, controlPoints);
         }
     }
-
 }
