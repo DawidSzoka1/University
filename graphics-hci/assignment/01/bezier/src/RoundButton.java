@@ -15,9 +15,8 @@ class RoundButton extends JButton {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Pobieramy kolor tła ustawiony przez setBackground()
-
         g2.setColor(getBackground());
-        if(getModel().isArmed()){
+        if (getModel().isArmed()) {
             g.setColor(Color.BLACK);
         }
         g2.fillOval(0, 0, getWidth(), getHeight());
