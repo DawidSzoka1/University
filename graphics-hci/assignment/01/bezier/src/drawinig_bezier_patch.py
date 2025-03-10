@@ -1,10 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+from read_control_points import read_control_points_from_txt
 from scipy.special import comb
 
 matplotlib.use('TkAgg')
 plt.ion()
+
 
 def bernstein(n, i, t):
     return comb(n, i) * (t ** i) * ((1 - t) ** (n - i))
@@ -27,17 +29,7 @@ def bezier_patch(control_points, resolution=20):
             py += control_points[index, 1] * b_u * b_w
             pz += control_points[index, 2] * b_u * b_w
 
-    return px, py, pz  # Zwracamy osobne macierze zamiast jednej tablicy
-
-
-def read_control_points(file_path):
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
-    control_points = []
-    for line in lines:
-        values = list(map(float, line.strip().split()))
-        control_points.append(values)
-    return np.array(control_points).reshape(-1, 16, 3)
+    return px, py, pz
 
 
 def plot_objects(teapot_cp, spoon_cp, cup_cp):
@@ -77,7 +69,7 @@ def plot_objects(teapot_cp, spoon_cp, cup_cp):
     plt.show(block=True)
 
 
-teapot_cp = read_control_points("teapotCGA.bpt.txt")
-spoon_cp = read_control_points("teaspoon.bpt.txt")
-cup_cp = read_control_points("teacup.bpt.txt")
+teapot_cp = read_control_points_from_txt("teapotCGA.bpt.txt", (-1, 16, 3))
+spoon_cp = read_control_points_from_txt("teaspoon.bpt.txt", (-1, 16, 3))
+cup_cp = read_control_points_from_txt("teacup.bpt.txt", (-1, 16, 3))
 plot_objects(teapot_cp, spoon_cp, cup_cp)
