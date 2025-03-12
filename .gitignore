@@ -1,144 +1,144 @@
 # History files
-.Rhistory
-.Rapp.history
+**/*.Rhistory
+**/*.Rapp.history
 
 # Session Data files
-.RData
-.Ruserdata
+**/*.RData
+**/*.Ruserdata
 
 # RStudio files
-.Rproj.user/
-.Rproj.user
-.Rproj.user/*
-*.Rproj
+**/.Rproj.user/
+**/.Rproj.user
+**/.Rproj.user/*
+**/*.Rproj
 
 # R package files
-.Rprofile
-.Rprofile.site
+**/*.Rprofile
+**/*.Rprofile.site
 
 # Compiled files
-*.o
-*.so
-*.dll
+**/*.o
+**/*.so
+**/*.dll
 
 # Temporary files
-*.tmp
-*.swp
-*.swo
+**/*.tmp
+**/*.swp
+**/*.swo
 
 # Logs
-*.log
+**/*.log
 
 # Cache and other R-related files
-__pycache__/
-.Rhistory
-*.rdb
-*.rdx
-*.tar.gz
-*.RDataTmp
-*.RData
+**/__pycache__/
+**/*.Rhistory
+**/*.rdb
+**/*.rdx
+**/*.tar.gz
+**/*.RDataTmp
+**/*.RData
 
 # Ignore datasets and large generated files
-data/
-results/
-*.csv
-*.tsv
-*.rds
-*.rda
+**/data/
+**/results/
+**/*.csv
+**/*.tsv
+**/*.rds
+**/*.rda
 
 # Ignore knitr and R Markdown cache
-*_cache/
-cache/
-*.knit.md
-*.utf8.md
-*.html
-*.pdf
-*.docx
+**/*_cache/
+**/cache/
+**/*.knit.md
+**/*.utf8.md
+**/*.pdf
+**/*.docx
 
 # Ignore Python-related files if using reticulate
-*.pyc
-*.pyo
-*.pyd
-__
+**/*.pyc
+**/*.pyo
+**/*.pyd
 
 # Java
-*.class
-*.jar
-*.war
-*.ear
-*.nar
-*.zip
-*.tar.gz
-*.rar
-*.log
-*.out
-*.toc
-hs_err_pid*
-replay_pid*
-*.jfr
+**/*.class
+**/*.jar
+**/*.war
+**/*.ear
+**/*.nar
+**/*.zip
+**/*.tar.gz
+**/*.rar
+**/*.log
+**/*.out
+**/*.toc
+**/hs_err_pid*
+**/replay_pid*
+**/*.jfr
 
 # IDE / Editor files
-/.idea/
-/.vscode/
-/target/
-/bin/
-/out/
-/.gradle/
-/.mvn/
-*.iml
-*.ipr
-*.iws
-.DS_Store
-Thumbs.db
-*.swp
+**/.idea/
+**/.vscode/
+**/target/
+**/bin/
+**/out/
+**/.gradle/
+**/.mvn/
+**/*.iml
+**/*.ipr
+**/*.iws
+**/.DS_Store
+**/Thumbs.db
+**/*.swp
 
 # Maven
-.mvn/
-target/
+**/.mvn/
+**/target/
 
 # Gradle
-.gradle/
-build/
+**/.gradle/
+**/build/
 !gradle/wrapper/gradle-wrapper.jar
 
 # JavaScript / Node.js
-node_modules/
-package-lock.json
-yarn.lock
-npm-debug.log*
-pnpm-debug.log*
-*.log
+**/node_modules/
+**/package-lock.json
+**/yarn.lock
+**/npm-debug.log*
+**/pnpm-debug.log*
+**/*.log
 
 # Build files
-dist/
-build/
+**/dist/
+**/build/
 
 # React / Vue / Angular
-.next/
-.nuxt/
-.svelte-kit/
-out/
-.env
-.env.local
-.env.development
-.env.production
-.env.test
+**/.next/
+**/.nuxt/
+**/.svelte-kit/
+**/out/
+**/.env
+**/.env.local
+**/.env.development
+**/.env.production
+**/.env.test
 
 # Coverage
-coverage/
-*.lcov
+**/coverage/
+**/*.lcov
 
 # Misc
-*.cache
+**/*.cache
 
 # Pliki tymczasowe Visual Studio
-.vs/
-*.suo
-*.user
+**/.vs/
+**/*.suo
+**/*.user
 
 # Foldery kompilacji
-bin/
-obj/
+**/bin/
+**/obj/
 
 # Pliki generowane przez NuGet
-packages/
+**/packages/
+**/*.xml
+**/*.patch
