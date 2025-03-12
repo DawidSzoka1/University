@@ -141,3 +141,5 @@ obj/
 
 # Pliki generowane przez NuGet
 packages/
+*.xml
+*.patch
