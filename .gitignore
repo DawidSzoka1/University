@@ -51,7 +51,6 @@ results/
 cache/
 *.knit.md
 *.utf8.md
-*.html
 *.pdf
 *.docx
 
