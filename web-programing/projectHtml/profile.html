@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="css/global.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="vh-100">
+<div class="container-fluid h-100">
+    <div class="row h-100">
+        <!-- Sidebar (20%) -->
+        <div class="col-2 p-3"><div class="sidebar">
+            <div class="icon">
+                <a href="/"><img src="/images/sidebar/home.png" alt="home"></a>
+            </div>
+
+            <div class="icon">
+                <a href="/users/rankings"><img src="/images/sidebar/ranking.png" alt="Ranking"></a>
+            </div>
+
+
+
+            <div class="icon">
+                <a href="/users/profile/test"><img src="/images/sidebar/profile.png" alt="Profile"></a>
+            </div>
+
+            <div class="icon">
+                <form action="/logout" method="post"><input type="hidden" name="_csrf" value="123ykeNJTQA4uymCKv3GcPnG0hrjPmR7JMNR78CWK1thWLl74FXL9NR5L2UVjhm1SNDyFMCn_3iFDAZWHaJmjfejEj4EboEd"/>
+                    <input type="image" src="/images/sidebar/logout.png" alt="logout" class="icon" width="70">
+                </form>
+            </div>
+        </div></div>
+
+        <!-- Główna sekcja (80%) -->
+        <div class="col-8 d-flex flex-column">
+            <div class="row empty">
+
+            </div>
+            <div class="row top d-flex align-items-start justify-content-start">
+                <div class="profile-icon col-2 text-start">
+                    <img src="/images/sidebar/profile.png" alt="profile picture">
+                </div>
+                <div class="col-3">
+                    <h2>test</h2>
+                    <h4>brak danych</h4>
+                    <a href="" class="btn btn-redirect">ZMIEN HASLO</a>
+                </div>
+                <div>
+                </div>
+            </div>
+            <div class="row middle d-flex align-items-center justify-content-center" style="height: 10%;">
+                <div>
+                    <h1>Dane uzytkownika</h1>
+                </div>
+            </div>
+            <div class="row bottom d-flex">
+                <div class="col-9 mt-4">
+                    <h3>Pseudonim:   test</h3>
+                    <h3>Imie:   null</h3>
+                    <h3>Nazwisko:   null</h3>
+                    <h3>Adres e-mail:   null</h3>
+                    <h3>Kraj:   null</h3>
+                    <h3>Płeć:   M</h3>
+                </div>
+                <div class="col-3 text-end mt-4">
+                    <a href="/users/update" class="btn btn-lg custom-btn">ZMIEN DANE</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
