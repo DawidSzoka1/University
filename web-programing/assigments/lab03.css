@@ -1,0 +1,65 @@
+body{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+header{
+    background-color: teal;
+    font-size: 140%;
+    height: 10vh;
+    text-align: center;
+}
+
+.klasa1{
+    background-color: khaki;
+    text-align: center;
+    flex: 2;
+}
+
+.container{
+    display: flex;
+    height: 75vh;
+}
+.klasa2{
+    background-color: lawngreen;
+    margin-top: 4px;
+}
+#nav{
+    background-color: darkorchid;
+    height: 5vh;
+}
+nav ul{
+    list-style: none;
+    justify-content: space-around;
+    display: flex;
+    margin: 0;
+}
+nav a{
+    text-decoration: none;
+    color: black;
+    display: inline-block;
+    width: 100%;
+}
+nav li{
+    flex: 0 0 33%;
+    width: 80%;
+    text-align: center;
+}
+
+nav a:hover{
+    color: white;
+    background-color: khaki;
+}
+
+.asside{
+    background-color: darkolivegreen;
+    color: white;
+    flex: 1;
+}
+
+footer{
+    background-color: teal;
+    font-size: 10px;
+    height: 10vh;
+    text-align: center;
+}
