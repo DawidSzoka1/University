@@ -1,7 +1,6 @@
 from config import *
 
 def load_animations(scale_factor, sprite_sheets):
-    """Wczytuje animacje postaci z wielu sprite sheetów."""
     animations = {}
     for action, (sprite_sheet, rows, cols) in sprite_sheets.items():
         frame_width = sprite_sheet.get_width() // cols

@@ -1,9 +1,10 @@
 import pygame
 
 pygame.init()
+pygame.mixer.init()
 HEIGHT = 1024
 WIDTH = 1800
-
+clock = pygame.time.Clock()
 font = pygame.font.Font(None, 40)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -19,6 +20,18 @@ player_sprite_sheets = {
     "attack": (attack_sheet, 1, 10),# 1 wiersz, 5 kolumn
     "basic": (basic_sheet, 1, 10),
 }
+
+
+enemy_idle = pygame.image.load("enemyImages/stageOne/Idle.png").convert_alpha()
+enemy_walk = pygame.image.load("enemyImages/stageOne/Walk.png").convert_alpha()
+
+
+enemy_sprite_sheets = {
+    "idle": (enemy_idle, 1, 5),
+    "move": (enemy_walk, 1, 9)
+}
+
+
 
 
 STAGE = 1

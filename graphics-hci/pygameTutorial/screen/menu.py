@@ -11,11 +11,15 @@ def menu_screen():
     # Przycisk Start
     start_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 50, 200, 50)
     pygame.draw.rect(screen, GRAY, start_button)
-    draw_text("START", WIDTH // 2 - 40, HEIGHT // 2 - 35, BLACK)
+    draw_text("GRAJ", WIDTH // 2 - 40, HEIGHT // 2 - 35, BLACK)
+
+    option_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 20, 200, 50)
+    pygame.draw.rect(screen, GRAY, option_button)
+    draw_text("STEROWANIE", WIDTH // 2 - 90, HEIGHT // 2 + 35, BLACK)
 
     # Przycisk Wyjścia
-    exit_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 20, 200, 50)
+    exit_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 90, 200, 50)
     pygame.draw.rect(screen, GRAY, exit_button)
-    draw_text("WYJŚCIE", WIDTH // 2 - 50, HEIGHT // 2 + 35, BLACK)
+    draw_text("WYJŚCIE", WIDTH // 2 - 50, HEIGHT // 2 + 105, BLACK)
 
-    return start_button, exit_button
+    return start_button, exit_button, option_button

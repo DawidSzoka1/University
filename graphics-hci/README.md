@@ -9,6 +9,9 @@ The primary goal of this subject is to introduce students to interactive game pr
 ## Course Content
 
 - **2D Game Development with PyGame** – Understanding graphical structures, scenario creation, and GUI interfaces.
+- ### Music
+#### The music used in this project is sourced from [Pixabay](https://pixabay.com), available under the [Pixabay License](https://pixabay.com/service/terms/).
+
 - **Bézier Curves and Surfaces** – Parametric curves and surface modeling techniques.
 - **Digital Image Representation and Processing** – Intensity adjustments, blending, filtering, and histogram-based modifications.
 - **3D Modeling with Unity** – Creating 3D scenes, controlling the camera, lighting, and user interaction.
