@@ -1,0 +1,45 @@
+.top{
+    background-color: #b58863;
+    color: #f0d9b5;
+    height: 20%;
+    margin-bottom: 20px;
+    padding: 10px;
+}
+
+
+.middle{
+    background-color: #f0d9b5;
+    color: #b58863;
+    height: 10%;
+    margin-bottom: 20px;
+}
+
+.bottom{
+    background-color: #f0d9b5;
+    color: #b58863;
+    height: 40%;
+}
+
+.empty{
+    background-color: white;
+    height: 10%;
+}
+
+.btn-redirect{
+    background-color: #f0d9b5 !important;
+    color: #b58863 !important;
+}
+
+.profile-icon img{
+    width: 90%;
+    height: 90%;
+}
+
+#changeRedirect{
+    position: relative;
+}
+
+.custom-btn{
+    background-color: #b58863 !important;
+    color: #f0d9b5 !important;
+}

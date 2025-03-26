@@ -1,0 +1,48 @@
+body, html {
+    height: 100vh;
+    margin: 0;
+}
+.small-col {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.main-content {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.login-box {
+    border: 5px solid #000;
+    width: 100%;
+    padding-left: 0.7vw;
+    padding-right: 0.7vw;
+}
+
+
+.black{
+    background-color: #b58863;
+    border: 10px solid  #b58863;
+}
+.white{
+    background-color:  #f0d9b5;
+    border: 10px solid  #f0d9b5;
+}
+
+input{
+    width: 100%;
+    background-color: inherit;
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+
+.btn{
+    background-color: #4a2c2c;
+    color: white;
+}

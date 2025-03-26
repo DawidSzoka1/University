@@ -1,0 +1,71 @@
+.container {
+    flex-wrap: wrap;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 85vw;
+    text-align: center;
+}
+
+.title {
+    font-size: 5vw;
+    font-weight: bold;
+    margin-bottom: 5vh;
+    margin-left: -12vw;
+    margin-top: -10vh;
+}
+
+.subtitle{
+    font-size: 2vw;
+    margin-left: -40vw;
+}
+
+.option-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5vw;
+    flex-wrap: wrap;
+}
+
+.computer{
+    width: 25vw;
+    height: auto;
+    margin-right: -20vw;
+    margin-bottom: -10vh;
+}
+
+.option {
+    text-align: center;
+}
+
+.king{
+    width: 20vw;
+    height: auto;
+}
+
+
+.image-container {
+    position: relative;
+    display: inline-block;
+    text-align: center;
+}
+
+.overlay-text {
+    position: absolute;
+    top: 50%;
+    left: 71%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 2vw;
+    font-weight: bold;
+    padding: 1vh 2vw;
+    border-radius: 0.5vw;
+}
+
+a{
+    text-decoration: none;
+    color: inherit;
+}
