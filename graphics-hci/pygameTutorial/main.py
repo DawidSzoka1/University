@@ -21,6 +21,7 @@ current_state = MENU
 
 
 while running:
+    clock.tick(60)
     screen.blit(bg, (0, 0))
 
     if current_state == MENU:

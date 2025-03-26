@@ -1,4 +1,3 @@
-from load_img import load_images
 import pygame
 
 pygame.init()
@@ -8,13 +7,19 @@ WIDTH = 1800
 font = pygame.font.Font(None, 40)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-player_walk = load_images("playerImages/move/sprite_", 10)
-player_idle = load_images("playerImages/idle/sprite_", 7)
-player_special_attack = load_images("playerImages/attack_special/sprite_", 10)
-player_basic_attack = load_images("playerImages/attack_basic/sprite_", 10)
+idle_sheet = pygame.image.load("playerImages/Idle.png").convert_alpha()
+walk_sheet = pygame.image.load("playerImages/Walk.png").convert_alpha()
+attack_sheet = pygame.image.load("playerImages/Special_Blow_1.png").convert_alpha()
+basic_sheet = pygame.image.load("playerImages/Special_Blow_2.png").convert_alpha()
 
-enemyStageOneIdleRight = load_images("enemyImages/stageOne/idle/sprite_", 4, 12)
-enemyStageOneIdleLeft = load_images("enemyImages/stageOne/idle/sprite_", 4, 8)
+# Definicja podziału sprite sheetów (ilość wierszy, ilość kolumn)
+player_sprite_sheets = {
+    "idle": (idle_sheet, 1, 7),  # 1 wiersz, 4 kolumny
+    "move": (walk_sheet, 1, 10),  # 1 wiersz, 6 kolumn
+    "attack": (attack_sheet, 1, 10),# 1 wiersz, 5 kolumn
+    "basic": (basic_sheet, 1, 10),
+}
+
 
 STAGE = 1
 EnemyPerStage = STAGE * 10
