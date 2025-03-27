@@ -15,8 +15,9 @@ all_sprites.add(player)
 def game_screen():
     screen.blit(bg, (0, 0))
     keys = pygame.key.get_pressed()
-    all_sprites.update(keys)
+    enemies = enemy_spawner.enemies
+    all_sprites.update(keys, enemies)
     all_sprites.draw(screen)
     draw_text(player.message, WIDTH // 2 - 200, 100, BLACK)
-    enemy_spawner.update()
+    enemy_spawner.update(player)
     enemy_spawner.draw(screen)
