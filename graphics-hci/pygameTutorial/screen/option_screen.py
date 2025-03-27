@@ -4,9 +4,11 @@ from pygameTutorial.util import draw_text
 
 bg = pygame.image.load("stageBackground/bamboo_bridge.png")
 bg = pygame.transform.scale(bg, (WIDTH, HEIGHT))
-player = Player(player_sprite_sheets, border_x=(100, WIDTH - 100), start=(WIDTH //2 , HEIGHT // 2  + 200))
+player = Player(player_sprite_sheets, border_x=(100, WIDTH - 100), start=(WIDTH // 2, HEIGHT // 2 + 200))
 all_sprites = pygame.sprite.Group()
 all_sprites.add(player)
+
+
 def option_screen():
     screen.blit(bg, (0, 0))
 

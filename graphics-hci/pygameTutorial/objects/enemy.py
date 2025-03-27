@@ -24,7 +24,7 @@ class Enemy(pygame.sprite.Sprite):
         self.animation_speed = 120
         self.last_update = 0
         self.down = False
-        # Zmienne do animacji otrzymywania obrażeń
+
         self.is_hurt = False
         self.hurt_timer = 0
         self.damage = 30
@@ -57,7 +57,7 @@ class Enemy(pygame.sprite.Sprite):
             self.dead_timer = pygame.time.get_ticks()
 
     def update(self, player):
-        """Przeciwnik podąża za graczem i zmienia animację w zależności od kierunku"""
+
         if not player.down:
             now = pygame.time.get_ticks()
             if self.state in ['dead_right', 'dead_left']:
@@ -75,24 +75,21 @@ class Enemy(pygame.sprite.Sprite):
                 if now - self.hurt_timer > self.hurt_duration:
                     self.is_hurt = False
 
-                # Sprawdzenie, czy gracz jest po lewej czy prawej stronie
                 if player.rect.centerx < self.rect.centerx and not self.is_attacking and not self.is_hurt:
-                    self.rect.x -= self.speed  # Ruch w lewo
-                    self.state = "move_left"  # Ustaw animację ruchu w lewo
+                    self.rect.x -= self.speed
+                    self.state = "move_left"
                     self.last_direction = "left"
                 elif player.rect.centerx > self.rect.centerx and not self.is_attacking and not self.is_hurt:
-                    self.rect.x += self.speed  # Ruch w prawo
-                    self.state = "move_right"  # Ustaw animację ruchu w prawo
+                    self.rect.x += self.speed
+                    self.state = "move_right"
                     self.last_direction = "right"
 
-                # Animacja ataku, jeśli przeciwnik blisko gracza
                 offset_x = player.rect.x - self.rect.x
                 offset_y = player.rect.y - self.rect.y
 
-                if ((self.mask.overlap(player.mask, (offset_x - 50, offset_y))  # Sprawdza z lewej strony
+                if ((self.mask.overlap(player.mask, (offset_x - 50, offset_y))
                      or self.mask.overlap(player.mask, (offset_x + 50, offset_y)))
-                        and now - self.attack_timer > self.attack_cooldown):  # Sprawdza z prawej strony
-
+                        and now - self.attack_timer > self.attack_cooldown):
                     print(f"attakuje gracza {player.hp}")
                     self.attack_timer = now
                     self.state = "attack_left" if player.rect.centerx < self.rect.centerx else "attack_right"
@@ -105,13 +102,13 @@ class Enemy(pygame.sprite.Sprite):
                         self.attack_timer = now
                         self.frame_index += 1
                         if self.frame_index >= len(self.animations[self.state]):
-                            self.is_attacking = False  # Koniec ataku
-                            self.state = f"move_{self.last_direction}"  # Powrót do idle w kierunku ruchu
+                            self.is_attacking = False
+                            self.state = f"move_{self.last_direction}"
                             self.frame_index = 0
                         self.image = self.animations[self.state][self.frame_index]
                         self.mask = pygame.mask.from_surface(self.image)
 
-                # Animacja ruchu
+
                 elif now - self.last_update > self.animation_speed:
                     self.last_update = now
                     self.frame_index = (self.frame_index + 1) % len(self.animations[self.state])

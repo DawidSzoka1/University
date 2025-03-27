@@ -1,4 +1,3 @@
-
 import random
 from pygameTutorial.config import *
 
@@ -22,15 +21,15 @@ class EnemySpawner:
             self.last_spawn_time = now
 
         for enemy in self.enemies:
-            enemy.update(player)  # Aktualizujemy wroga, przekazując gracza
+            enemy.update(player)
 
     def spawn_enemy(self, player):
         side = random.choice(["left", "right"])
         x_position = 0 if side == "left" else WIDTH
-        y_position = HEIGHT // 2  # Losowa wysokość
+        y_position = HEIGHT // 2
 
         new_enemy = self.enemy_class(self.sprite_sheets, x_position, y_position)
-        new_enemy.player = player  # Przypisujemy gracza jako cel
+        new_enemy.player = player
         self.enemies.add(new_enemy)
 
     def draw(self, screen):

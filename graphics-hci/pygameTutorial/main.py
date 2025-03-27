@@ -8,6 +8,7 @@ from pygameTutorial.screen.menu import menu_screen
 from pygameTutorial.screen.option_screen import option_screen
 from pygameTutorial.screen.gameOver import game_over_screen
 
+
 def start_game(enemies):
     score = 0
     game_bg = pygame.image.load('stageBackground/sky_bridge.png')
@@ -18,6 +19,7 @@ def start_game(enemies):
     all_sprites.add(player)
 
     return game_bg, player, all_sprites, enemy_spawner, score
+
 
 def game_loop():
     pygame.init()
@@ -55,14 +57,14 @@ def game_loop():
                 if first_play:
                     first_play = False
                     game_bg, player, all_sprites, enemy_spawner, score = start_game(max_enemies)
-                    game_screen( game_bg, player, all_sprites, enemy_spawner, score)
+                    game_screen(game_bg, player, all_sprites, enemy_spawner, score)
                 else:
                     game_screen(game_bg, player, all_sprites, enemy_spawner, score)
                 score = (enemy_spawner.count - len(enemy_spawner.enemies)) * 20
                 if max_enemies == enemy_spawner.count and len(enemy_spawner.enemies) == 0:
                     current_state = OVER
                     over_message = "You won GG next time will be harder"
-                    max_enemies  *= 2
+                    max_enemies *= 2
                     over_bg = win_screen
                     pygame.mixer.music.stop()
                     pygame.mixer.music.load('sound/win_song.mp3')
@@ -79,7 +81,7 @@ def game_loop():
                     pygame.mixer.music.play(-1)
             elif current_state == OPTIONS:
                 menu_button = option_screen()
-        if  current_state == OVER:
+        if current_state == OVER:
             current_state = OVER
             game_over_screen(score, over_message, over_bg)
             first_play = True
@@ -104,7 +106,6 @@ def game_loop():
                     if exit_btn.collidepoint(mouse_x, mouse_y):
                         running = False  # Zamknięcie gry
 
-
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE and (current_state == GAME
                                                      or current_state == OPTIONS):
@@ -122,6 +123,7 @@ def game_loop():
                         current_state = MENU
                     if event.key == pygame.K_ESCAPE:
                         running = False
+
 
 if __name__ == '__main__':
     game_loop()
