@@ -22,7 +22,7 @@ class EnemySpawner:
     def spawn_enemy(self, player):
         side = random.choice(["left", "right"])
         x_position = 0 if side == "left" else WIDTH
-        y_position = random.randint(100, HEIGHT - 100)  # Losowa wysokość
+        y_position = HEIGHT // 2  # Losowa wysokość
 
         new_enemy = self.enemy_class(self.sprite_sheets, x_position, y_position)
         new_enemy.player = player  # Przypisujemy gracza jako cel

@@ -16,7 +16,7 @@ class Enemy(pygame.sprite.Sprite):
         self.attack_distance = attack_distance
         self.is_attacking = False
         self.attack_timer = 0
-        self.attack_cooldown = 2000  # 1 sekunda przerwy między atakami
+        self.attack_cooldown = 2000
         self.attack_damage = 20
         self.animation_speed = 120
         self.last_update = 0
@@ -74,10 +74,15 @@ class Enemy(pygame.sprite.Sprite):
             self.state = "move_right"  # Ustaw animację ruchu w prawo
 
         # Animacja ataku, jeśli przeciwnik blisko gracza
-        if self.rect.colliderect(player.rect):
+        offset_x = player.rect.x - self.rect.x
+        offset_y = player.rect.y - self.rect.y
+
+        if (self.mask.overlap(player.mask, (offset_x - 50, offset_y))  # Sprawdza z lewej strony
+                or self.mask.overlap(player.mask, (offset_x + 50, offset_y))):  # Sprawdza z prawej strony
+
             self.state = "attack_left" if player.rect.centerx < self.rect.centerx else "attack_right"
 
-        # Aktualizacja klatki animacji
+
         now = pygame.time.get_ticks()
         if now - self.last_update > self.animation_speed:
             self.last_update = now
