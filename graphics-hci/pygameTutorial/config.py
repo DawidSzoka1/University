@@ -7,11 +7,13 @@ WIDTH = 1800
 clock = pygame.time.Clock()
 font = pygame.font.Font(None, 40)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+SCORE = 0
 
 idle_sheet = pygame.image.load("playerImages/Idle.png").convert_alpha()
 walk_sheet = pygame.image.load("playerImages/Walk.png").convert_alpha()
 attack_sheet = pygame.image.load("playerImages/Special_Blow_1.png").convert_alpha()
 basic_sheet = pygame.image.load("playerImages/Special_Blow_2.png").convert_alpha()
+hurt_sheet = pygame.image.load("playerImages/Hurt_1.png").convert_alpha()
 
 # Definicja podziału sprite sheetów (ilość wierszy, ilość kolumn)
 player_sprite_sheets = {
@@ -19,6 +21,7 @@ player_sprite_sheets = {
     "move": (walk_sheet, 1, 10),  # 1 wiersz, 6 kolumn
     "attack": (attack_sheet, 1, 10),# 1 wiersz, 5 kolumn
     "basic": (basic_sheet, 1, 10),
+    "hurt": (hurt_sheet, 1, 5),
 }
 
 
@@ -40,8 +43,6 @@ STAGE = 1
 EnemyPerStage = STAGE * 10
 EnemySpawnInterval = 2000
 EXPPerStage = STAGE * 5 + 25
-
-
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)

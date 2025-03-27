@@ -2,7 +2,7 @@ import pygame.mixer
 
 from pygameTutorial.load_animations import load_animations
 from pygameTutorial.config import *
-
+from pygameTutorial.screen.gameOver import game_over_screen
 
 
 class Player(pygame.sprite.Sprite):
@@ -38,6 +38,11 @@ class Player(pygame.sprite.Sprite):
         self.exp = 0
         self.last_direction = "right"  # Śledzenie ostatniego kierunku
         self.message = ""
+        self.alive = True
+        self.is_hurt = False
+        self.hurt_timer = 0
+        self.hurt_duration = 1000
+
 
 
     def update(self, keys, enemies):
@@ -54,6 +59,10 @@ class Player(pygame.sprite.Sprite):
                 self.state = f"idle_{self.last_direction}"
 
         now = pygame.time.get_ticks()
+
+        if now - self.hurt_timer > self.hurt_duration:
+            self.is_hurt = False
+
         if self.is_attacking and self.attack_hitbox:
             for enemy in enemies:
                 if self.attack_hitbox.colliderect(enemy.rect):
@@ -113,6 +122,19 @@ class Player(pygame.sprite.Sprite):
         self.attack_timer = pygame.time.get_ticks()
 
         if "left" in self.state:
-            self.attack_hitbox = pygame.Rect(self.rect.left - 30, self.rect.top, 30, self.rect.height)
+            self.attack_hitbox = pygame.Rect(self.rect.left, self.rect.top, 30, self.rect.height)
         elif "right" in self.state:
             self.attack_hitbox = pygame.Rect(self.rect.right, self.rect.top, 30, self.rect.height)
+
+    def take_damage(self, damage):
+        if not self.is_hurt:
+            self.hp -= damage
+            self.is_hurt = True
+            self.hurt_timer = pygame.time.get_ticks()
+            self.state = f"hurt_{self.last_direction}"
+            self.frame_index = 0
+
+
+        if self.hp <= 0:
+            self.kill()
+            self.alive = False
