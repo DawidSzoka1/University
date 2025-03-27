@@ -20,6 +20,6 @@ def option_screen():
     draw_text("e - atak specjalny w kierunku ruchu", WIDTH // 2 - 300, HEIGHT // 2 + 45, BLACK)
     draw_text("esc - powrot do menu", WIDTH // 2 - 300, HEIGHT // 2 + 95, BLACK)
     keys = pygame.key.get_pressed()
-    all_sprites.update(keys)
+    all_sprites.update(keys, [])
     all_sprites.draw(screen)
     return menu_button

@@ -15,6 +15,7 @@ class Player(pygame.sprite.Sprite):
         self.state = "idle_right"
         self.frame_index = 0
         self.image = self.animations[self.state][self.frame_index]
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(center=start)
         self.speed = 20
         self.last_update = pygame.time.get_ticks()
@@ -22,6 +23,8 @@ class Player(pygame.sprite.Sprite):
         self.basic_attack_sound = pygame.mixer.Sound("sound/basic_attack.mp3")
         self.special_attack_sound = pygame.mixer.Sound("sound/special_attack.mp3")
         self.basic_attack_sound.set_volume(0.15)
+        self.attack_hitbox = None
+        self.attack_damage = 20
         self.special_attack_sound.set_volume(0.15)
         self.reload_sound = pygame.mixer.Sound("sound/reload.mp3")
         self.is_reloading = False
@@ -37,7 +40,7 @@ class Player(pygame.sprite.Sprite):
         self.message = ""
 
 
-    def update(self, keys):
+    def update(self, keys, enemies):
         if not self.is_attacking:  # Ruch tylko jeśli nie atakujemy
             if keys[pygame.K_a] and self.rect.x > self.border_x[0]:
                 self.rect.x -= self.speed
@@ -51,10 +54,16 @@ class Player(pygame.sprite.Sprite):
                 self.state = f"idle_{self.last_direction}"
 
         now = pygame.time.get_ticks()
+        if self.is_attacking and self.attack_hitbox:
+            for enemy in enemies:
+                if self.attack_hitbox.colliderect(enemy.rect):
+                    enemy.take_damage(self.attack_damage)
+
         # Atak podstawowy
         if keys[pygame.K_q] and not self.is_attacking:
             self.start_attack(f"attack_{self.last_direction}")
             self.basic_attack_sound.play()
+            self.attack_damage = 20
 
         remaining_cooldown = max(0, (self.eCooldown - (now - self.lastE)) // 1000)
         if self.is_reloading:
@@ -72,6 +81,7 @@ class Player(pygame.sprite.Sprite):
             self.special_attack_sound.play()
             self.start_attack(f"basic_{self.last_direction}")
             self.lastE = now
+            self.attack_damage = 50
             clock.tick(100000)
             self.is_reloading = True
 
@@ -85,13 +95,14 @@ class Player(pygame.sprite.Sprite):
                     self.state = f"idle_{self.last_direction}"  # Powrót do idle w kierunku ruchu
                     self.frame_index = 0
                 self.image = self.animations[self.state][self.frame_index]
+                self.mask = pygame.mask.from_surface(self.image)
 
         # Animacja ruchu
         elif now - self.last_update > self.animation_speed:
             self.last_update = now
             self.frame_index = (self.frame_index + 1) % len(self.animations[self.state])
             self.image = self.animations[self.state][self.frame_index]
-
+            self.mask = pygame.mask.from_surface(self.image)
 
     def start_attack(self, animation):
         """Rozpoczyna animację ataku w ostatnim kierunku ruchu"""
@@ -100,3 +111,8 @@ class Player(pygame.sprite.Sprite):
         self.state = attack_state
         self.frame_index = 0
         self.attack_timer = pygame.time.get_ticks()
+
+        if "left" in self.state:
+            self.attack_hitbox = pygame.Rect(self.rect.left - 30, self.rect.top, 30, self.rect.height)
+        elif "right" in self.state:
+            self.attack_hitbox = pygame.Rect(self.rect.right, self.rect.top, 30, self.rect.height)

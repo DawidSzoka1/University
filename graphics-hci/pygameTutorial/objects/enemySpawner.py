@@ -10,17 +10,22 @@ class EnemySpawner:
         self.enemies = pygame.sprite.Group()
         self.last_spawn_time = pygame.time.get_ticks()
 
-    def update(self):
+    def update(self, player):
         now = pygame.time.get_ticks()
         if len(self.enemies) < self.max_enemies and now - self.last_spawn_time > self.spawn_interval:
-            self.spawn_enemy()
+            self.spawn_enemy(player)
             self.last_spawn_time = now
-        self.enemies.update()
 
-    def spawn_enemy(self):
+        for enemy in self.enemies:
+            enemy.update(player)  # Aktualizujemy wroga, przekazując gracza
+
+    def spawn_enemy(self, player):
         side = random.choice(["left", "right"])
         x_position = 0 if side == "left" else WIDTH
-        new_enemy = self.enemy_class(self.sprite_sheets, x_position)
+        y_position = random.randint(100, HEIGHT - 100)  # Losowa wysokość
+
+        new_enemy = self.enemy_class(self.sprite_sheets, x_position, y_position)
+        new_enemy.player = player  # Przypisujemy gracza jako cel
         self.enemies.add(new_enemy)
 
     def draw(self, screen):
