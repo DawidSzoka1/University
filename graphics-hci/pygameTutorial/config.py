@@ -14,6 +14,7 @@ walk_sheet = pygame.image.load("playerImages/Walk.png").convert_alpha()
 attack_sheet = pygame.image.load("playerImages/Special_Blow_1.png").convert_alpha()
 basic_sheet = pygame.image.load("playerImages/Special_Blow_2.png").convert_alpha()
 hurt_sheet = pygame.image.load("playerImages/Hurt_1.png").convert_alpha()
+dead_sheet = pygame.image.load("playerImages/K.O..png").convert_alpha()
 
 # Definicja podziału sprite sheetów (ilość wierszy, ilość kolumn)
 player_sprite_sheets = {
@@ -22,6 +23,7 @@ player_sprite_sheets = {
     "attack": (attack_sheet, 1, 10),# 1 wiersz, 5 kolumn
     "basic": (basic_sheet, 1, 10),
     "hurt": (hurt_sheet, 1, 5),
+    "dead": (dead_sheet, 1, 9),
 }
 
 
@@ -29,11 +31,13 @@ enemy_idle = pygame.image.load("enemyImages/stageOne/Idle.png").convert_alpha()
 enemy_walk = pygame.image.load("enemyImages/stageOne/Walk.png").convert_alpha()
 enemy_hurt = pygame.image.load("enemyImages/stageOne/Hurt.png").convert_alpha()
 enemy_attack = pygame.image.load("enemyImages/stageOne/Attack_1.png").convert_alpha()
+enemy_dead = pygame.image.load("enemyImages/stageOne/Dead.png").convert_alpha()
 enemy_sprite_sheets = {
     "idle": (enemy_idle, 1, 5),
     "move": (enemy_walk, 1, 9),
     "hurt": (enemy_hurt, 1, 2),
-    "attack": (enemy_attack, 1, 4)
+    "attack": (enemy_attack, 1, 4),
+    "dead": (enemy_dead, 1, 6)
 }
 
 

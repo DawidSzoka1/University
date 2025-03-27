@@ -1,6 +1,7 @@
 from pygameTutorial.config import *
 from pygameTutorial.load_animations import load_animations
 
+
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, sprite_sheets, x, y, scale_factor=2, speed=2, attack_distance=50):
         super().__init__()
@@ -16,30 +17,19 @@ class Enemy(pygame.sprite.Sprite):
         self.attack_distance = attack_distance
         self.is_attacking = False
         self.attack_timer = 0
-        self.attack_cooldown = 3000
+        self.attack_cooldown = 2000
         self.last_direction = "right"
         self.attack_damage = 20
         self.attack_speed = 200
         self.animation_speed = 120
         self.last_update = 0
+        self.down = False
         # Zmienne do animacji otrzymywania obrażeń
         self.is_hurt = False
         self.hurt_timer = 0
         self.damage = 30
         self.hurt_duration = 1000
-
-    def move_towards(self, player):
-        if not self.is_attacking and not self.is_hurt:
-            dx = player.rect.centerx - self.rect.centerx
-            dy = player.rect.centery - self.rect.centery
-            distance = (dx ** 2 + dy ** 2) ** 0.5  # Obliczamy dystans
-
-            if distance > self.attack_distance:  # Jeśli gracz jest dalej niż dystans ataku
-                self.rect.x += self.speed if dx > 0 else -self.speed
-                self.rect.y += self.speed if dy > 0 else -self.speed
-                self.state = "move_left"
-            else:
-                self.start_attack(player)
+        self.dead_timer = 500
 
     def start_attack(self, player):
         now = pygame.time.get_ticks()
@@ -62,54 +52,68 @@ class Enemy(pygame.sprite.Sprite):
             print(f"Przeciwnik traci {damage} HP! Pozostało: {self.hp}")
 
         if self.hp <= 0:
-            print("Przeciwnik pokonany!")
-            self.kill()
-
+            self.state = f"dead_{self.last_direction}"
+            self.frame_index = 0
+            self.dead_timer = pygame.time.get_ticks()
 
     def update(self, player):
         """Przeciwnik podąża za graczem i zmienia animację w zależności od kierunku"""
-        now = pygame.time.get_ticks()
-        if now - self.hurt_timer > self.hurt_duration:
-            self.is_hurt = False
+        if not player.down:
+            now = pygame.time.get_ticks()
+            if self.state in ['dead_right', 'dead_left']:
+                self.down = True
+                if self.frame_index != len(self.animations[self.state]) - 1:
+                    if now - self.last_update > self.animation_speed:
+                        self.last_update = now
+                        self.frame_index = (self.frame_index + 1) % len(self.animations[self.state])
+                        self.image = self.animations[self.state][self.frame_index]
+                else:
+                    if now - self.dead_timer > 2000:
+                        self.kill()
+            else:
 
-        # Sprawdzenie, czy gracz jest po lewej czy prawej stronie
-        if player.rect.centerx < self.rect.centerx and not self.is_attacking and not self.is_hurt:
-            self.rect.x -= self.speed  # Ruch w lewo
-            self.state = "move_left"  # Ustaw animację ruchu w lewo
-            self.last_direction = "left"
-        elif player.rect.centerx > self.rect.centerx and not self.is_attacking and not self.is_hurt:
-            self.rect.x += self.speed  # Ruch w prawo
-            self.state = "move_right"  # Ustaw animację ruchu w prawo
-            self.last_direction = "right"
+                if now - self.hurt_timer > self.hurt_duration:
+                    self.is_hurt = False
 
-        # Animacja ataku, jeśli przeciwnik blisko gracza
-        offset_x = player.rect.x - self.rect.x
-        offset_y = player.rect.y - self.rect.y
+                # Sprawdzenie, czy gracz jest po lewej czy prawej stronie
+                if player.rect.centerx < self.rect.centerx and not self.is_attacking and not self.is_hurt:
+                    self.rect.x -= self.speed  # Ruch w lewo
+                    self.state = "move_left"  # Ustaw animację ruchu w lewo
+                    self.last_direction = "left"
+                elif player.rect.centerx > self.rect.centerx and not self.is_attacking and not self.is_hurt:
+                    self.rect.x += self.speed  # Ruch w prawo
+                    self.state = "move_right"  # Ustaw animację ruchu w prawo
+                    self.last_direction = "right"
 
-        if ((self.mask.overlap(player.mask, (offset_x - 50, offset_y))  # Sprawdza z lewej strony
-                or self.mask.overlap(player.mask, (offset_x + 50, offset_y)))
-                and now - self.attack_timer > self.attack_cooldown):  # Sprawdza z prawej strony
+                # Animacja ataku, jeśli przeciwnik blisko gracza
+                offset_x = player.rect.x - self.rect.x
+                offset_y = player.rect.y - self.rect.y
 
-            self.attack_timer = now
-            self.state = "attack_left" if player.rect.centerx < self.rect.centerx else "attack_right"
-            self.is_attacking = True
-            player.take_damage(self.damage)
+                if ((self.mask.overlap(player.mask, (offset_x - 50, offset_y))  # Sprawdza z lewej strony
+                     or self.mask.overlap(player.mask, (offset_x + 50, offset_y)))
+                        and now - self.attack_timer > self.attack_cooldown):  # Sprawdza z prawej strony
 
-
-        if self.is_attacking and not self.is_hurt:
-            if now - self.attack_timer > self.attack_speed:
-                self.attack_timer = now
-                self.frame_index += 1
-                if self.frame_index >= len(self.animations[self.state]):
-                    self.is_attacking = False  # Koniec ataku
-                    self.state = f"move_{self.last_direction}"  # Powrót do idle w kierunku ruchu
+                    print(f"attakuje gracza {player.hp}")
+                    self.attack_timer = now
+                    self.state = "attack_left" if player.rect.centerx < self.rect.centerx else "attack_right"
+                    self.is_attacking = True
                     self.frame_index = 0
-                self.image = self.animations[self.state][self.frame_index]
-                self.mask = pygame.mask.from_surface(self.image)
+                    player.take_damage(self.damage)
 
-        # Animacja ruchu
-        elif now - self.last_update > self.animation_speed:
-            self.last_update = now
-            self.frame_index = (self.frame_index + 1) % len(self.animations[self.state])
-            self.image = self.animations[self.state][self.frame_index]
-            self.mask = pygame.mask.from_surface(self.image)
+                if self.is_attacking and not self.is_hurt:
+                    if now - self.attack_timer > self.attack_speed:
+                        self.attack_timer = now
+                        self.frame_index += 1
+                        if self.frame_index >= len(self.animations[self.state]):
+                            self.is_attacking = False  # Koniec ataku
+                            self.state = f"move_{self.last_direction}"  # Powrót do idle w kierunku ruchu
+                            self.frame_index = 0
+                        self.image = self.animations[self.state][self.frame_index]
+                        self.mask = pygame.mask.from_surface(self.image)
+
+                # Animacja ruchu
+                elif now - self.last_update > self.animation_speed:
+                    self.last_update = now
+                    self.frame_index = (self.frame_index + 1) % len(self.animations[self.state])
+                    self.image = self.animations[self.state][self.frame_index]
+                    self.mask = pygame.mask.from_surface(self.image)

@@ -34,7 +34,7 @@ def game_loop():
     pygame.display.set_caption("RPG")
     bg = pygame.image.load("stageBackground/bamboo_bridge.png")
     bg = pygame.transform.scale(bg, (WIDTH, HEIGHT))
-    max_enemies = 3
+    max_enemies = 10
     game_bg, player, all_sprites, enemy_spawner, score = start_game(max_enemies)
     running = True
 
@@ -120,7 +120,7 @@ def game_loop():
                         pygame.mixer.music.set_volume(0.2)
                         pygame.mixer.music.play(-1)
                         current_state = MENU
-                    if event.key == pygame.K_q:
+                    if event.key == pygame.K_ESCAPE:
                         running = False
 
 if __name__ == '__main__':
