@@ -2,8 +2,8 @@ import pygame
 
 pygame.init()
 pygame.mixer.init()
-HEIGHT = 1024
-WIDTH = 1800
+HEIGHT = pygame.display.Info().current_h
+WIDTH = pygame.display.Info().current_w
 clock = pygame.time.Clock()
 font = pygame.font.Font(None, 40)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))

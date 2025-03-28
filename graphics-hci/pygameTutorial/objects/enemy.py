@@ -3,7 +3,7 @@ from pygameTutorial.load_animations import load_animations
 
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, sprite_sheets, x, y, scale_factor=2, speed=2, attack_distance=50):
+    def __init__(self, sprite_sheets, x, y, scale_factor=2, speed=2, attack_distance=50, damage=20, hp=70):
         super().__init__()
         self.animations = load_animations(scale_factor, sprite_sheets)
         self.state = "idle_right"
@@ -12,14 +12,14 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=(x, y))
         self.mask = pygame.mask.from_surface(self.image)
 
-        self.hp = 70
+        self.hp = hp
         self.speed = speed
         self.attack_distance = attack_distance
         self.is_attacking = False
         self.attack_timer = 0
         self.attack_cooldown = 2000
         self.last_direction = "right"
-        self.attack_damage = 20
+        self.attack_damage = damage
         self.attack_speed = 200
         self.animation_speed = 120
         self.last_update = 0

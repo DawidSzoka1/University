@@ -9,11 +9,14 @@ from pygameTutorial.screen.option_screen import option_screen
 from pygameTutorial.screen.gameOver import game_over_screen
 
 
-def start_game(enemies):
+def start_game(enemies, enemy_damage, enemy_hp):
     score = 0
     game_bg = pygame.image.load('stageBackground/sky_bridge.png')
     game_bg = pygame.transform.scale(game_bg, (WIDTH, HEIGHT))
-    enemy_spawner = EnemySpawner(Enemy, enemy_sprite_sheets, max_enemies=enemies)
+    enemy_spawner = EnemySpawner(Enemy, enemy_sprite_sheets,
+                                 max_enemies=enemies,
+                                 enemy_damage=enemy_damage,
+                                 enemy_hp=enemy_hp)
     all_sprites = pygame.sprite.Group()
     player = Player(player_sprite_sheets)
     all_sprites.add(player)
@@ -37,9 +40,11 @@ def game_loop():
     bg = pygame.image.load("stageBackground/bamboo_bridge.png")
     bg = pygame.transform.scale(bg, (WIDTH, HEIGHT))
     max_enemies = 10
-    game_bg, player, all_sprites, enemy_spawner, score = start_game(max_enemies)
+    enemy_hp = 70
+    enemy_damage = 20
+    game_bg, player, all_sprites, enemy_spawner, score = start_game(max_enemies, enemy_damage, enemy_hp)
     running = True
-
+    menu_button = False
     MENU = "menu"
     GAME = "game"
     OVER = "over"
@@ -56,15 +61,17 @@ def game_loop():
             elif current_state == GAME:
                 if first_play:
                     first_play = False
-                    game_bg, player, all_sprites, enemy_spawner, score = start_game(max_enemies)
+                    game_bg, player, all_sprites, enemy_spawner, score = start_game(max_enemies, enemy_damage, enemy_hp)
                     game_screen(game_bg, player, all_sprites, enemy_spawner, score)
                 else:
                     game_screen(game_bg, player, all_sprites, enemy_spawner, score)
                 score = (enemy_spawner.count - len(enemy_spawner.enemies)) * 20
                 if max_enemies == enemy_spawner.count and len(enemy_spawner.enemies) == 0:
                     current_state = OVER
-                    over_message = "You won GG next time will be harder"
+                    over_message = "You won GG nastepnym razem bedzie ciezej"
                     max_enemies *= 2
+                    enemy_hp += 10
+                    enemy_damage += 5
                     over_bg = win_screen
                     pygame.mixer.music.stop()
                     pygame.mixer.music.load('sound/win_song.mp3')
@@ -73,7 +80,16 @@ def game_loop():
 
                 if not player.alive:
                     current_state = OVER
-                    over_message = "Game Over You Lost"
+                    over_message = "Game Over You Lost nastepnym razem bedzie latwiej"
+                    if enemy_hp - 10 == 0:
+                        enemy_hp = 10
+                        over_message = "Game Over You Lost latwiejszego pozimu juz nie ma"
+                    else:
+                        enemy_hp -= 10
+                    if enemy_damage - 5 == 0:
+                        enemy_damage = 5
+                    else:
+                        enemy_damage -= 5
                     over_bg = lose_screen
                     pygame.mixer.music.stop()
                     pygame.mixer.music.load('sound/lose_song.mp3')
@@ -105,7 +121,9 @@ def game_loop():
                         current_state = OPTIONS
                     if exit_btn.collidepoint(mouse_x, mouse_y):
                         running = False  # Zamknięcie gry
-
+                if current_state == OPTIONS:
+                    if menu_button and menu_button.collidepoint(mouse_x, mouse_y):
+                        current_state = MENU
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE and (current_state == GAME
                                                      or current_state == OPTIONS):

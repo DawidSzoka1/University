@@ -3,7 +3,11 @@ from pygameTutorial.config import *
 
 
 class EnemySpawner:
-    def __init__(self, enemy_class, sprite_sheets, spawn_interval=2000, max_enemies=10):
+    def __init__(self, enemy_class, sprite_sheets,
+                 spawn_interval=2000, max_enemies=10,
+                 enemy_hp=70, enemy_damage=20):
+        self.enemy_hp = enemy_hp
+        self.enemy_damage = enemy_damage
         self.enemy_class = enemy_class
         self.sprite_sheets = sprite_sheets
         self.spawn_interval = spawn_interval
@@ -28,7 +32,8 @@ class EnemySpawner:
         x_position = 0 if side == "left" else WIDTH
         y_position = HEIGHT // 2
 
-        new_enemy = self.enemy_class(self.sprite_sheets, x_position, y_position)
+        new_enemy = self.enemy_class(self.sprite_sheets, x_position, y_position,
+                                     damage=self.enemy_damage, hp=self.enemy_hp)
         new_enemy.player = player
         self.enemies.add(new_enemy)
 

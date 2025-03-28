@@ -11,6 +11,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.scale_factor = scale_factor
         self.animations = load_animations(scale_factor, sprite_sheets)
+        self.max_hp = 100
         self.state = "idle_right"
         self.frame_index = 0
         self.image = self.animations[self.state][self.frame_index]
