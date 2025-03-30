@@ -1,6 +1,7 @@
 import random
-from pygameTutorial.config import *
 
+from pygameTutorial.config import *
+from pygameTutorial.util import enemy_sheets
 
 class EnemySpawner:
     def __init__(self, enemy_class, sprite_sheets,
@@ -31,8 +32,14 @@ class EnemySpawner:
         side = random.choice(["left", "right"])
         x_position = 0 if side == "left" else WIDTH
         y_position = HEIGHT // 2
-
-        new_enemy = self.enemy_class(self.sprite_sheets, x_position, y_position,
+        skin = random.choice(["skinBasic", "skinArcher", "skinCommander"])
+        if skin == "skinArcher":
+            amount = [9, 8, 3, 5, 5]
+        elif skin == "skinBasic":
+            amount = [6, 9, 3, 4, 6]
+        else:
+            amount = [5, 9, 2, 4, 6]
+        new_enemy = self.enemy_class(enemy_sheets(skin, amount), x_position, y_position,
                                      damage=self.enemy_damage, hp=self.enemy_hp)
         new_enemy.player = player
         self.enemies.add(new_enemy)

@@ -8,29 +8,31 @@ clock = pygame.time.Clock()
 font = pygame.font.Font(None, 40)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 SCORE = 0
+SKINCOLOR = "skinRed"
 
-idle_sheet = pygame.image.load("playerImages/Idle.png").convert_alpha()
-walk_sheet = pygame.image.load("playerImages/Walk.png").convert_alpha()
-attack_sheet = pygame.image.load("playerImages/Special_Blow_1.png").convert_alpha()
-basic_sheet = pygame.image.load("playerImages/Special_Blow_2.png").convert_alpha()
-hurt_sheet = pygame.image.load("playerImages/Hurt_1.png").convert_alpha()
-dead_sheet = pygame.image.load("playerImages/K.O..png").convert_alpha()
+
+idle_sheet = pygame.image.load(f"playerImages/{SKINCOLOR}/Idle.png").convert_alpha()
+walk_sheet = pygame.image.load(f"playerImages/{SKINCOLOR}/Walk.png").convert_alpha()
+attack_sheet = pygame.image.load(f"playerImages/{SKINCOLOR}/Special_Blow_1.png").convert_alpha()
+basic_sheet = pygame.image.load(f"playerImages/{SKINCOLOR}/Special_Blow_2.png").convert_alpha()
+hurt_sheet = pygame.image.load(f"playerImages/{SKINCOLOR}/Hurt_1.png").convert_alpha()
+dead_sheet = pygame.image.load(f"playerImages/{SKINCOLOR}/K.O..png").convert_alpha()
 
 # Definicja podziału sprite sheetów (ilość wierszy, ilość kolumn)
 player_sprite_sheets = {
     "idle": (idle_sheet, 1, 7),
     "move": (walk_sheet, 1, 10),
-    "attack": (attack_sheet, 1, 10),  #
+    "attack": (attack_sheet, 1, 10),
     "basic": (basic_sheet, 1, 10),
     "hurt": (hurt_sheet, 1, 5),
     "dead": (dead_sheet, 1, 9),
 }
 
-enemy_idle = pygame.image.load("enemyImages/stageOne/Idle.png").convert_alpha()
-enemy_walk = pygame.image.load("enemyImages/stageOne/Walk.png").convert_alpha()
-enemy_hurt = pygame.image.load("enemyImages/stageOne/Hurt.png").convert_alpha()
-enemy_attack = pygame.image.load("enemyImages/stageOne/Attack_1.png").convert_alpha()
-enemy_dead = pygame.image.load("enemyImages/stageOne/Dead.png").convert_alpha()
+enemy_idle = pygame.image.load("enemyImages/skinCommander/Idle.png").convert_alpha()
+enemy_walk = pygame.image.load("enemyImages/skinCommander/Walk.png").convert_alpha()
+enemy_hurt = pygame.image.load("enemyImages/skinCommander/Hurt.png").convert_alpha()
+enemy_attack = pygame.image.load("enemyImages/skinCommander/Attack_1.png").convert_alpha()
+enemy_dead = pygame.image.load("enemyImages/skinCommander/Dead.png").convert_alpha()
 enemy_sprite_sheets = {
     "idle": (enemy_idle, 1, 5),
     "move": (enemy_walk, 1, 9),
