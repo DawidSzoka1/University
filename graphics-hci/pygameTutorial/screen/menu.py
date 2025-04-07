@@ -10,8 +10,6 @@ GRAY = (200, 200, 200)
 def menu_screen():
     draw_text("MENU GŁÓWNE", WIDTH // 2 - 100, HEIGHT // 4)
 
-
-
     start_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 - 50, 200, 50)
     pygame.draw.rect(screen, GRAY, start_button)
     draw_text("GRAJ", WIDTH // 2 - 40, HEIGHT // 2 - 35, BLACK)
