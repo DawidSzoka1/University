@@ -1,6 +1,6 @@
 library(tidyverse)
 
-vehicles
+vehicles = read.csv("vehicles.csv")
 fuel_sample = vehicles[sample(nrow(vehicles), 2000),]
 fuel_sample
 
@@ -23,7 +23,11 @@ is.factor(fuel_sample$VClass)
 unique(fuel_sample$VClass)
 
 
+
+
 fuel_data <- read.csv("fuel_sample.csv", stringsAsFactors = TRUE)
+nrow(unique(fuel_data)) == nrow(fuel_data)
+
 
 is.factor(fuel_data$VClass)
 is.ordered(fuel_data$VClass)

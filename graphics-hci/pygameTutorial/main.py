@@ -1,5 +1,5 @@
 import pygame
-from config import HEIGHT, WIDTH, screen, clock, player_sprite_sheets, enemy_sprite_sheets
+from config import HEIGHT, WIDTH, screen, clock, enemy_sprite_sheets
 from pygameTutorial.load_animations import load_animations
 from pygameTutorial.screen.game import game_screen
 from pygameTutorial.objects.player import Player
@@ -9,7 +9,7 @@ from pygameTutorial.screen.menu import menu_screen
 from pygameTutorial.screen.option_screen import option_screen
 from pygameTutorial.screen.gameOver import game_over_screen
 from pygameTutorial.screen.pickSkin import pick_skin
-from pygameTutorial.util import player_sheets, draw_text
+from pygameTutorial.util import player_sheets
 
 
 def start_game(enemies, enemy_damage, enemy_hp, skin_color="skinRed"):
