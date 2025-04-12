@@ -10,45 +10,61 @@
 <body class="vh-100">
 <div class="container-fluid h-100">
     <div class="row h-100">
-        <!-- Sidebar (20%) -->
         <div class="col-2 p-3">
-            <div class="sidebar">
-                <div class="icon">
-                    <a href="index.html"><img src="images/sidebar/home.png" alt="home"></a>
-                </div>
+            <div>
+                <div class="sidebar flex-wrap">
+                    <div class="icon">
+                        <a href="index.html"><img src="images/sidebar/home.png" alt="home"></a>
+                    </div>
 
-                <div class="icon">
-                    <a href="ranking.html"><img src="images/sidebar/ranking.png" alt="Ranking"></a>
-                </div>
+                    <div class="icon">
+                        <a href="ranking.html"><img src="images/sidebar/ranking.png" alt="Ranking"></a>
+                    </div>
 
 
-                <div class="icon">
-                    <a href="profile.html"><img src="images/sidebar/profile.png" alt="Profile"></a>
-                </div>
-
-                <div class="icon">
-                    <form action="#" method="post">
-                        <input type="image" src="images/sidebar/logout.png" alt="logout" class="icon" width="70">
-                    </form>
+                    <div>
+                        <div class="icon">
+                            <a href="profile.html">
+                                <img src="images/sidebar/profile.png" alt="Profile">
+                            </a>
+                        </div>
+                        <div class="icon">
+                            <a href="gameHistory.html">
+                                <img src="images/util/win.png" alt="GameHistory">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="icon">
+                        <a href="admin.html">
+                            <img src="images/sidebar/admin.png" alt="Profile">
+                        </a>
+                    </div>
+                    <div class="icon">
+                        <a href="login.html"><img src="images/sidebar/login.png" alt="Login"></a>
+                    </div>
+                    <div class="icon">
+                        <form action="#" method="post">
+                            <input type="image" src="images/sidebar/logout.png" alt="logout" width="70">
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Główna sekcja (80%) -->
         <div class="col-8 d-flex flex-column">
             <div class="row empty">
 
             </div>
-            <div class="row top d-flex align-items-start justify-content-start">
+            <div class="row top d-flex align-items-start justify-content-start flex-wrap">
                 <div class="profile-icon col-2 text-start">
                     <img src="images/sidebar/profile.png" alt="profile picture">
                 </div>
-                <div class="col-3">
-                    <h2>test</h2>
-                    <h4>brak danych</h4>
+                <div class="col-10 col-md-4 d-flex flex-column justify-content-start">
+                    <h2>michal_adamczyk</h2>
+                    <h4>Dawid Szoka</h4>
+
                     <a href="" class="btn btn-redirect">ZMIEN HASLO</a>
-                </div>
-                <div>
+
                 </div>
             </div>
             <div class="row middle d-flex align-items-center justify-content-center" style="height: 10%;">
@@ -56,17 +72,19 @@
                     <h1>Dane uzytkownika</h1>
                 </div>
             </div>
-            <div class="row bottom d-flex">
+            <div class="row bottom d-flex flex-wrap">
                 <div class="col-9 mt-4">
-                    <h3>Pseudonim: test</h3>
-                    <h3>Imie: null</h3>
-                    <h3>Nazwisko: null</h3>
-                    <h3>Adres e-mail: null</h3>
-                    <h3>Kraj: null</h3>
+                    <h3>Pseudonim: michal_adamczyk</h3>
+                    <h3>Imie: Dawid</h3>
+                    <h3>Nazwisko: Szoka</h3>
+                    <h3>Adres e-mail: gmail@ga.com</h3>
+                    <h3>Kraj: Polska</h3>
                     <h3>Płeć: M</h3>
                 </div>
                 <div class="col-3 text-end mt-4">
-                    <a href="updateForm.html" class="btn btn-lg custom-btn">ZMIEN DANE</a>
+
+                    <a href="updateForm.html" class="btn btn-lg custom-btn me-3">ZMIEN DANE</a>
+
                 </div>
             </div>
         </div>

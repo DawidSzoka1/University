@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <title>Login Page</title>
     <meta charset="utf-8">
@@ -11,10 +11,10 @@
 </head>
 
 <body>
-<div class="container-fluid">
-    <div class="row">
+<div class="container">
+    <div class="row mt-2">
 
-        <div class="col-1 sidebar">
+        <div class="col-2">
             <div>
                 <div class="sidebar">
                     <div class="icon">
@@ -25,56 +25,89 @@
                         <a href="ranking.html"><img src="images/sidebar/ranking.png" alt="Ranking"></a>
                     </div>
 
+
+                    <div>
+                        <div class="icon">
+                            <a href="profile.html">
+                                <img src="images/sidebar/profile.png" alt="Profile">
+                            </a>
+                        </div>
+                        <div class="icon">
+                            <a href="gameHistory.html">
+                                <img src="images/util/win.png" alt="GameHistory">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="icon">
+                        <a href="admin.html">
+                            <img src="images/sidebar/admin.png" alt="Profile">
+                        </a>
+                    </div>
                     <div class="icon">
                         <a href="login.html"><img src="images/sidebar/login.png" alt="Login"></a>
+                    </div>
+                    <div class="icon">
+                        <form action="#" method="post">
+                            <input type="image" src="images/sidebar/logout.png" alt="logout" width="70">
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-2">
-
-        </div>
 
 
-        <div class="col-2 small-col">
+        <div class="col-12 col-md-2 text-center mb-3 mb-md-0">
             <img src="images/index/chess-piece.png" alt="chess-piece">
         </div>
 
-        <!-- Główna kolumna zajmująca resztę szerokości -->
-        <div class="col-1 mt-5 mr-5">
+        <div class="col-12 col-md-2 mb-3">
             <h1><strong>REJESTRACJA</strong></h1>
         </div>
-        <div class="col-6 main-content">
-            <form action="#" method="post">
-                <div class="container">
 
-                    <div class="login-box">
-                        <div class="row">
-                            <label for="login" class="col-3 black">LOGIN:</label>
-                            <div class="col-9 white">
-                                <input type="text" id="login" placeholder="Wpisz login" name="userName" value="">
+        <div class="col-12 col-md-6">
+            <div class="main-content">
+                <form action="#" method="post">
+                    <div class="container">
+
+                        <div class="login-box">
+                            <div class="row">
+                                <label for="login" class="col-4 black text-start">LOGIN:</label>
+                                <div class="col-8 white">
+                                    <input type="text" required id="login" placeholder="Wpisz login" name="userName"
+                                           value="">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label for="password" class="col-4 white text-start">HASŁO:</label>
+                                <div class="col-8 black">
+                                    <input type="password" required id="password" placeholder="Wpisz hasło"
+                                           name="password"
+                                           value="">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label for="password2" class="col-4 black text-start">PONÓW HASŁO:</label>
+                                <div class="col-8 white">
+                                    <input type="password" required id="password2" placeholder="Wpisz hasło"
+                                           name="password2"
+                                           value="">
+                                </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <label for="password" class="col-3 white">HASŁO:</label>
-                            <div class="col-9 black">
-                                <input type="password" id="password" placeholder="Wpisz hasło" name="password" value="">
+                        <div class="text-end">
+                            <div>
+                                <a href="login.html" class="text-secondary text-decoration-none">Masz juz konto?</a>
                             </div>
-                        </div>
-                        <div class="row">
-                            <label for="password" class="col-3 black">Powtorz haslo:</label>
-                            <div class="col-9 white">
-                                <input type="password" id="password2" placeholder="Wpisz hasło" name="password2"
-                                       value="">
+                            <div>
+                                <button type="submit" class="btn btn-lg mt-3">Zarejestruj się</button>
                             </div>
+
                         </div>
                     </div>
-                    <div class="text-end">
-                        <button type="submit" class="btn btn-lg mt-3">Zarejestruj sie</button>
-                        <a href="login.html" class="text-secondary text-decoration-none">Masz juz konto?</a>
-                    </div>
-                </div>
-            </form>
+
+                </form>
+            </div>
+
         </div>
     </div>
 </div>

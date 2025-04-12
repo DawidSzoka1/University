@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,24 +10,46 @@
 <body class="vh-100">
 <div class="container-fluid h-100">
     <div class="row h-100">
-        <div class="col-2 p-3"><div class="sidebar">
-            <div class="icon">
-                <a href="index.html"><img src="images/sidebar/home.png" alt="home"></a>
-            </div>
+        <div class="col-2 p-3">
+            <div>
+                <div class="sidebar flex-wrap">
+                    <div class="icon">
+                        <a href="index.html"><img src="images/sidebar/home.png" alt="home"></a>
+                    </div>
 
-            <div class="icon">
-                <a href="ranking.html"><img src="images/sidebar/ranking.png" alt="Ranking"></a>
-            </div>
-            <div class="icon">
-                <a href="profile.html"><img src="images/sidebar/profile.png" alt="Profile"></a>
-            </div>
+                    <div class="icon">
+                        <a href="ranking.html"><img src="images/sidebar/ranking.png" alt="Ranking"></a>
+                    </div>
 
-            <div class="icon">
-                <form action="#" method="post">
-                    <input type="image" src="images/sidebar/logout.png" alt="logout" class="icon" width="70">
-                </form>
+
+                    <div>
+                        <div class="icon">
+                            <a href="profile.html">
+                                <img src="images/sidebar/profile.png" alt="Profile">
+                            </a>
+                        </div>
+                        <div class="icon">
+                            <a href="gameHistory.html">
+                                <img src="images/util/win.png" alt="GameHistory">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="icon">
+                        <a href="admin.html">
+                            <img src="images/sidebar/admin.png" alt="Profile">
+                        </a>
+                    </div>
+                    <div class="icon">
+                        <a href="login.html"><img src="images/sidebar/login.png" alt="Login"></a>
+                    </div>
+                    <div class="icon">
+                        <form action="#" method="post">
+                            <input type="image" src="images/sidebar/logout.png" alt="logout" width="70">
+                        </form>
+                    </div>
+                </div>
             </div>
-        </div></div>
+        </div>
 
         <div class="col-8 d-flex flex-column">
             <div class="row empty">
@@ -38,9 +59,9 @@
                 <div class="profile-icon col-2 text-start">
                     <img src="images/sidebar/profile.png" alt="profile picture">
                 </div>
-                <div class="col-3">
-                    <h2>test</h2>
-                    <h4>brak danych</h4>
+                <div class="col-10 col-md-4 d-flex flex-column justify-content-start">
+                    <h2>michal_adamczyk</h2>
+                    <h4>Dawid Szoka</h4>
                     <a href="" class="btn btn-redirect">ZMIEN HASLO</a>
                 </div>
                 <div>
@@ -55,11 +76,11 @@
                 <form method="post" action="#">
                     <div class="row">
                         <div class="col-7 mt-4">
-                            <h3>Pseudonim: <input name="userName" id="userName" value="test"></h3>
-                            <h3>Imie: <input name="firstName" id="firstName" value=""></h3>
-                            <h3>Nazwisko: <input name="lastName" id="lastName" value=""></h3>
-                            <h3>Adres e-mail: <input name="email" id="email" value=""></h3>
-                            <h3>Kraj: <input name="country" id="country" value=""></h3>
+                            <h3>Pseudonim: <input name="userName" id="userName" value="michal_adamczyk"></h3>
+                            <h3>Imie: <input name="firstName" id="firstName" value="Dawid"></h3>
+                            <h3>Nazwisko: <input name="lastName" id="lastName" value="Szoka"></h3>
+                            <h3>Adres e-mail: <input name="email" id="email" value="szokadawid13@gmail.com"></h3>
+                            <h3>Kraj: <input name="country" id="country" value="Polska"></h3>
                             <h3>Płeć: <select name="gender" id="gender">
                                 <option value="M" selected="selected">Mężczyzna</option>
                                 <option value="F">Kobieta</option>

@@ -14,6 +14,7 @@ body {
     justify-content: center;
     flex-direction: row;
     overflow: auto;
+    position: relative;
 }
 
 
@@ -25,6 +26,7 @@ body {
     flex-wrap: wrap;
     width: 8vw;
     min-width: 8vw;
+    overflow-y: auto;
     background-color: #4a2c2c;
     height: 100vh;
     min-height: 100vh;
@@ -37,8 +39,337 @@ body {
     margin: 2vh 0;
 }
 
-.icon img {
-    width: 5vw;
+.icon img, .icon input {
+    width: 4vw;
     height: auto;
     cursor: pointer;
+}
+
+.game-history {
+    max-width: 600px;
+    margin-left: 20%;
+}
+.game-entry {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 800px;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+.win {
+    background-color: #4a7c4d;
+    color: #1e3c1f;
+}
+
+.draw{
+    background-color: lightgray;
+    color: darkgray;
+}
+.loss {
+    background-color: #8c3a3a;
+    color: #3c1e1e;
+}
+.game-icon {
+    width: 50px;
+    height: 50px;
+    margin-right: 15px;
+}
+
+.ranking .main-content{
+    height: 100vh;
+}
+.ranking .top-section{
+    height: 20vh;
+}
+
+.ranking .bottom-section{
+    height: 80vh;
+}
+
+
+.custom-table thead tr{
+    border-bottom: 30px solid white;
+}
+.custom-table thead th{
+    background-color: #b58863;
+    color: #f0d9b5;
+}
+.custom-table tbody td{
+    background-color: #f0d9b5;
+}
+.custom-table tbody{
+    max-height: 300px;
+}
+.custom-table tbody td a{
+    text-decoration: none;
+    color: black;
+}
+.empty-row td{
+    height: 50vh;
+}
+
+
+
+
+.admin-profile{
+    .bottom-section{
+        height: 66vh;
+    }
+
+    .top-section{
+        height: 33vh;
+    }
+
+    .admin-box{
+        background-color: #f1e1a6;
+        height: 20vh;
+        margin-top: 8vh;
+        padding: 20px;
+    }
+
+    .top-section .admin-label {
+        font-style: italic;
+        font-weight: bold;
+        font-size: 1.8rem;
+        color: #7d4f3f;
+    }
+
+    .top-section .admin-name {
+        font-weight: 900;
+        font-size: 2.2rem;
+        color: #7d4f3f;
+    }
+
+
+    .menu-btn {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background-color: #a87551;
+        color: #f3e7b3;
+        font-weight: bold;
+        text-align: center;
+        border: none;
+        text-decoration: none;
+        font-family: 'YourFontName', sans-serif;
+        font-size: 2.2em;
+        margin-bottom: 10px;
+        transition: background-color 0.3s ease;
+        border-radius: 4px;
+    }
+
+    .menu-btn:hover {
+        background-color: #8d6245;
+        cursor: pointer;
+    }
+}
+.admin-panel .label{
+    font-size: 3.2rem;
+    margin: 5vh;
+    font-style: italic;
+    font-weight: bold;
+}
+
+.admin-table{
+    thead tr{
+        border-bottom: 30px solid white;
+    }
+    thead th{
+        background-color:#a87551;
+        color: #f0d9b5;
+        font-size: 1.8rem;
+    }
+    .delete{
+        top: 0;
+        left: 0;
+        height: 24px;
+        width: 24px;
+        background-color: #f1e4b3 !important;
+        border: 2px solid #a87551 !important;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+
+    tbody td{
+
+        background-color: #f0d9b5;
+        color: #a87551;
+        font-size: 1.5rem;
+    }
+    .userName{
+        align-items: start;
+        text-align: start;
+    }
+    tbody td a{
+        text-decoration: none;
+        color: #a87551;
+    }
+}
+
+.pagination{
+    text-align: center;
+    justify-content: center;
+    position: relative;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    li img{
+        height: 9vh;
+        vertical-align: middle;
+        margin: 0;
+        padding: 0;
+        display: block;
+    }
+    a{
+        text-decoration: none;
+        color: black;
+    }
+
+}
+
+.login-title{
+    font-size: 3.2rem;
+}
+
+.right-sidebar .info{
+    height: 20%;
+    display: flex;
+    font-size: 2.3rem;
+}
+
+.play{
+    background-color: #000;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 1.5rem; /* mocne zaokrąglenie */
+    padding: 0.5rem 2rem;
+    text-decoration: none;
+    font-size: 1.5rem;
+}
+.play:hover{
+    background-color: #222; /* lekki efekt po najechaniu */
+    color: #fff;
+}
+.right-sidebar-lobby{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+
+}
+.translate-middle-y-custom {
+    transform: translate(-50%, -100%);
+}
+.top-40 {
+    top: 40%;
+}
+
+.responsive-title {
+    font-size: clamp(0.8rem, 2vw, 1.5rem);
+}
+
+.responsive-button {
+    font-size: clamp(0.7rem, 1.5vw, 1.2rem);
+    padding: 0.3em 1em;
+}
+
+.spinner-img {
+    width: 50px;
+    height: 50px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+#searching {
+    display: flex;
+    gap: 0.5rem;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.d-none {
+    display: none !important;
+}
+
+.time-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.right-sidebar-game {
+    background-image: url("/images/util/game-option.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    min-height: 400px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    color: white;
+}
+
+.moves-box {
+    position: relative;
+    margin-top: 15vh;
+    margin-left: 7vw;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 20vw;
+    height: 50vh;
+    transform: scale(0.9);
+    background-color: #a94442;
+    font-size: 1.5rem;
+    padding: 1rem;
+    border-radius: 10px;
+}
+.black-move{
+    color: black;
+}
+.moves-box p {
+    margin: 0;
+    font-weight: bold;
+}
+
+.surrender-btn {
+    background-color: #1c1c1c;
+    color: white;
+    width: 50%;
+    border: none;
+    margin-left: 9vw;
+    padding: 10px;
+    font-weight: bold;
+}
+
+.error-text h3 strong{
+    font-weight: bold;
+    font-size: 2.4rem;
+}
+
+.knight-img{
+    position: relative;
+
+    margin-right: 3vw;
+    height: 50vh;
+}
+
+.delete-button{
+    color: #f0d9b5 !important;
+    font-size: 1.8rem !important;
+    background-color: inherit;
+    border: none;
 }
