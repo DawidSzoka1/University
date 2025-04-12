@@ -75,5 +75,5 @@ def splineFunction(x_values, y_values, derivative, looking_for):
 
 
 
-print("Interpolacja funkcja sklejana",
+print("S(3) = ",
       splineFunction(x_values, y_values, derivative, 3))
