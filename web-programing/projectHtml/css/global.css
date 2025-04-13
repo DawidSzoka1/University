@@ -26,11 +26,12 @@ body {
     flex-wrap: wrap;
     width: 8vw;
     min-width: 8vw;
-    overflow-y: auto;
     background-color: #4a2c2c;
     height: 100vh;
     min-height: 100vh;
     display: flex;
+    overflow-y: auto;
+    overflow-x: hidden;
     flex-direction: column;
     align-items: center;
 }
@@ -45,10 +46,12 @@ body {
     cursor: pointer;
 }
 
+
 .game-history {
     max-width: 600px;
     margin-left: 20%;
 }
+
 .game-entry {
     display: flex;
     align-items: center;
@@ -62,71 +65,78 @@ body {
     font-weight: bold;
     font-size: 1.5rem;
 }
+
 .win {
     background-color: #4a7c4d;
     color: #1e3c1f;
 }
 
-.draw{
+.draw {
     background-color: lightgray;
     color: darkgray;
 }
+
 .loss {
     background-color: #8c3a3a;
     color: #3c1e1e;
 }
+
 .game-icon {
     width: 50px;
     height: 50px;
     margin-right: 15px;
 }
 
-.ranking .main-content{
+.ranking .main-content {
     height: 100vh;
 }
-.ranking .top-section{
+
+.ranking .top-section {
     height: 20vh;
 }
 
-.ranking .bottom-section{
+.ranking .bottom-section {
     height: 80vh;
 }
 
 
-.custom-table thead tr{
+.custom-table thead tr {
     border-bottom: 30px solid white;
 }
-.custom-table thead th{
+
+.custom-table thead th {
     background-color: #b58863;
     color: #f0d9b5;
 }
-.custom-table tbody td{
+
+.custom-table tbody td {
     background-color: #f0d9b5;
 }
-.custom-table tbody{
+
+.custom-table tbody {
     max-height: 300px;
 }
-.custom-table tbody td a{
+
+.custom-table tbody td a {
     text-decoration: none;
     color: black;
 }
-.empty-row td{
+
+.empty-row td {
     height: 50vh;
 }
 
 
-
-
-.admin-profile{
-    .bottom-section{
+.admin-profile {
+    .bottom-section {
         height: 66vh;
     }
 
-    .top-section{
+    .top-section {
         height: 33vh;
     }
 
-    .admin-box{
+    .admin-box {
         background-color: #f1e1a6;
         height: 20vh;
         margin-top: 8vh;
@@ -169,23 +179,26 @@ body {
         cursor: pointer;
     }
 }
-.admin-panel .label{
+
+.admin-panel .label {
     font-size: 3.2rem;
     margin: 5vh;
     font-style: italic;
     font-weight: bold;
 }
 
-.admin-table{
-    thead tr{
+.admin-table {
+    thead tr {
         border-bottom: 30px solid white;
     }
-    thead th{
-        background-color:#a87551;
-        color: #f0d9b5;
-        font-size: 1.8rem;
+
+    thead th {
+        background-color: #a87551 !important;
+        color: #f0d9b5 !important;
+        font-size: 1.8rem !important;
     }
-    .delete{
+
+    .delete {
         top: 0;
         left: 0;
         height: 24px;
@@ -197,54 +210,57 @@ body {
     }
 
 
-    tbody td{
-
+    tbody td {
         background-color: #f0d9b5;
         color: #a87551;
         font-size: 1.5rem;
     }
-    .userName{
+
+    .userName {
         align-items: start;
         text-align: start;
     }
-    tbody td a{
+
+    tbody td a {
         text-decoration: none;
         color: #a87551;
     }
 }
 
-.pagination{
+.pagination {
     text-align: center;
     justify-content: center;
     position: relative;
     bottom: 0;
     left: 0;
     right: 0;
-    li img{
+
+    li img {
         height: 9vh;
         vertical-align: middle;
         margin: 0;
         padding: 0;
         display: block;
     }
-    a{
+
+    a {
         text-decoration: none;
         color: black;
     }
 
 }
 
-.login-title{
+.login-title {
     font-size: 3.2rem;
 }
 
-.right-sidebar .info{
+.right-sidebar .info {
     height: 20%;
     display: flex;
     font-size: 2.3rem;
 }
 
-.play{
+.play {
     background-color: #000;
     color: #fff;
     font-weight: bold;
@@ -253,11 +269,13 @@ body {
     text-decoration: none;
     font-size: 1.5rem;
 }
-.play:hover{
+
+.play:hover {
     background-color: #222; /* lekki efekt po najechaniu */
     color: #fff;
 }
-.right-sidebar-lobby{
+
+.right-sidebar-lobby {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -266,9 +284,11 @@ body {
     position: relative;
 
 }
+
 .translate-middle-y-custom {
     transform: translate(-50%, -100%);
 }
+
 .top-40 {
     top: 40%;
 }
@@ -289,8 +309,12 @@ body {
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 #searching {
@@ -311,65 +335,297 @@ body {
     justify-content: center;
 }
 
-.right-sidebar-game {
-    background-image: url("/images/util/game-option.png");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    min-height: 400px;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    color: white;
-}
 
-.moves-box {
-    position: relative;
-    margin-top: 15vh;
-    margin-left: 7vw;
-    overflow-y: auto;
-    overflow-x: hidden;
-    width: 20vw;
-    height: 50vh;
-    transform: scale(0.9);
-    background-color: #a94442;
-    font-size: 1.5rem;
-    padding: 1rem;
-    border-radius: 10px;
-}
-.black-move{
-    color: black;
-}
-.moves-box p {
-    margin: 0;
-    font-weight: bold;
-}
-
-.surrender-btn {
-    background-color: #1c1c1c;
-    color: white;
-    width: 50%;
-    border: none;
-    margin-left: 9vw;
-    padding: 10px;
-    font-weight: bold;
-}
-
-.error-text h3 strong{
+.error-text h3 strong {
     font-weight: bold;
     font-size: 2.4rem;
 }
 
-.knight-img{
+.knight-img {
     position: relative;
-
     margin-right: 3vw;
     height: 50vh;
 }
 
-.delete-button{
+.delete-button {
     color: #f0d9b5 !important;
     font-size: 1.8rem !important;
     background-color: inherit;
     border: none;
+}
+
+.game {
+    .background-img {
+        position: absolute;
+        object-fit: cover;
+        bottom: 0;
+        left: 0;
+    }
+    .moves-box {
+        aspect-ratio: 4 / 3;
+        box-sizing: border-box;
+        position: relative;
+        margin-top: 15vh;
+        margin-left: 7vw;
+        overflow-y: auto;
+        overflow-x: hidden;
+        width: 20vw;
+        transform: scale(0.9);
+        background-color: #a94442;
+        font-size: 1.5rem;
+        padding: 1rem;
+        border-radius: 10px;
+    }
+
+
+    .black-move {
+        color: black;
+    }
+
+    .moves-box p {
+        margin: 0;
+        font-weight: bold;
+    }
+
+    .surrender-btn {
+        position: relative;
+        background-color: #1c1c1c;
+        color: white;
+        width: 50%;
+        border: none;
+        margin-left: 9vw;
+        padding: 10px;
+        font-weight: bold;
+    }
+
+    .right-sidebar-game {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        position: relative;
+    }
+
+    .chessboard {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        width: 100%;
+        height: 100%;
+        margin: 0;
+    }
+
+
+    .center {
+        margin-left: 15vw;
+        margin-top: 1vh;
+        overflow: hidden;
+    }
+
+    .square {
+        width: 100%;
+        padding-top: 100%;
+        position: relative;
+        aspect-ratio: 1 / 1;
+    }
+
+    .square.white {
+        background-color: #f0d9b5;
+    }
+
+    .square.black {
+        background-color: #b58863;
+    }
+
+    .square-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: black;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .piece {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: contain !important;
+    }
+
+    body, html {
+        height: 100%;
+        margin: 0;
+    }
+
+    .sidebar {
+        background-color: #4a2c2c;
+        color: white;
+        display: flex;
+        height: 100vh;
+    }
+
+    .main-content {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        margin-right: 0;
+    }
+
+    .top, .bottom {
+        height: 20vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .top img, .bottom img {
+        width: 5vw;
+        height: auto;
+        margin-right: 10px;
+    }
+
+    .middle {
+        img {
+            width: 100%;
+            height: 100%;
+        }
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .right-sidebar {
+        flex-direction: column;
+        margin-top: 10vh;
+        margin-right: 10vw;
+        color: #f0d9b5;
+        display: flex;
+        align-items: start;
+        padding: 5vh;
+        justify-content: start;
+        height: 80vh;
+    }
+}
+
+
+/*login/register */
+.main-content-login {
+    margin-left: 100px;
+    padding: 2rem;
+    .black {
+        background-color: #b58863;
+        border: 10px solid #b58863;
+    }
+
+    .white {
+        background-color: #f0d9b5;
+        border: 10px solid #f0d9b5;
+    }
+}
+
+.chess-img {
+    max-width: 100%;
+    height: auto;
+}
+
+.login-box {
+    border: 3px solid black;
+    padding-right: 0.7rem;
+    padding-left: 0.7rem;
+}
+
+
+.login-box label {
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+.login-box input {
+    background-color: inherit;
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+
+.btn-custom {
+    background-color: #472423;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .main-content-login {
+        margin-left: 90px;
+    }
+}
+
+
+/*gamesReview*/
+.game-review {
+    .section-title, .game-header {
+        font-family: 'Bebas Neue', cursive;
+        letter-spacing: 1px;
+    }
+
+
+    .main-content {
+        margin-left: 140px;
+        padding: 2rem;
+    }
+
+    .game-header {
+        background-color: #a87551;
+        color: #f0d9b5;
+        font-weight: bold;
+        font-size: 1.5rem;
+        padding: 1rem;
+        display: flex;
+        margin-bottom: 10px;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .search-box input {
+        border: none;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .games-list {
+        background-color: #a87551;
+        color: #f0d9b5;
+        font-size: 1.3rem;
+        padding: 1rem;
+    }
+
+    .games-list .row {
+        border-bottom: 1px solid white;
+        padding: 1rem;
+    }
+
+    .games-list .row:last-child {
+        border-bottom: none;
+    }
+
+    .green {
+        color: #00c853;
+    }
+
+    .red {
+        color: #f44336;
+    }
+
+    .gray {
+        color: lightgrey;
+    }
+
+    .section-title {
+        font-weight: bold;
+        font-size: 3rem;
+    }
 }
