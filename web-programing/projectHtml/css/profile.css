@@ -1,7 +1,7 @@
 .top{
     background-color: #b58863;
     color: #f0d9b5;
-    height: 20%;
+    height: 25%;
     margin-bottom: 20px;
     padding: 10px;
 }
@@ -17,7 +17,9 @@
 .bottom{
     background-color: #f0d9b5;
     color: #b58863;
-    height: 40%;
+    height: 45%;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .empty{
@@ -28,6 +30,7 @@
 .btn-redirect{
     background-color: #f0d9b5 !important;
     color: #b58863 !important;
+    position: relative;
 }
 
 .profile-icon img{

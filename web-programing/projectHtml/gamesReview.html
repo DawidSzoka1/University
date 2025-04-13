@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Przegląd gier</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/global.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Open+Sans&display=swap" rel="stylesheet">
+</head>
+<body class="game-review">
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="icon">
+        <a href="index.html"><img src="images/sidebar/home.png" alt="home"></a>
+    </div>
+
+    <div class="icon">
+        <a href="ranking.html"><img src="images/sidebar/ranking.png" alt="Ranking"></a>
+    </div>
+
+
+    <div>
+        <div class="icon">
+            <a href="profile.html">
+                <img src="images/sidebar/profile.png" alt="Profile">
+            </a>
+        </div>
+        <div class="icon">
+            <a href="gameHistory.html">
+                <img src="images/util/win.png" alt="GameHistory">
+            </a>
+        </div>
+    </div>
+    <div class="icon">
+        <a href="admin.html">
+            <img src="images/sidebar/admin.png" alt="Profile">
+        </a>
+    </div>
+    <div class="icon">
+        <a href="login.html"><img src="images/sidebar/login.png" alt="Login"></a>
+    </div>
+    <div class="icon">
+        <form action="#" method="post">
+            <input type="image" src="images/sidebar/logout.png" alt="logout" width="70">
+        </form>
+    </div>
+</div>
+
+<!-- Main content -->
+<div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="section-title">PRZEGLĄD GIER</div>
+
+    </div>
+
+    <div class="game-header">
+        <div>Partie rozegrane</div>
+        <div class="search-box">
+            <input type="text" placeholder="Szukaj partii" class="form-control form-control-lg custom-search">
+        </div>
+    </div>
+
+    <div class="games-list p-2">
+        <div class="row">
+            <div class="col-8"><span class="green">alberto</span> vs <span class="red">donkasjo</span></div>
+            <div class="col-4 text-end">00:14:37</div>
+        </div>
+        <div class="row">
+            <div class="col-8"><span class="gray">Olejnik</span> vs <span class="gray">cbs112</span></div>
+            <div class="col-4 text-end">00:03:33</div>
+        </div>
+        <div class="row">
+            <div class="col-8"><span class="red">bandura</span> vs <span class="green">multi</span></div>
+            <div class="col-4 text-end">00:19:59</div>
+        </div>
+        <div class="row">
+            <div class="col-8"><span class="green">kruszwil</span> vs <span class="red">bieda</span></div>
+            <div class="col-4 text-end">00:01:11</div>
+        </div>
+        <div class="row">
+            <div class="col-8"><span class="green">lom</span> vs <span class="red">bard</span></div>
+            <div class="col-4 text-end">00:15:15</div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
