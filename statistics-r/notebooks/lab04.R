@@ -9,7 +9,7 @@ fillter_vector <- function(vector, b){
   vector[vector %% b == 0]
 }
 
-vector <- c(2, 3, 45,5654, 43, 32, 342)
+vector <- 0:20
 fillter_vector(vector, 3.2)
 fillter_vector(vector, c(2, 2))
 fillter_vector(vector, 2)
@@ -22,8 +22,48 @@ first_three <- function(vector){
   sort(vector)[1:3]
 }
 
-first_three(vector)
+
+first_three(1:20)
 first_three(c(1, 2))
 
 
 
+frst_last_three <- function(vector){
+  if(length(vector) < 3){
+    return("wektor za krótki minimalna dlugość 3")
+  }
+  vector_sroted <- sort(vector)
+  min_three <- vector_sroted[1:3]
+  last_three <- tail(vector_sroted, 3)
+  
+  list(najmniejsze=min_three,
+       najwieksze=last_three)
+  c(min_three, last_three)
+}
+
+frst_last_three(c(1,2))
+frst_last_three(1:20)
+
+
+fibonnaci <- function(n){
+  if(length(n) != 1){
+    return("argumentem musi być skalar")
+  }
+  if(n %% 1 != 0){
+    return(" argumentem nie może być liczbą zmiennoprzecinkową nieutożsamianą z liczbą naturalną,")
+  }
+  if(n < 0){
+    return("argumentem musi być liczba naturalna dodatnia")
+  }
+  if(n == 1 || n == 0){
+    return(0)
+  }
+  if(n == 2){
+    return(1)
+  }
+  return(fibonnaci(n-1) + fibonnaci(n-2))
+}
+fibonnaci(3)
+fibonnaci(c(1,2))
+fibonnaci(-1)
+fibonnaci(4.3)
