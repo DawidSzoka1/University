@@ -45,17 +45,19 @@ frst_last_three(c(1,2))
 frst_last_three(1:20)
 
 
+
 fibonnaci <- function(n){
   if(length(n) != 1){
-    return("argumentem musi być skalar")
+    stop("argumentem musi być skalar")
   }
   if(n %% 1 != 0){
-    return(" argumentem nie może być liczbą zmiennoprzecinkową nieutożsamianą z liczbą naturalną,")
+    stop("argumentem nie może być liczbą zmiennoprzecinkową
+         nieutożsamianą z liczbą naturalną,")
   }
-  if(n < 0){
-    return("argumentem musi być liczba naturalna dodatnia")
+  if(n <= 0){
+    stop("argumentem musi być liczba naturalna dodatnia")
   }
-  if(n == 1 || n == 0){
+  if(n == 1){
     return(0)
   }
   if(n == 2){
@@ -67,3 +69,4 @@ fibonnaci(3)
 fibonnaci(c(1,2))
 fibonnaci(-1)
 fibonnaci(4.3)
+
