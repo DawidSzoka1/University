@@ -19,7 +19,7 @@ def function(x):
 
 a = 0.4
 b = 1.3
-n = 3
+n = 16
 
 
 def compute_integral(a, b, n, func=function):
@@ -45,4 +45,4 @@ def compute_integral(a, b, n, func=function):
     return h / 3 * suma
 
 
-print(f"przyblizona wartosc calki = {compute_integral(a, b, n)}")
+print(f"przyblizona wartosc calki dla n = {n} wynosi {compute_integral(a, b, n)}")

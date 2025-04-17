@@ -34,4 +34,4 @@ def compute_integral(a, b, n, func=None):
     return h * sum_full
 
 
-print(compute_integral(a, b, n, function))
+print(f"przyblizona wartosc calki dla n = {n} wynosi {compute_integral(a, b, n, function)}")
