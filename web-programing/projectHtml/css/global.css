@@ -474,7 +474,7 @@ body {
     border: none;
 }
 
-. #chessboard {
+#chessboard {
     border: 3px solid #343a40;
     border-radius: 10px;
     overflow: hidden;
