@@ -1,88 +1,240 @@
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Przegląd gier</title>
+    <title>Przegląd Gier</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/global.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Open+Sans&display=swap" rel="stylesheet">
+    <link href="css/gamePanel.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
-<body class="game-review">
-
-<!-- Sidebar -->
-<div class="sidebar">
-    <div class="icon">
-        <a href="index.html"><img src="images/sidebar/home.png" alt="home"></a>
-    </div>
-
-    <div class="icon">
-        <a href="ranking.html"><img src="images/sidebar/ranking.png" alt="Ranking"></a>
-    </div>
+<body>
 
 
-    <div>
+<div>
+    <div class="sidebar">
+        <div class="icon">
+            <a href="index.html">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5Z"/>
+                </svg>
+            </a>
+        </div>
+
+        <div class="icon">
+            <a href="ranking.html">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path d="M3 3v18h18M9 17V9m4 8v-5m4 5v-2"/>
+                </svg>
+            </a>
+        </div>
+
+
         <div class="icon">
             <a href="profile.html">
-                <img src="images/sidebar/profile.png" alt="Profile">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4 0-7 2-7 4v2h14v-2c0-2-3-4-7-4Z"/>
+                </svg>
+            </a>
+        </div>
+
+
+        <div class="icon">
+            <a href="admin.html">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path d="M20 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M4 21v-2a4 4 0 0 1 3-3.87"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
             </a>
         </div>
         <div class="icon">
             <a href="gameHistory.html">
-                <img src="images/util/win.png" alt="GameHistory">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path d="M8 21h8"/>
+                    <path d="M12 17v4"/>
+                    <path d="M18 3h3v4a3 3 0 0 1-3 3h-1"/>
+                    <path d="M6 3H3v4a3 3 0 0 0 3 3h1"/>
+                    <path d="M5 6h14"/>
+                    <path d="M7 10a5 5 0 0 0 10 0"/>
+                </svg>
+            </a>
+        </div>
+
+        <div class="icon">
+            <form action="#" method="post">
+                <button type="submit" style="background: none; border: none; padding: 0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path d="M15 12H3m0 0l4-4m-4 4l4 4M21 3v18"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+        <div class="icon">
+            <a href="login.html">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24" stroke="currentColor">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                    <polyline points="10 17 15 12 10 7"/>
+                    <line x1="15" y1="12" x2="3" y2="12"/>
+                </svg>
             </a>
         </div>
     </div>
-    <div class="icon">
-        <a href="admin.html">
-            <img src="images/sidebar/admin.png" alt="Profile">
-        </a>
-    </div>
-    <div class="icon">
-        <a href="login.html"><img src="images/sidebar/login.png" alt="Login"></a>
-    </div>
-    <div class="icon">
-        <form action="#" method="post">
-            <input type="image" src="images/sidebar/logout.png" alt="logout" width="70">
-        </form>
-    </div>
 </div>
 
-<!-- Main content -->
 <div class="main-content">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="section-title">PRZEGLĄD GIER</div>
+    <div class="container-fluid">
+        <div class="title title-main">PRZEGLĄD GIER</div>
 
-    </div>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <a href="liveGames.html" class="section-header">
+                    Aktualnie trwające partie
+                    <div class="live-dot"></div>
+                </a>
+                <div class="game-list">
 
-    <div class="game-header">
-        <div>Partie rozegrane</div>
-        <div class="search-box">
-            <input type="text" placeholder="Szukaj partii" class="form-control form-control-lg custom-search">
-        </div>
-    </div>
+                    <a class="game-item justify-content-space-between"
+                       href="game.html">
 
-    <div class="games-list p-2">
-        <div class="row">
-            <div class="col-8"><span class="green">alberto</span> vs <span class="red">donkasjo</span></div>
-            <div class="col-4 text-end">00:14:37</div>
+                        <span>
+                            <span class="white">anonimowy</span>
+                            vs
+                            <span class="black">anonimowy</span>
+                        </span>
+                        <span>01:13:36</span>
+
+                    </a><a class="game-item justify-content-space-between"
+                           href="game.html">
+
+                        <span>
+                            <span class="white">jan_kowalski</span>
+                            vs
+                            <span class="black">anonimowy</span>
+                        </span>
+                    <span>01:13:58</span>
+
+                </a><a class="game-item justify-content-space-between"
+                       href="game.html">
+
+                        <span>
+                            <span class="white">jan_kowalski</span>
+                            vs
+                            <span class="black">anonimowy</span>
+                        </span>
+                    <span>01:14:01</span>
+
+                </a><a class="game-item justify-content-space-between"
+                       href="game.html">
+
+                        <span>
+                            <span class="white">jan_kowalski</span>
+                            vs
+                            <span class="black">anonimowy</span>
+                        </span>
+                    <span>01:14:05</span>
+
+                </a><a class="game-item justify-content-space-between"
+                       href="game.html">
+
+                        <span>
+                            <span class="white">jan_kowalski</span>
+                            vs
+                            <span class="black">anonimowy</span>
+                        </span>
+                    <span>01:14:38</span>
+
+                </a><a class="game-item justify-content-space-between"
+                       href="game.html">
+
+                        <span>
+                            <span class="white">jan_kowalski</span>
+                            vs
+                            <span class="black">anonimowy</span>
+                        </span>
+                    <span>01:16:19</span>
+
+                </a><a class="game-item justify-content-space-between"
+                       href="game.html">
+
+                        <span>
+                            <span class="white">jan_kowalski</span>
+                            vs
+                            <span class="black">anonimowy</span>
+                        </span>
+                    <span>01:16:26</span>
+
+                </a>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <a href="endedGames.html" class="section-header right">
+                    <div>Partie rozegrane</div>
+                </a>
+                <div class="game-list right">
+                    <a class="game-item justify-content-space-between"
+                       href="game.html">
+                            <span>
+                                <span class="green">michal_adamczyk</span> vs
+                                <span class="red">aleksandra_pawlak</span>
+                            </span>
+                        <span>00:45:00</span>
+                    </a><a class="game-item justify-content-space-between"
+                           href="game.html">
+                            <span>
+                                <span class="gray">jan_kowalski</span> vs
+                                <span class="gray">joanna_dabrowska</span>
+                            </span>
+                    <span>00:45:00</span>
+                </a><a class="game-item justify-content-space-between"
+                       href="game.html">
+                            <span>
+                                <span class="red">mateusz_kaczmarek</span> vs
+                                <span class="green">agnieszka_lewandowska</span>
+                            </span>
+                    <span>00:45:00</span>
+                </a><a class="game-item justify-content-space-between"
+                       href="game.html">
+                            <span>
+                                <span class="red">bartek_zielinski</span> vs
+                                <span class="green">kasia_kwiatkowska</span>
+                            </span>
+                    <span>00:50:00</span>
+                </a><a class="game-item justify-content-space-between"
+                       href="game.html">
+                            <span>
+                                <span class="gray">tomasz_wisniewski</span> vs
+                                <span class="gray">anna_nowak</span>
+                            </span>
+                    <span>00:45:00</span>
+                </a><a class="game-item justify-content-space-between"
+                       href="game.html">
+                            <span>
+                                <span class="gray">aleksandra_pawlak</span> vs
+                                <span class="gray">mateusz_kaczmarek</span>
+                            </span>
+                    <span>00:40:00</span>
+                </a><a class="game-item justify-content-space-between"
+                       href="game.html">
+                            <span>
+                                <span class="gray">joanna_dabrowska</span> vs
+                                <span class="gray">bartek_zielinski</span>
+                            </span>
+                    <span>00:50:00</span>
+                </a>
+                </div>
+            </div>
         </div>
-        <div class="row">
-            <div class="col-8"><span class="gray">Olejnik</span> vs <span class="gray">cbs112</span></div>
-            <div class="col-4 text-end">00:03:33</div>
-        </div>
-        <div class="row">
-            <div class="col-8"><span class="red">bandura</span> vs <span class="green">multi</span></div>
-            <div class="col-4 text-end">00:19:59</div>
-        </div>
-        <div class="row">
-            <div class="col-8"><span class="green">kruszwil</span> vs <span class="red">bieda</span></div>
-            <div class="col-4 text-end">00:01:11</div>
-        </div>
-        <div class="row">
-            <div class="col-8"><span class="green">lom</span> vs <span class="red">bard</span></div>
-            <div class="col-4 text-end">00:15:15</div>
-        </div>
+
     </div>
 </div>
 

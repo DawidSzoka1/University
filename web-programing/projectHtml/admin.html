@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,58 +11,101 @@
     <div class="row h-100">
 
         <div class="col-2 d-flex flex-column">
-            <div class="sidebar">
-                <div class="icon">
-                    <a href="index.html"><img src="images/sidebar/home.png" alt="home"></a>
-                </div>
+            <div>
+                <div class="sidebar">
+                    <div class="icon">
+                        <a href="index.html">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                                 stroke="currentColor">
+                                <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5Z"/>
+                            </svg>
+                        </a>
+                    </div>
 
-                <div class="icon">
-                    <a href="ranking.html"><img src="images/sidebar/ranking.png" alt="Ranking"></a>
-                </div>
+                    <div class="icon">
+                        <a href="ranking.html">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                                 stroke="currentColor">
+                                <path d="M3 3v18h18M9 17V9m4 8v-5m4 5v-2"/>
+                            </svg>
+                        </a>
+                    </div>
 
 
-                <div>
                     <div class="icon">
                         <a href="profile.html">
-                            <img src="images/sidebar/profile.png" alt="Profile">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                                 stroke="currentColor">
+                                <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4 0-7 2-7 4v2h14v-2c0-2-3-4-7-4Z"/>
+                            </svg>
+                        </a>
+                    </div>
+
+
+                    <div class="icon">
+                        <a href="admin.html">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                                 stroke="currentColor">
+                                <path d="M20 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M4 21v-2a4 4 0 0 1 3-3.87"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
                         </a>
                     </div>
                     <div class="icon">
                         <a href="gameHistory.html">
-                            <img src="images/util/win.png" alt="GameHistory">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                                 stroke="currentColor">
+                                <path d="M8 21h8"/>
+                                <path d="M12 17v4"/>
+                                <path d="M18 3h3v4a3 3 0 0 1-3 3h-1"/>
+                                <path d="M6 3H3v4a3 3 0 0 0 3 3h1"/>
+                                <path d="M5 6h14"/>
+                                <path d="M7 10a5 5 0 0 0 10 0"/>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="icon">
+                        <form action="#" method="post">
+                            <button type="submit" style="background: none; border: none; padding: 0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8"
+                                     viewBox="0 0 24 24"
+                                     stroke="currentColor">
+                                    <path d="M15 12H3m0 0l4-4m-4 4l4 4M21 3v18"/>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="icon">
+                        <a href="login.html">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                                 stroke="currentColor">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                                <polyline points="10 17 15 12 10 7"/>
+                                <line x1="15" y1="12" x2="3" y2="12"/>
+                            </svg>
                         </a>
                     </div>
                 </div>
-                <div class="icon">
-                    <a href="admin.html">
-                        <img src="images/sidebar/admin.png" alt="Profile">
-                    </a>
-                </div>
-                <div class="icon">
-                    <a href="login.html"><img src="images/sidebar/login.png" alt="Login"></a>
-                </div>
-                <div class="icon">
-                    <form action="#" method="post">
-                        <input type="image" src="images/sidebar/logout.png" alt="logout" width="70">
-                    </form>
-                </div>
             </div>
         </div>
 
-        <div class="col-9 d-flex flex-column p-0 admin-profile">
-            <div class="top-section">
-                <div class="admin-box">
-                    <div class="admin-label">Administrator</div>
-                    <div class="admin-name">jan_kowalski</div>
-                </div>
-            </div>
-            <div class="bottom-section">
-                <a class="menu-btn" href="listUzytkownikow.html">LISTA UŻYTKOWNIKÓW</a>
-                <a class="menu-btn" href="gamesReview.html">PRZEGLĄD GRY</a>
-            </div>
 
+    <div class="col-9 d-flex flex-column p-0 admin-profile">
+        <div class="admin-profile-top-section">
+            <div class="admin-profile-admin-box">
+                <div class="admin-profile-admin-label">Administrator</div>
+                <div class="admin-profile-admin-name">jan_kowalski</div>
+            </div>
         </div>
+        <div class="admin-profile-bottom-section">
+            <a class="admin-profile-menu-btn" href="usersList.html">LISTA UŻYTKOWNIKÓW</a>
+            <a class="admin-profile-menu-btn" href="gamesReview.html">PRZEGLĄD GRY</a>
+        </div>
+
     </div>
+</div>
 </div>
 </body>
 </html>

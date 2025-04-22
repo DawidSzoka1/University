@@ -1,0 +1,52 @@
+.login-container {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    background-color: white;
+    padding: 40px 60px;
+    border-radius: 16px;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.08);
+    position: relative;
+    z-index: 1;
+}
+
+.login-container img.chess-icon {
+    width: 130px;
+    opacity: 0.9;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.login-btn {
+    background-color: #4A2B2B;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 18px;
+    margin: 16px auto 0;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.3s;
+    width: fit-content;
+}
+
+.login-btn:hover {
+    background-color: #331a1a;
+}
+
+
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .login-container img.chess-icon {
+        display: none;
+    }
+}
