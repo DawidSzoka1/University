@@ -1,0 +1,218 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Przegląd Gier</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/global.css" rel="stylesheet">
+    <link href="css/gamePanel.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .section-title {
+            background-color: #a87551;
+            color: #f0d9b5;
+            box-shadow: 0 0 8px #a87551;
+        }
+
+        .game-list {
+            background-color: #a87551;
+            color: #f0d9b5;
+            box-shadow: 0 0 8px #a87551;
+        }
+
+        .live-button {
+            background-color: #f5e6c5;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- Sidebar -->
+        <div>
+            <div class="sidebar">
+                <div class="icon">
+                    <a href="index.html">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5Z"/>
+                        </svg>
+                    </a>
+                </div>
+
+                <div class="icon">
+                    <a href="ranking.html">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path d="M3 3v18h18M9 17V9m4 8v-5m4 5v-2"/>
+                        </svg>
+                    </a>
+                </div>
+
+
+                <div class="icon">
+                    <a href="profile.html">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4 0-7 2-7 4v2h14v-2c0-2-3-4-7-4Z"/>
+                        </svg>
+                    </a>
+                </div>
+
+
+                <div class="icon">
+                    <a href="admin.html">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path d="M20 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M4 21v-2a4 4 0 0 1 3-3.87"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </a>
+                </div>
+                <div class="icon">
+                    <a href="gameHistory.html">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path d="M8 21h8"/>
+                            <path d="M12 17v4"/>
+                            <path d="M18 3h3v4a3 3 0 0 1-3 3h-1"/>
+                            <path d="M6 3H3v4a3 3 0 0 0 3 3h1"/>
+                            <path d="M5 6h14"/>
+                            <path d="M7 10a5 5 0 0 0 10 0"/>
+                        </svg>
+                    </a>
+                </div>
+
+                <div class="icon">
+                    <form action="#" method="post">
+                        <button type="submit" style="background: none; border: none; padding: 0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                                 stroke="currentColor">
+                                <path d="M15 12H3m0 0l4-4m-4 4l4 4M21 3v18"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+                <div class="icon">
+                    <a href="login.html">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24" stroke="currentColor">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                            <polyline points="10 17 15 12 10 7"/>
+                            <line x1="15" y1="12" x2="3" y2="12"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-10 p-4 main-content-ended">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="m-0 title-main">PRZEGLĄD GIER</h2>
+                <a href="liveGames.html" class="live-button">Aktualnie trwające partie
+                    <span class="dot"></span>
+                </a>
+            </div>
+
+            <div class="section-title">
+                Partie rozegrane
+                <input type="text" class="form-control form-control-sm search-input" placeholder="Szukaj partii">
+            </div>
+
+            <div class="game-list">
+                <a class="game-item justify-content-space-between"
+                   href="game.html">
+                            <span>
+                                <span class="green">michal_adamczyk</span> vs
+                                <span class="red">aleksandra_pawlak</span>
+                            </span>
+                    <span>00:45:00</span>
+                </a><a class="game-item justify-content-space-between"
+                       href="game.html">
+                            <span>
+                                <span class="gray">jan_kowalski</span> vs
+                                <span class="gray">joanna_dabrowska</span>
+                            </span>
+                <span>00:45:00</span>
+            </a><a class="game-item justify-content-space-between"
+                   href="game.html">
+                            <span>
+                                <span class="red">mateusz_kaczmarek</span> vs
+                                <span class="green">agnieszka_lewandowska</span>
+                            </span>
+                <span>00:45:00</span>
+            </a><a class="game-item justify-content-space-between"
+                   href="game.html">
+                            <span>
+                                <span class="red">bartek_zielinski</span> vs
+                                <span class="green">kasia_kwiatkowska</span>
+                            </span>
+                <span>00:50:00</span>
+            </a><a class="game-item justify-content-space-between"
+                   href="game.html">
+                            <span>
+                                <span class="gray">tomasz_wisniewski</span> vs
+                                <span class="gray">anna_nowak</span>
+                            </span>
+                <span>00:45:00</span>
+            </a><a class="game-item justify-content-space-between"
+                   href="game.html">
+                            <span>
+                                <span class="gray">aleksandra_pawlak</span> vs
+                                <span class="gray">mateusz_kaczmarek</span>
+                            </span>
+                <span>00:40:00</span>
+            </a><a class="game-item justify-content-space-between"
+                   href="game.html">
+                            <span>
+                                <span class="gray">joanna_dabrowska</span> vs
+                                <span class="gray">bartek_zielinski</span>
+                            </span>
+                <span>00:50:00</span>
+            </a><a class="game-item justify-content-space-between"
+                   href="game.html">
+                            <span>
+                                <span class="red">agnieszka_lewandowska</span> vs
+                                <span class="green">tomasz_wisniewski</span>
+                            </span>
+                <span>00:50:00</span>
+            </a><a class="game-item justify-content-space-between"
+                   href="game.html">
+                            <span>
+                                <span class="gray">kasia_kwiatkowska</span> vs
+                                <span class="gray">michal_adamczyk</span>
+                            </span>
+                <span>00:45:00</span>
+            </a><a class="game-item justify-content-space-between"
+                   href="game.html">
+                            <span>
+                                <span class="green">anna_nowak</span> vs
+                                <span class="red">jan_kowalski</span>
+                            </span>
+                <span>00:45:00</span>
+            </a>
+            </div>
+        </div>
+    </div>
+    <div>
+        <ul class="pagination">
+            <li>
+                <a href="#">
+                    <img src="images/B/paginationQueen.png"
+                         class="chess-icon" alt="Hetman">
+
+                    <span class="pagination-number">1</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+</body>
+</html>

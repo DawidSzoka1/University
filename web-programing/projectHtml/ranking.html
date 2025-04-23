@@ -1,204 +1,226 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="css/global.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historia Gier</title>
+    <link href="css/global.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="vh-100">
-<div class="container-fluid h-100">
-    <div class="row h-100">
-        <div class="col-2">
-            <div>
-                <div class="sidebar">
-                    <div class="icon">
-                        <a href="index.html"><img src="images/sidebar/home.png" alt="home"></a>
-                    </div>
+<body>
 
-                    <div class="icon">
-                        <a href="ranking.html"><img src="images/sidebar/ranking.png" alt="Ranking"></a>
-                    </div>
-
-
-                    <div>
-                        <div class="icon">
-                            <a href="profile.html">
-                                <img src="images/sidebar/profile.png" alt="Profile">
-                            </a>
-                        </div>
-                        <div class="icon">
-                            <a href="gameHistory.html">
-                                <img src="images/util/win.png" alt="GameHistory">
-                            </a>
-                        </div>
-                    </div>
-                    <div class="icon">
-                        <a href="admin.html">
-                            <img src="images/sidebar/admin.png" alt="Profile">
-                        </a>
-                    </div>
-                    <div class="icon">
-                        <a href="login.html"><img src="images/sidebar/login.png" alt="Login"></a>
-                    </div>
-                    <div class="icon">
-                        <form action="#" method="post">
-                            <input type="image" src="images/sidebar/logout.png" alt="logout" width="70">
-                        </form>
-                    </div>
-                </div>
-            </div>
+<div>
+    <div class="sidebar">
+        <div class="icon">
+            <a href="index.html">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5Z"/>
+                </svg>
+            </a>
         </div>
-        <div class="ranking col-9">
-            <div class="main-content">
-                <div class="d-flex flex-column h-100">
 
-                    <div class="top-section d-flex align-items-center">
-                        <h1>RANKING</h1>
-                    </div>
+        <div class="icon">
+            <a href="ranking.html">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path d="M3 3v18h18M9 17V9m4 8v-5m4 5v-2"/>
+                </svg>
+            </a>
+        </div>
 
-                    <div class="flex-grow-1 bg-table px-4 py-3">
-                        <table class="table custom-table text-center mb-0">
-                            <thead>
-                            <tr>
-                                <th>MIEJSCE</th>
-                                <th>PSEUDONIM</th>
-                                <th>RANKING</th>
-                                <th>RODZAJ</th>
-                                <th>RODZAJ</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td><strong>1</strong></td>
-                                <td>
-                                    <a href="profile.html">
-                                        <strong>agnieszka_lewandowska</strong>
-                                    </a>
-                                </td>
-                                <td>50</td>
-                                <td>8765</td>
-                                <td>9876</td>
-                            </tr>
-                            <tr>
-                                <td><strong>2</strong></td>
-                                <td>
-                                    <a href="profile.html">
-                                        <strong>michal_adamczyk</strong>
-                                    </a>
-                                </td>
-                                <td>45</td>
-                                <td>8765</td>
-                                <td>9876</td>
-                            </tr>
-                            <tr>
-                                <td><strong>3</strong></td>
-                                <td>
-                                    <a href="profile.html">
-                                        <strong>joanna_dabrowska</strong>
-                                    </a>
-                                </td>
-                                <td>40</td>
-                                <td>8765</td>
-                                <td>9876</td>
-                            </tr>
-                            <tr>
-                                <td><strong>4</strong></td>
-                                <td>
-                                    <a href="profile.html">
-                                        <strong>tomasz_wisniewski</strong>
-                                    </a>
-                                </td>
-                                <td>35</td>
-                                <td>8765</td>
-                                <td>9876</td>
-                            </tr>
-                            <tr>
-                                <td><strong>5</strong></td>
-                                <td>
-                                    <a href="profile.html">
-                                        <strong>mateusz_kaczmarek</strong>
-                                    </a>
-                                </td>
-                                <td>33</td>
-                                <td>8765</td>
-                                <td>9876</td>
-                            </tr>
-                            <tr>
-                                <td><strong>6</strong></td>
-                                <td>
-                                    <a href="profile.html">
-                                        <strong>anna_nowak</strong>
-                                    </a>
-                                </td>
-                                <td>30</td>
-                                <td>8765</td>
-                                <td>9876</td>
-                            </tr>
-                            <tr>
-                                <td><strong>7</strong></td>
-                                <td>
-                                    <a href="profile.html">
-                                        <strong>bartek_zielinski</strong>
-                                    </a>
-                                </td>
-                                <td>28</td>
-                                <td>8765</td>
-                                <td>9876</td>
-                            </tr>
-                            <tr>
-                                <td><strong>8</strong></td>
-                                <td>
-                                    <a href="profile.html">
-                                        <strong>aleksandra_pawlak</strong>
-                                    </a>
-                                </td>
-                                <td>27</td>
-                                <td>8765</td>
-                                <td>9876</td>
-                            </tr>
-                            <tr>
-                                <td><strong>9</strong></td>
-                                <td>
-                                    <a href="profile.html">
-                                        <strong>jan_kowalski</strong>
-                                    </a>
-                                </td>
-                                <td>25</td>
-                                <td>8765</td>
-                                <td>9876</td>
-                            </tr>
-                            <tr>
-                                <td><strong>10</strong></td>
-                                <td>
-                                    <a href="profile.html">
-                                        <strong>kasia_kwiatkowska</strong>
-                                    </a>
-                                </td>
-                                <td>22</td>
-                                <td>8765</td>
-                                <td>9876</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <div>
-                            <ul class="pagination">
-                                <li>
-                                    <a href="#">
-                                        <img src="images/B/paginationQueen.png"
-                                             class="chess-icon" alt="Hetman">
 
-                                        <span class="pagination-number">1</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+        <div class="icon">
+            <a href="profile.html">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4 0-7 2-7 4v2h14v-2c0-2-3-4-7-4Z"/>
+                </svg>
+            </a>
+        </div>
 
-                </div>
-            </div>
+
+        <div class="icon">
+            <a href="admin.html">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path d="M20 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M4 21v-2a4 4 0 0 1 3-3.87"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </a>
+        </div>
+        <div class="icon">
+            <a href="gameHistory.html">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path d="M8 21h8"/>
+                    <path d="M12 17v4"/>
+                    <path d="M18 3h3v4a3 3 0 0 1-3 3h-1"/>
+                    <path d="M6 3H3v4a3 3 0 0 0 3 3h1"/>
+                    <path d="M5 6h14"/>
+                    <path d="M7 10a5 5 0 0 0 10 0"/>
+                </svg>
+            </a>
+        </div>
+
+        <div class="icon">
+            <form action="#" method="post">
+                <button type="submit" style="background: none; border: none; padding: 0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path d="M15 12H3m0 0l4-4m-4 4l4 4M21 3v18"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+        <div class="icon">
+            <a href="login.html">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.8" viewBox="0 0 24 24" stroke="currentColor">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                    <polyline points="10 17 15 12 10 7"/>
+                    <line x1="15" y1="12" x2="3" y2="12"/>
+                </svg>
+            </a>
         </div>
     </div>
 </div>
+<div class="game-history-main-container">
+    <div class="game-history-top-content">
+
+        <section class="game-history-section">
+            <h1 class="game-history-title title-main">RANKING</h1>
+            <a href="profile.html" class="game-history-card-link">
+
+                <div class="game-history-ranking-card game-history-ranking-card podium-first">
+                    <div class="game-history-ranking-entry">
+                        <span class="game-history-ranking-position">1.</span>
+                        <span class="game-history-ranking-username">agnieszka_lewandowska</span>
+                        <span class="game-history-ranking-points">50 pts</span>
+                    </div>
+                </div>
+            </a><a href="profile.html" class="game-history-card-link">
+
+            <div class="game-history-ranking-card game-history-ranking-card podium-second">
+                <div class="game-history-ranking-entry">
+                    <span class="game-history-ranking-position">2.</span>
+                    <span class="game-history-ranking-username">michal_adamczyk</span>
+                    <span class="game-history-ranking-points">45 pts</span>
+                </div>
+            </div>
+        </a><a href="profile.html" class="game-history-card-link">
+
+            <div class="game-history-ranking-card game-history-ranking-card podium-third">
+                <div class="game-history-ranking-entry">
+                    <span class="game-history-ranking-position">3.</span>
+                    <span class="game-history-ranking-username">joanna_dabrowska</span>
+                    <span class="game-history-ranking-points">40 pts</span>
+                </div>
+            </div>
+        </a><a href="profile.html" class="game-history-card-link">
+
+            <div class="game-history-ranking-card game-history-ranking-card ">
+                <div class="game-history-ranking-entry">
+                    <span class="game-history-ranking-position">4.</span>
+                    <span class="game-history-ranking-username">tomasz_wisniewski</span>
+                    <span class="game-history-ranking-points">35 pts</span>
+                </div>
+            </div>
+        </a><a href="profile.html" class="game-history-card-link">
+
+            <div class="game-history-ranking-card game-history-ranking-card ">
+                <div class="game-history-ranking-entry">
+                    <span class="game-history-ranking-position">5.</span>
+                    <span class="game-history-ranking-username">mateusz_kaczmarek</span>
+                    <span class="game-history-ranking-points">33 pts</span>
+                </div>
+            </div>
+        </a><a href="profile.html" class="game-history-card-link">
+
+            <div class="game-history-ranking-card game-history-ranking-card ">
+                <div class="game-history-ranking-entry">
+                    <span class="game-history-ranking-position">6.</span>
+                    <span class="game-history-ranking-username">anna_nowak</span>
+                    <span class="game-history-ranking-points">30 pts</span>
+                </div>
+            </div>
+        </a><a href="profile.html" class="game-history-card-link">
+
+            <div class="game-history-ranking-card game-history-ranking-card ">
+                <div class="game-history-ranking-entry">
+                    <span class="game-history-ranking-position">7.</span>
+                    <span class="game-history-ranking-username">bartek_zielinski</span>
+                    <span class="game-history-ranking-points">28 pts</span>
+                </div>
+            </div>
+        </a><a href="profile.html" class="game-history-card-link">
+
+            <div class="game-history-ranking-card game-history-ranking-card ">
+                <div class="game-history-ranking-entry">
+                    <span class="game-history-ranking-position">8.</span>
+                    <span class="game-history-ranking-username">aleksandra_pawlak</span>
+                    <span class="game-history-ranking-points">27 pts</span>
+                </div>
+            </div>
+        </a><a href="profile.html" class="game-history-card-link">
+
+            <div class="game-history-ranking-card game-history-ranking-card ">
+                <div class="game-history-ranking-entry">
+                    <span class="game-history-ranking-position">9.</span>
+                    <span class="game-history-ranking-username">jan_kowalski</span>
+                    <span class="game-history-ranking-points">25 pts</span>
+                </div>
+            </div>
+        </a><a href="profile.html" class="game-history-card-link">
+
+            <div class="game-history-ranking-card game-history-ranking-card ">
+                <div class="game-history-ranking-entry">
+                    <span class="game-history-ranking-position">10.</span>
+                    <span class="game-history-ranking-username">kasia_kwiatkowska</span>
+                    <span class="game-history-ranking-points">22 pts</span>
+                </div>
+            </div>
+        </a>
+            <div class="game-history-pagination-wrapper">
+                <ul class="game-history-pagination">
+                    <li>
+                        <a href="#">
+                            <img src="images/B/paginationQueen.png"
+                                 class="game-history-chess-icon" alt="Hetman">
+
+                            <span class="game-history-pagination-number">1</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+
+                            <img src="images/B/paginationPawn.png"
+                                 class="game-history-chess-icon" alt="Pionek">
+                            <span class="game-history-pagination-number">2</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <aside class="game-history-filter-box">
+            <h3>Filtruj Ranking</h3>
+            <label for="gracz">Gracz:</label>
+            <input type="text" id="gracz" placeholder="np. michal_adamczyk">
+
+            <label for="sortuj">Sortuj:</label>
+            <select id="sortuj">
+                <option>Domyślnie</option>
+                <option>Od końca</option>
+                <option>A-Z</option>
+            </select>
+
+            <button>Zastosuj</button>
+            <p>Pasujących wyników: 3</p>
+        </aside>
+
+    </div>
+</div>
+
 </body>
 </html>

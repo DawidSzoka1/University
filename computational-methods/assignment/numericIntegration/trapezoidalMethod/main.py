@@ -2,11 +2,11 @@ import math
 
 a = 0.4
 b = 1.3
-n = 20
+n = 3
 
 
 def function(x):
-    return (1.4 * x + 0.3) / (2.3 + math.cos(0.4 * x ** 2 + 1))
+    return (1.4 * x + 0.3)/(2.3 + math.cos(0.4*x**2 + 1))
 
 
 def compute_h(n, a, b):
@@ -34,4 +34,4 @@ def compute_integral(a, b, n, func=None):
     return h * sum_full
 
 
-print(compute_integral(a, b, n, function))
+print(f"przyblizona wartosc calki dla n = {n} wynosi {compute_integral(a, b, n, function)}")
