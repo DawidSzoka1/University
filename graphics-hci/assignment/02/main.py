@@ -1,12 +1,13 @@
 import sys
 from lineTransformation import LineTransformation
+from powerTransformation import PowerTransformation
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
     QVBoxLayout, QHBoxLayout, QFileDialog, QGroupBox
 )
 from PyQt5.QtGui import QPixmap
 
-class OknoZeZdjeciem(QWidget):
+class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
 
@@ -24,10 +25,11 @@ class OknoZeZdjeciem(QWidget):
         self.image_transformation.setStyleSheet("border: 1px solid gray;")
         self.image_transformation.setScaledContents(True)
         self.lineTransformation = LineTransformation(self.image_transformation)
+        self.powerTransformation = PowerTransformation(self.image_transformation)
 
         # Przycisk ładowania
         self.button_load = QPushButton("Wybierz zdjęcie")
-        self.button_load.clicked.connect(self.wybierz_zdjecie)
+        self.button_load.clicked.connect(self.choose_photo)
 
         image_layout = QVBoxLayout()
         image_layout.addWidget(self.image_label)
@@ -36,8 +38,8 @@ class OknoZeZdjeciem(QWidget):
 
         # Grupy przycisków
         control_layout = QVBoxLayout()
-        control_layout.addWidget(self.grupa_transformacje_liniowe())
-        control_layout.addWidget(self.grupa_transformacje_potegowe())
+        control_layout.addWidget(self.group_linear_transformation())
+        control_layout.addWidget(self.group_power_transformation())
         control_layout.addWidget(self.grupa_mieszanie())
         control_layout.addWidget(self.grupa_histogramy())
         control_layout.addWidget(self.grupa_filtry_dolno())
@@ -51,7 +53,7 @@ class OknoZeZdjeciem(QWidget):
 
         self.setLayout(main_layout)
 
-    def wybierz_zdjecie(self):
+    def choose_photo(self):
         sciezka, _ = QFileDialog.getOpenFileName(self, "Wybierz plik", "", "Obrazy (*.png *.jpg *.jpeg *.bmp)")
         if sciezka:
             pixmap = QPixmap(sciezka)
@@ -64,11 +66,11 @@ class OknoZeZdjeciem(QWidget):
         self.darkening.clicked.connect(lambda: self.lineTransformation.darken(self.image_label.pixmap()))
         self.negative.clicked.connect(lambda: self.lineTransformation.negative(self.image_label.pixmap()))
 
-        self.power_brightnes.clicked.connect(lambda: self.lineTransformation.brightness(self.image_label.pixmap()))
-        self.power_darkening.clicked.connect(lambda: self.lineTransformation.darken(self.image_label.pixmap()))
+        self.power_brightnes.clicked.connect(lambda: self.powerTransformation.brightness(self.image_label.pixmap()))
+        self.power_darkening.clicked.connect(lambda: self.powerTransformation.darken(self.image_label.pixmap()))
 
     # Grupa: Transformacje liniowe
-    def grupa_transformacje_liniowe(self):
+    def group_linear_transformation(self):
         box = QGroupBox("Transformacje liniowe")
         layout = QVBoxLayout()
         self.brightnes = QPushButton("Rozjaśnienie", self)
@@ -81,12 +83,12 @@ class OknoZeZdjeciem(QWidget):
         return box
 
     # Grupa: Transformacje potęgowe
-    def grupa_transformacje_potegowe(self):
+    def group_power_transformation(self):
         box = QGroupBox("Transformacje potęgowe")
         layout = QVBoxLayout()
-        self.power_brightnes = QPushButton("Rozjaśnienie(potęgowe)")
+        self.power_brightnes = QPushButton("Rozjaśnienie(potęgowe)", self)
         layout.addWidget(self.power_brightnes)
-        self.power_darkening = QPushButton("Przyciemnienie(potęgowe)")
+        self.power_darkening = QPushButton("Przyciemnienie(potęgowe)", self)
         layout.addWidget(self.power_darkening)
         box.setLayout(layout)
         return box
@@ -104,7 +106,8 @@ class OknoZeZdjeciem(QWidget):
     def grupa_histogramy(self):
         box = QGroupBox("Histogramy")
         layout = QVBoxLayout()
-        layout.addWidget(QPushButton("Generuj histogram RGB"))
+        self.histogram = QPushButton("Generuj histogram RGB")
+        layout.addWidget(self.histogram)
         layout.addWidget(QPushButton("Wyrównanie histogramu"))
         layout.addWidget(QPushButton("Skalowanie histogramu"))
         box.setLayout(layout)
@@ -145,6 +148,6 @@ class OknoZeZdjeciem(QWidget):
 # Start
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    okno = OknoZeZdjeciem()
+    okno = MainWindow()
     okno.show()
     sys.exit(app.exec_())
