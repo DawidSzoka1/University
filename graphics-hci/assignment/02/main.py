@@ -3,7 +3,7 @@ from lineTransformation import LineTransformation
 from powerTransformation import PowerTransformation
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
-    QVBoxLayout, QHBoxLayout, QFileDialog, QGroupBox
+    QVBoxLayout, QHBoxLayout, QFileDialog, QGroupBox, QGridLayout
 )
 from PyQt5.QtGui import QPixmap
 
@@ -12,30 +12,45 @@ class MainWindow(QWidget):
         super().__init__()
 
         self.setWindowTitle("Transformacje obrazu")
-        self.setGeometry(100, 100, 1000, 600)
+        self.setGeometry(100, 100, 1300, 800)
         self.is_image_loaded = False
-        # Obrazy
-        self.image_label = QLabel("Obraz")
-        self.image_label.setFixedSize(500, 400)
+        self.image_label = QLabel("Obraz 1")
+        self.image_label.setFixedSize(400, 300)
         self.image_label.setStyleSheet("border: 1px solid gray;")
         self.image_label.setScaledContents(True)
 
+        self.second_image_label = QLabel("Obraz 2")
+        self.second_image_label.setFixedSize(400, 300)
+        self.second_image_label.setStyleSheet("border: 1px solid gray;")
+        self.second_image_label.setScaledContents(True)
+
         self.image_transformation = QLabel("Transformowany obraz")
-        self.image_transformation.setFixedSize(500, 400)
+        self.image_transformation.setFixedSize(400, 300)
         self.image_transformation.setStyleSheet("border: 1px solid gray;")
         self.image_transformation.setScaledContents(True)
-        self.lineTransformation = LineTransformation(self.image_transformation)
-        self.powerTransformation = PowerTransformation(self.image_transformation)
+
+        self.histogram_label = QLabel("Histogram")
+        self.histogram_label.setFixedSize(400, 300)
+        self.histogram_label.setStyleSheet("border: 1px solid gray;")
+        self.histogram_label.setScaledContents(True)
 
         # Przycisk ładowania
         self.button_load = QPushButton("Wybierz zdjęcie")
         self.button_load.clicked.connect(self.choose_photo)
 
-        image_layout = QVBoxLayout()
-        image_layout.addWidget(self.image_label)
-        image_layout.addWidget(self.image_transformation)
-        image_layout.addWidget(self.button_load)
+        self.button_load_2 = QPushButton("Wybierz drugie zdjęcie")
+        self.button_load_2.clicked.connect(self.choose_second_photo)
 
+        image_layout = QGridLayout()
+        image_layout.addWidget(self.image_label, 0, 0)
+        image_layout.addWidget(self.second_image_label, 0, 1)
+        image_layout.addWidget(self.image_transformation, 1, 0)
+        image_layout.addWidget(self.histogram_label, 1, 1)
+        image_layout.addWidget(self.button_load, 2, 0)
+        image_layout.addWidget(self.button_load_2, 2, 1)
+
+        self.lineTransformation = LineTransformation(self.image_transformation)
+        self.powerTransformation = PowerTransformation(self.image_transformation)
         # Grupy przycisków
         control_layout = QVBoxLayout()
         control_layout.addWidget(self.group_linear_transformation())
@@ -54,12 +69,16 @@ class MainWindow(QWidget):
         self.setLayout(main_layout)
 
     def choose_photo(self):
-        sciezka, _ = QFileDialog.getOpenFileName(self, "Wybierz plik", "", "Obrazy (*.png *.jpg *.jpeg *.bmp)")
-        if sciezka:
-            pixmap = QPixmap(sciezka)
+        path, _ = QFileDialog.getOpenFileName(self, "Wybierz plik", "", "Obrazy (*.png *.jpg *.jpeg *.bmp)")
+        if path:
+            pixmap = QPixmap(path)
             self.image_label.setPixmap(pixmap)
             self.add_clicked()
-
+    def choose_second_photo(self):
+        path, _ = QFileDialog.getOpenFileName(self, "Wybierz drugie zdjęcie", "", "Obrazy (*.png *.jpg *.jpeg *.bmp)")
+        if path:
+            pixmap = QPixmap(path)
+            self.second_image_label.setPixmap(pixmap)
 
     def add_clicked(self):
         self.brightnes.clicked.connect(lambda: self.lineTransformation.brightness(self.image_label.pixmap()))
