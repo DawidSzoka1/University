@@ -1,11 +1,13 @@
 import sys
+from histogramTransformation import HistogramTransformation
 from lineTransformation import LineTransformation
 from powerTransformation import PowerTransformation
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
     QVBoxLayout, QHBoxLayout, QFileDialog, QGroupBox, QGridLayout
 )
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QImage
+
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -51,12 +53,14 @@ class MainWindow(QWidget):
 
         self.lineTransformation = LineTransformation(self.image_transformation)
         self.powerTransformation = PowerTransformation(self.image_transformation)
+        self.histogramTransformation = HistogramTransformation(self.second_image_label, self.image_transformation,
+                                                               self.histogram_label)
         # Grupy przycisków
         control_layout = QVBoxLayout()
         control_layout.addWidget(self.group_linear_transformation())
         control_layout.addWidget(self.group_power_transformation())
         control_layout.addWidget(self.grupa_mieszanie())
-        control_layout.addWidget(self.grupa_histogramy())
+        control_layout.addWidget(self.group_histogram())
         control_layout.addWidget(self.grupa_filtry_dolno())
         control_layout.addWidget(self.grupa_filtry_gorno())
         control_layout.addWidget(self.grupa_filtry_statystyczne())
@@ -74,6 +78,7 @@ class MainWindow(QWidget):
             pixmap = QPixmap(path)
             self.image_label.setPixmap(pixmap)
             self.add_clicked()
+
     def choose_second_photo(self):
         path, _ = QFileDialog.getOpenFileName(self, "Wybierz drugie zdjęcie", "", "Obrazy (*.png *.jpg *.jpeg *.bmp)")
         if path:
@@ -81,12 +86,20 @@ class MainWindow(QWidget):
             self.second_image_label.setPixmap(pixmap)
 
     def add_clicked(self):
-        self.brightnes.clicked.connect(lambda: self.lineTransformation.brightness(self.image_label.pixmap()))
-        self.darkening.clicked.connect(lambda: self.lineTransformation.darken(self.image_label.pixmap()))
+        self.brightnes.clicked.connect(lambda: self.lineTransformation.brightness(self.image_label.pixmap(), self))
+        self.darkening.clicked.connect(lambda: self.lineTransformation.darken(self.image_label.pixmap(), self))
         self.negative.clicked.connect(lambda: self.lineTransformation.negative(self.image_label.pixmap()))
 
         self.power_brightnes.clicked.connect(lambda: self.powerTransformation.brightness(self.image_label.pixmap()))
         self.power_darkening.clicked.connect(lambda: self.powerTransformation.darken(self.image_label.pixmap()))
+
+        self.histogram.clicked.connect(lambda: self.histogramTransformation.show_histogram(self.image_label.pixmap(),
+                                                                                           self.second_image_label))
+
+        self.histogram_equalization.clicked.connect(
+            lambda: self.histogramTransformation.histogram_equalization(self.image_label.pixmap()))
+        self.histogram_scale.clicked.connect(
+            lambda: self.histogramTransformation.histogram_scaling(self.image_label.pixmap(), self))
 
     # Grupa: Transformacje liniowe
     def group_linear_transformation(self):
@@ -122,13 +135,17 @@ class MainWindow(QWidget):
         return box
 
     # Grupa: Histogramy
-    def grupa_histogramy(self):
+    def group_histogram(self):
         box = QGroupBox("Histogramy")
         layout = QVBoxLayout()
-        self.histogram = QPushButton("Generuj histogram RGB")
+        self.histogram = QPushButton("Generuj histogram RGB", self)
         layout.addWidget(self.histogram)
-        layout.addWidget(QPushButton("Wyrównanie histogramu"))
-        layout.addWidget(QPushButton("Skalowanie histogramu"))
+
+        self.histogram_equalization = QPushButton("Wyrównanie histogramu", self)
+        layout.addWidget(self.histogram_equalization)
+
+        self.histogram_scale = QPushButton("Skalowanie histogramu", self)
+        layout.addWidget(self.histogram_scale)
         box.setLayout(layout)
         return box
 
@@ -163,6 +180,7 @@ class MainWindow(QWidget):
         layout.addWidget(QPushButton("Filtr medianowy"))
         box.setLayout(layout)
         return box
+
 
 # Start
 if __name__ == "__main__":
