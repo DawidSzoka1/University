@@ -3,17 +3,44 @@ from histogramTransformation import HistogramTransformation
 from lineTransformation import LineTransformation
 from statisticsTransformation import StatisticsTransformation
 from highpassTransformation import HighPassTransformation
+from mixingTransformation import MixingTransformation
 from powerTransformation import PowerTransformation
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
     QVBoxLayout, QHBoxLayout, QFileDialog, QGroupBox, QGridLayout, QMessageBox
 )
 from PyQt5.QtGui import QPixmap, QImage
+from functools import partial
+
 
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
+        self.mixing_add = QPushButton("Suma", self)
+        self.mixing_sub = QPushButton("Odejmowanie", self)
+        self.mixing_diff = QPushButton("Różnica", self)
+        self.mixing_multi = QPushButton("Mnozenie", self)
+        self.mixing_screen = QPushButton("Mnożenie odwrotności", self)
+        self.mixing_negation = QPushButton("Negacja", self)
+        self.mixing_darken = QPushButton("Ciemniejsze", self)
+        self.mixing_lighten = QPushButton("Jaśniejsze", self)
+        self.mixing_exclusion = QPushButton("Wyłaczenie", self)
+        self.mixing_overlay = QPushButton("Nakładka", self)
+        self.mixing_hardLight = QPushButton("Ostre światło", self)
+        self.mixing_softLight = QPushButton("Łagodne światło", self)
+        self.mixing_colorDodge = QPushButton("Rozcieńczenie", self)
+        self.mixing_colorBurn = QPushButton("Wypalanie", self)
+        self.mixing_reflect = QPushButton("Reflect mode", self)
+        self.mixing_transparency = QPushButton("Przezroczystość", self)
+
+        self.mixing_images = [
+            [self.mixing_add, self.mixing_sub, self.mixing_diff, self.mixing_multi],
+            [self.mixing_screen, self.mixing_negation, self.mixing_darken, self.mixing_lighten],
+            [self.mixing_exclusion, self.mixing_overlay, self.mixing_hardLight, self.mixing_softLight],
+            [self.mixing_colorDodge, self.mixing_colorBurn, self.mixing_reflect, self.mixing_transparency]
+        ]
+
         self.image_path = None
         self.setWindowTitle("Transformacje obrazu")
         self.setGeometry(100, 100, 1300, 800)
@@ -23,6 +50,7 @@ class MainWindow(QWidget):
         self.image_label.setStyleSheet("border: 1px solid gray;")
         self.image_label.setScaledContents(True)
 
+        self.second_image_path = None
         self.second_image_label = QLabel("Obraz 2")
         self.second_image_label.setFixedSize(400, 300)
         self.second_image_label.setStyleSheet("border: 1px solid gray;")
@@ -47,7 +75,6 @@ class MainWindow(QWidget):
 
         self.button_save_1 = QPushButton("Zapisz obraz Transformowany")
 
-
         image_layout = QGridLayout()
         image_layout.addWidget(self.image_label, 0, 0)
         image_layout.addWidget(self.second_image_label, 0, 1)
@@ -57,13 +84,13 @@ class MainWindow(QWidget):
         image_layout.addWidget(self.button_load_2, 2, 1)
         image_layout.addWidget(self.button_save_1, 3, 0)
 
-
         self.lineTransformation = LineTransformation(self.image_transformation)
         self.powerTransformation = PowerTransformation(self.image_transformation)
         self.histogramTransformation = HistogramTransformation(self.second_image_label, self.image_transformation,
                                                                self.histogram_label)
         self.statisticsTransformation = StatisticsTransformation(self.image_transformation)
         self.hightpassTransformation = HighPassTransformation(self.image_transformation)
+        self.mixingTransformation = MixingTransformation(self.image_transformation)
         # Grupy przycisków
         control_layout = QVBoxLayout()
         control_layout.addWidget(self.group_linear_transformation())
@@ -93,10 +120,13 @@ class MainWindow(QWidget):
         path, _ = QFileDialog.getOpenFileName(self, "Wybierz drugie zdjęcie", "", "Obrazy (*.png *.jpg *.jpeg *.bmp)")
         if path:
             pixmap = QPixmap(path)
+            self.second_image_path = path
             self.second_image_label.setPixmap(pixmap)
+        if self.image_path and self.second_image_path:
+            self.add_mixing_clicked()
 
     def save_image(self, image):
-        if  image.pixmap() is None or image.pixmap().isNull():
+        if image.pixmap() is None or image.pixmap().isNull():
             QMessageBox.warning(self, "Błąd", "Nie zostalo wykonane jeszcze przeksztalcenie")
             return
 
@@ -107,6 +137,18 @@ class MainWindow(QWidget):
 
         image.save(filePath)
 
+    def add_mixing_clicked(self):
+
+        for i in range(4):
+            for j in range(4):
+                self.mixing_images[i][j].clicked.connect(
+                    partial(self.mixingTransformation.transform, self.image_path, self.second_image_path, i, j)
+                )
+
+
+
+
+
     def add_clicked(self):
         self.button_save_1.clicked.connect(lambda: self.save_image(self.image_transformation))
 
@@ -114,10 +156,8 @@ class MainWindow(QWidget):
         self.darkening.clicked.connect(lambda: self.lineTransformation.darken(self.image_label.pixmap(), self))
         self.negative.clicked.connect(lambda: self.lineTransformation.negative(self.image_label.pixmap()))
 
-
         self.power_brightnes.clicked.connect(lambda: self.powerTransformation.brightness(self.image_label.pixmap()))
         self.power_darkening.clicked.connect(lambda: self.powerTransformation.darken(self.image_label.pixmap()))
-
 
         self.histogram.clicked.connect(lambda: self.histogramTransformation.show_histogram(self.image_label.pixmap(),
                                                                                            self.second_image_label))
@@ -149,7 +189,6 @@ class MainWindow(QWidget):
             lambda: self.hightpassTransformation.choose_laplace(self, self.image_path)
         )
 
-
         self.filtr_min.clicked.connect(lambda:
                                        self.statisticsTransformation.statistics_transformation(
                                            self.image_label.pixmap(), "min"))
@@ -159,6 +198,7 @@ class MainWindow(QWidget):
         self.filtr_median.clicked.connect(lambda:
                                           self.statisticsTransformation.statistics_transformation(
                                               self.image_label.pixmap(), "median"))
+
 
     # Grupa: Transformacje liniowe
     def group_linear_transformation(self):
@@ -187,10 +227,14 @@ class MainWindow(QWidget):
     # Grupa: Mieszanie obrazów
     def grupa_mieszanie(self):
         box = QGroupBox("Mieszanie obrazów")
-        layout = QVBoxLayout()
-        for i in range(1, 5):  # Na razie 4, można dodać więcej
-            layout.addWidget(QPushButton(f"Mieszaj {i}"))
-        box.setLayout(layout)
+        grid = QGridLayout()
+
+        for i in range(16):
+            row = i // 4
+            col = i % 4
+            grid.addWidget(self.mixing_images[row][col], row, col)
+
+        box.setLayout(grid)
         return box
 
     # Grupa: Histogramy
