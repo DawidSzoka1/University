@@ -6,7 +6,7 @@ from highpassTransformation import HighPassTransformation
 from powerTransformation import PowerTransformation
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
-    QVBoxLayout, QHBoxLayout, QFileDialog, QGroupBox, QGridLayout
+    QVBoxLayout, QHBoxLayout, QFileDialog, QGroupBox, QGridLayout, QMessageBox
 )
 from PyQt5.QtGui import QPixmap, QImage
 
@@ -44,6 +44,7 @@ class MainWindow(QWidget):
 
         self.button_load_2 = QPushButton("Wybierz drugie zdjęcie")
         self.button_load_2.clicked.connect(self.choose_second_photo)
+
         self.button_save_1 = QPushButton("Zapisz obraz Transformowany")
 
 
@@ -70,7 +71,7 @@ class MainWindow(QWidget):
         control_layout.addWidget(self.grupa_mieszanie())
         control_layout.addWidget(self.group_histogram())
         control_layout.addWidget(self.grupa_filtry_dolno())
-        control_layout.addWidget(self.grupa_filtry_gorno())
+        control_layout.addWidget(self.group_high_pass())
         control_layout.addWidget(self.group_statistics())
         control_layout.addStretch()
 
@@ -94,7 +95,21 @@ class MainWindow(QWidget):
             pixmap = QPixmap(path)
             self.second_image_label.setPixmap(pixmap)
 
+    def save_image(self, image):
+        if  image.pixmap() is None or image.pixmap().isNull():
+            QMessageBox.warning(self, "Błąd", "Nie zostalo wykonane jeszcze przeksztalcenie")
+            return
+
+        image = image.pixmap().toImage()
+        filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "", "PNG(*.png);;JPEG(*.jpg *.jpeg)")
+        if filePath == "":
+            return
+
+        image.save(filePath)
+
     def add_clicked(self):
+        self.button_save_1.clicked.connect(lambda: self.save_image(self.image_transformation))
+
         self.brightnes.clicked.connect(lambda: self.lineTransformation.brightness(self.image_label.pixmap(), self))
         self.darkening.clicked.connect(lambda: self.lineTransformation.darken(self.image_label.pixmap(), self))
         self.negative.clicked.connect(lambda: self.lineTransformation.negative(self.image_label.pixmap()))
@@ -202,7 +217,7 @@ class MainWindow(QWidget):
         return box
 
     # Grupa: Filtry górnoprzepustowe
-    def grupa_filtry_gorno(self):
+    def group_high_pass(self):
         box = QGroupBox("Filtry górnoprzepustowe")
         layout = QVBoxLayout()
         self.roberts_horizontal = QPushButton("Roberts (poziomy)", self)
