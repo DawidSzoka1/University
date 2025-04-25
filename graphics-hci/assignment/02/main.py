@@ -115,6 +115,8 @@ class MainWindow(QWidget):
             self.image_label.setPixmap(pixmap)
             self.image_path = path
             self.add_clicked()
+        if self.image_path and self.second_image_path:
+            self.add_mixing_clicked()
 
     def choose_second_photo(self):
         path, _ = QFileDialog.getOpenFileName(self, "Wybierz drugie zdjęcie", "", "Obrazy (*.png *.jpg *.jpeg *.bmp)")
