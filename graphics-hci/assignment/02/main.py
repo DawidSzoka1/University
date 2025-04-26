@@ -1,4 +1,5 @@
 import sys
+from lowpassTransformation import LowPassTransformation
 from contrastTransformation import ContrasTransformation
 from histogramTransformation import HistogramTransformation
 from lineTransformation import LineTransformation
@@ -92,6 +93,7 @@ class MainWindow(QWidget):
         self.hightpassTransformation = HighPassTransformation(self.image_transformation)
         self.mixingTransformation = MixingTransformation(self.image_transformation)
         self.contrastTransformation = ContrasTransformation(self.image_transformation)
+        self.lowPassTransformation = LowPassTransformation(self.image_transformation)
         # Grupy przycisków
         control_layout = QVBoxLayout()
         control_layout.addWidget(self.group_linear_transformation())
@@ -169,6 +171,10 @@ class MainWindow(QWidget):
 
         self.contrast_button.clicked.connect(
             lambda: self.contrastTransformation.transform(self.image_label.pixmap(), self)
+        )
+
+        self.low_pass.clicked.connect(
+            lambda: self.lowPassTransformation.transform(self.image_label.pixmap())
         )
 
         self.sobel_horizontal.clicked.connect(
