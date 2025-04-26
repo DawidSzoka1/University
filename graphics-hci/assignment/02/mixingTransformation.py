@@ -1,5 +1,3 @@
-import math
-from PIL import Image
 from PyQt5.QtGui import QPixmap
 from convertImage import qpixmap_to_numpy, numpy_to_qpixmap
 import numpy as np

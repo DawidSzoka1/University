@@ -1,4 +1,5 @@
 import sys
+from contrastTransformation import ContrasTransformation
 from histogramTransformation import HistogramTransformation
 from lineTransformation import LineTransformation
 from statisticsTransformation import StatisticsTransformation
@@ -11,7 +12,6 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QPixmap, QImage
 from functools import partial
-
 
 
 class MainWindow(QWidget):
@@ -91,13 +91,15 @@ class MainWindow(QWidget):
         self.statisticsTransformation = StatisticsTransformation(self.image_transformation)
         self.hightpassTransformation = HighPassTransformation(self.image_transformation)
         self.mixingTransformation = MixingTransformation(self.image_transformation)
+        self.contrastTransformation = ContrasTransformation(self.image_transformation)
         # Grupy przycisków
         control_layout = QVBoxLayout()
         control_layout.addWidget(self.group_linear_transformation())
         control_layout.addWidget(self.group_power_transformation())
-        control_layout.addWidget(self.grupa_mieszanie())
+        control_layout.addWidget(self.group_mixing())
+        control_layout.addWidget(self.group_contrast())
         control_layout.addWidget(self.group_histogram())
-        control_layout.addWidget(self.grupa_filtry_dolno())
+        control_layout.addWidget(self.group_low_pass())
         control_layout.addWidget(self.group_high_pass())
         control_layout.addWidget(self.group_statistics())
         control_layout.addStretch()
@@ -147,10 +149,6 @@ class MainWindow(QWidget):
                     partial(self.mixingTransformation.transform, self.image_path, self.second_image_path, i, j)
                 )
 
-
-
-
-
     def add_clicked(self):
         self.button_save_1.clicked.connect(lambda: self.save_image(self.image_transformation))
 
@@ -168,6 +166,10 @@ class MainWindow(QWidget):
             lambda: self.histogramTransformation.histogram_equalization(self.image_label.pixmap()))
         self.histogram_scale.clicked.connect(
             lambda: self.histogramTransformation.histogram_scaling(self.image_label.pixmap(), self))
+
+        self.contrast_button.clicked.connect(
+            lambda: self.contrastTransformation.transform(self.image_label.pixmap(), self)
+        )
 
         self.sobel_horizontal.clicked.connect(
             lambda: self.hightpassTransformation.transform(self.image_path)
@@ -201,7 +203,6 @@ class MainWindow(QWidget):
                                           self.statisticsTransformation.statistics_transformation(
                                               self.image_label.pixmap(), "median"))
 
-
     # Grupa: Transformacje liniowe
     def group_linear_transformation(self):
         box = QGroupBox("Transformacje liniowe")
@@ -227,7 +228,7 @@ class MainWindow(QWidget):
         return box
 
     # Grupa: Mieszanie obrazów
-    def grupa_mieszanie(self):
+    def group_mixing(self):
         box = QGroupBox("Mieszanie obrazów")
         grid = QGridLayout()
 
@@ -237,6 +238,15 @@ class MainWindow(QWidget):
             grid.addWidget(self.mixing_images[row][col], row, col)
 
         box.setLayout(grid)
+        return box
+
+    # Grupa: Modyfikacji kontrastu
+    def group_contrast(self):
+        box = QGroupBox("Modyfikacja kontrastu")
+        layout = QVBoxLayout()
+        self.contrast_button = QPushButton("Obrazu barwnego wariant 1 a)", self)
+        layout.addWidget(self.contrast_button)
+        box.setLayout(layout)
         return box
 
     # Grupa: Histogramy
@@ -255,32 +265,33 @@ class MainWindow(QWidget):
         return box
 
     # Grupa: Filtry dolnoprzepustowe
-    def grupa_filtry_dolno(self):
+    def group_low_pass(self):
         box = QGroupBox("Filtry dolnoprzepustowe")
         layout = QVBoxLayout()
-        layout.addWidget(QPushButton("Filtr dolnoprzepustowy"))
+        self.low_pass = QPushButton("Filtr dolnoprzepustowy", self)
+        layout.addWidget(self.low_pass)
         box.setLayout(layout)
         return box
 
     # Grupa: Filtry górnoprzepustowe
     def group_high_pass(self):
         box = QGroupBox("Filtry górnoprzepustowe")
-        layout = QVBoxLayout()
+        grid = QGridLayout()
         self.roberts_horizontal = QPushButton("Roberts (poziomy)", self)
-        layout.addWidget(self.roberts_horizontal)
+        grid.addWidget(self.roberts_horizontal, 0, 0)
         self.roberts_vertical = QPushButton("Roberts (pionowy)", self)
-        layout.addWidget(self.roberts_vertical)
+        grid.addWidget(self.roberts_vertical, 0, 1)
         self.prewitt_horizontal = QPushButton("Prewitt (poziomy)", self)
-        layout.addWidget(self.prewitt_horizontal)
+        grid.addWidget(self.prewitt_horizontal, 1, 0)
         self.prewitt_vertical = QPushButton("Prewitt (pionowy)", self)
-        layout.addWidget(self.prewitt_vertical)
+        grid.addWidget(self.prewitt_vertical, 1, 1)
         self.sobel_horizontal = QPushButton("Sobel (poziomy)", self)
-        layout.addWidget(self.sobel_horizontal)
+        grid.addWidget(self.sobel_horizontal, 2, 0)
         self.sobel_vertical = QPushButton("Sobel (pionowy)", self)
-        layout.addWidget(self.sobel_vertical)
+        grid.addWidget(self.sobel_vertical, 2, 1)
         self.laplace = QPushButton("Laplace (maski 1-3)", self)
-        layout.addWidget(self.laplace)
-        box.setLayout(layout)
+        grid.addWidget(self.laplace, 3, 0)
+        box.setLayout(grid)
         return box
 
     # Grupa: Filtry statystyczne
