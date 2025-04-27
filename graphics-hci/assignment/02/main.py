@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
     QVBoxLayout, QHBoxLayout, QFileDialog, QGroupBox, QGridLayout, QMessageBox
 )
-from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtGui import QPixmap
 from functools import partial
 
 
@@ -75,15 +75,14 @@ class MainWindow(QWidget):
         self.button_load_2.clicked.connect(self.choose_second_photo)
 
         self.button_save_1 = QPushButton("Zapisz obraz Transformowany")
-
         image_layout = QGridLayout()
-        image_layout.addWidget(self.image_label, 0, 0)
-        image_layout.addWidget(self.second_image_label, 0, 1)
-        image_layout.addWidget(self.image_transformation, 1, 0)
-        image_layout.addWidget(self.histogram_label, 1, 1)
-        image_layout.addWidget(self.button_load, 2, 0)
-        image_layout.addWidget(self.button_load_2, 2, 1)
-        image_layout.addWidget(self.button_save_1, 3, 0)
+        image_layout.addWidget(self.image_label, 1, 0)
+        image_layout.addWidget(self.second_image_label, 1, 1)
+        image_layout.addWidget(self.image_transformation, 2, 0)
+        image_layout.addWidget(self.histogram_label, 2, 1)
+        image_layout.addWidget(self.button_load, 3, 0)
+        image_layout.addWidget(self.button_load_2, 3, 1)
+        image_layout.addWidget(self.button_save_1, 4, 0, 1, 2)
 
         self.lineTransformation = LineTransformation(self.image_transformation)
         self.powerTransformation = PowerTransformation(self.image_transformation)
@@ -296,7 +295,7 @@ class MainWindow(QWidget):
         self.sobel_vertical = QPushButton("Sobel (pionowy)", self)
         grid.addWidget(self.sobel_vertical, 2, 1)
         self.laplace = QPushButton("Laplace (maski 1-3)", self)
-        grid.addWidget(self.laplace, 3, 0)
+        grid.addWidget(self.laplace, 3, 0, 1, 2)
         box.setLayout(grid)
         return box
 
@@ -317,6 +316,6 @@ class MainWindow(QWidget):
 # Start
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    okno = MainWindow()
-    okno.show()
+    window = MainWindow()
+    window.show()
     sys.exit(app.exec_())

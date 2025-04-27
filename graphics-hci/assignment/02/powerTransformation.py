@@ -1,10 +1,11 @@
 import numpy as np
-from PyQt5.QtGui import QPixmap, QImage
 from convertImage import qpixmap_to_numpy, numpy_to_qpixmap
+
 
 class PowerTransformation:
     def __init__(self, image_transformation):
         self.image_transformation = image_transformation
+
     def power_transformation(self, pixmap, gamma):
         np_img = qpixmap_to_numpy(pixmap)
 

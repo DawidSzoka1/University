@@ -33,7 +33,6 @@ class HistogramTransformation:
         histogram_pixmap.loadFromData(buf.read(), 'PNG')
         target.setPixmap(histogram_pixmap)
 
-
     def histogram_equalization(self, pixmap):
         img = qpixmap_to_numpy(pixmap)
         img_eq = np.zeros_like(img)
@@ -48,7 +47,6 @@ class HistogramTransformation:
         result = numpy_to_qpixmap(img_eq)
         self.transform_label.setPixmap(result)
         self.show_histogram(result, self.histogram_label_transform)
-
 
     def histogram_scaling(self, pixmap, frame):
         L_min, ok1 = QInputDialog.getInt(frame, 'Podaj Lmin', 'Wartość Lmin:', 0, 0, 255, 1)
@@ -67,7 +65,8 @@ class HistogramTransformation:
             if max_val - min_val == 0:
                 img_scaled[..., i] = channel.astype(np.uint8)
             else:
-                img_scaled[..., i] = (((channel - min_val) * (L_max-L_min)) / (max_val - min_val) + L_min).astype(np.uint8)
+                img_scaled[..., i] = (((channel - min_val) * (L_max - L_min)) / (max_val - min_val) + L_min).astype(
+                    np.uint8)
 
         result = numpy_to_qpixmap(img_scaled)
         self.transform_label.setPixmap(result)
