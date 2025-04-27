@@ -1,5 +1,5 @@
 import numpy as np
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QImage, QColor, QPixmap
 from PIL import Image
 from PyQt5.QtWidgets import QInputDialog, QMessageBox
 

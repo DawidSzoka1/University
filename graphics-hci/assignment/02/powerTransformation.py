@@ -1,4 +1,5 @@
 import numpy as np
+from PyQt5.QtGui import QPixmap, QImage
 from convertImage import qpixmap_to_numpy, numpy_to_qpixmap
 
 

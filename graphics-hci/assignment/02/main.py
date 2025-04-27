@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton,
     QVBoxLayout, QHBoxLayout, QFileDialog, QGroupBox, QGridLayout, QMessageBox
 )
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QImage
 from functools import partial
 
 
@@ -109,13 +109,15 @@ class MainWindow(QWidget):
         main_layout.addLayout(image_layout)
         main_layout.addLayout(control_layout)
 
+        self.image = None
+        self.second_image = None
         self.setLayout(main_layout)
 
     def choose_photo(self):
         path, _ = QFileDialog.getOpenFileName(self, "Wybierz plik", "", "Obrazy (*.png *.jpg *.jpeg *.bmp)")
         if path:
-            pixmap = QPixmap(path)
-            self.image_label.setPixmap(pixmap)
+            self.image = QPixmap(path)
+            self.image_label.setPixmap(self.image)
             self.image_path = path
             self.add_clicked()
         if self.image_path and self.second_image_path:
@@ -124,9 +126,9 @@ class MainWindow(QWidget):
     def choose_second_photo(self):
         path, _ = QFileDialog.getOpenFileName(self, "Wybierz drugie zdjęcie", "", "Obrazy (*.png *.jpg *.jpeg *.bmp)")
         if path:
-            pixmap = QPixmap(path)
+            self.second_image = QPixmap(path)
             self.second_image_path = path
-            self.second_image_label.setPixmap(pixmap)
+            self.second_image_label.setPixmap(self.second_image)
         if self.image_path and self.second_image_path:
             self.add_mixing_clicked()
 
@@ -153,27 +155,27 @@ class MainWindow(QWidget):
     def add_clicked(self):
         self.button_save_1.clicked.connect(lambda: self.save_image(self.image_transformation))
 
-        self.brightnes.clicked.connect(lambda: self.lineTransformation.brightness(self.image_label.pixmap(), self))
-        self.darkening.clicked.connect(lambda: self.lineTransformation.darken(self.image_label.pixmap(), self))
-        self.negative.clicked.connect(lambda: self.lineTransformation.negative(self.image_label.pixmap()))
+        self.brightnes.clicked.connect(lambda: self.lineTransformation.brightness(self.image, self))
+        self.darkening.clicked.connect(lambda: self.lineTransformation.darken(self.image, self))
+        self.negative.clicked.connect(lambda: self.lineTransformation.negative(self.image))
 
-        self.power_brightnes.clicked.connect(lambda: self.powerTransformation.brightness(self.image_label.pixmap()))
-        self.power_darkening.clicked.connect(lambda: self.powerTransformation.darken(self.image_label.pixmap()))
+        self.power_brightnes.clicked.connect(lambda: self.powerTransformation.brightness(self.image))
+        self.power_darkening.clicked.connect(lambda: self.powerTransformation.darken(self.image))
 
-        self.histogram.clicked.connect(lambda: self.histogramTransformation.show_histogram(self.image_label.pixmap(),
+        self.histogram.clicked.connect(lambda: self.histogramTransformation.show_histogram(self.image,
                                                                                            self.second_image_label))
 
         self.histogram_equalization.clicked.connect(
-            lambda: self.histogramTransformation.histogram_equalization(self.image_label.pixmap()))
+            lambda: self.histogramTransformation.histogram_equalization(self.image))
         self.histogram_scale.clicked.connect(
-            lambda: self.histogramTransformation.histogram_scaling(self.image_label.pixmap(), self))
+            lambda: self.histogramTransformation.histogram_scaling(self.image, self))
 
         self.contrast_button.clicked.connect(
-            lambda: self.contrastTransformation.transform(self.image_label.pixmap(), self)
+            lambda: self.contrastTransformation.transform(self.image, self)
         )
 
         self.low_pass.clicked.connect(
-            lambda: self.lowPassTransformation.transform(self.image_label.pixmap())
+            lambda: self.lowPassTransformation.transform(self.image)
         )
 
         self.sobel_horizontal.clicked.connect(
@@ -200,13 +202,13 @@ class MainWindow(QWidget):
 
         self.filtr_min.clicked.connect(lambda:
                                        self.statisticsTransformation.statistics_transformation(
-                                           self.image_label.pixmap(), "min"))
+                                           self.image, "min"))
         self.filtr_max.clicked.connect(lambda:
                                        self.statisticsTransformation.statistics_transformation(
-                                           self.image_label.pixmap(), "max"))
+                                           self.image, "max"))
         self.filtr_median.clicked.connect(lambda:
                                           self.statisticsTransformation.statistics_transformation(
-                                              self.image_label.pixmap(), "median"))
+                                              self.image, "median"))
 
     # Grupa: Transformacje liniowe
     def group_linear_transformation(self):
