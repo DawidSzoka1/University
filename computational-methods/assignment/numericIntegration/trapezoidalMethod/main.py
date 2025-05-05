@@ -2,7 +2,7 @@ import math
 
 a = 0.4
 b = 1.3
-n = 3
+n = 16
 
 
 def function(x):

@@ -17,7 +17,7 @@ CREATE TABLE user
     gender          VARCHAR(1) CHECK (gender IN ('F', 'M')) DEFAULT 'M',
     country         VARCHAR(100),
     created         TIMESTAMP                               DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    enable          BOOLEAN,
+    enable          BOOLEAN                                 DEFAULT TRUE,
     ranking         INT
 );
 
@@ -56,7 +56,7 @@ CREATE TABLE figure
     image_name VARCHAR(255),
     position   VARCHAR(255),
     opponent   VARCHAR(1) CHECK (opponent IN ('W', 'B')),
-    direction int check (direction IN (1, -1)),
+    direction  int check (direction IN (1, -1)),
     FOREIGN KEY (game_id) REFERENCES game (game_id),
     FOREIGN KEY (owner_id) REFERENCES user (id)
 );
@@ -77,19 +77,28 @@ FROM user;
 INSERT INTO role
 values (1, 'ROLE_BASE'),
        (2, 'ROLE_ADMIN');
-#
-password is haslo
-INSERT INTO user (enable, id, ranking, password, username, is_guest, authorization, created)
-VALUES (true, 1, 25, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'jan_kowalski', FALSE, 'Admin', TIMESTAMP '2024-03-01 15:30:00'),
-       (true, 2, 30, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'anna_nowak', FALSE, 'Admin', TIMESTAMP '2024-03-01 15:30:00'),
-       (true, 3, 45, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'michal_adamczyk', FALSE, 'Użytkownik', TIMESTAMP '2024-08-11 15:30:00'),
-       (true, 4, 22, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'kasia_kwiatkowska', FALSE, 'Użytkownik', TIMESTAMP '2024-08-12 15:30:00'),
-       (true, 5, 35, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'tomasz_wisniewski', FALSE, 'Użytkownik', TIMESTAMP '2024-08-5 15:30:00'),
-       (true, 6, 50, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'agnieszka_lewandowska', FALSE, 'Użytkownik', TIMESTAMP '2024-08-11 15:30:00'),
-       (true, 7, 28, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'bartek_zielinski', FALSE, 'Użytkownik', TIMESTAMP '2024-08-11 15:30:00'),
-       (true, 8, 40, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'joanna_dabrowska', FALSE, 'Użytkownik', TIMESTAMP '2024-08-11 15:30:00'),
-       (true, 9, 33, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'mateusz_kaczmarek', FALSE, 'Użytkownik', TIMESTAMP '2024-08-11 15:30:00'),
-       (true, 10, 27, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'aleksandra_pawlak', FALSE, 'Użytkownik', TIMESTAMP '2024-08-11 15:30:00');
+
+INSERT INTO user (id, ranking, password, username, created)
+VALUES (1, 25, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'jan_kowalski',
+        TIMESTAMP '2024-03-01 15:30:00'),
+       (2, 30, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'anna_nowak',
+        TIMESTAMP '2024-03-01 15:30:00'),
+       (3, 45, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'michal_adamczyk',
+        TIMESTAMP '2024-08-11 15:30:00'),
+       (4, 22, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'kasia_kwiatkowska',
+        TIMESTAMP '2024-08-12 15:30:00'),
+       (5, 35, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'tomasz_wisniewski',
+        TIMESTAMP '2024-08-5 15:30:00'),
+       (6, 50, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'agnieszka_lewandowska',
+        TIMESTAMP '2024-08-11 15:30:00'),
+       (7, 28, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'bartek_zielinski',
+        TIMESTAMP '2024-08-11 15:30:00'),
+       (8, 40, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'joanna_dabrowska',
+        TIMESTAMP '2024-08-11 15:30:00'),
+       (9, 33, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'mateusz_kaczmarek',
+        TIMESTAMP '2024-08-11 15:30:00'),
+       (10, 27, '$2a$12$cJ9u3iJfldUasYTScx6qrO7VqPpS/7XomSG/9/wrtIPC.Zb6YBV3y', 'aleksandra_pawlak',
+        TIMESTAMP '2024-08-11 15:30:00');
 INSERT INTO users_roles(role_id, user_id)
 VALUES (2, 1),
        (1, 1),

@@ -19,7 +19,7 @@ def function(x):
 
 a = 0.4
 b = 1.3
-n = 16
+n = 3
 
 
 def compute_integral(a, b, n, func=function):
