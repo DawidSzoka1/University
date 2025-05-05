@@ -1,0 +1,89 @@
+---
+title: "Analiza danych"
+author: "Dawid Szoka"
+date: "2025-04-17"
+output:
+   ioslides_presentation:
+    widescreen: true
+    smaller: true
+---
+## Wczytywanie danych i biblioteki
+```{r}
+library(tidyverse)
+library(e1071)
+library(DT)
+data <- read.csv("fuel_sample.csv")
+```
+## Parametry liczbowe i pozycyjne
+```{r}
+opisz_liczbowa <- function(x) {
+  tibble(
+    typ = "numeryczna",
+    mean = mean(x, na.rm = TRUE),
+    sd = sd(x, na.rm = TRUE),
+    min = min(x, na.rm = TRUE),
+    Q1 = quantile(x, 0.25, na.rm = TRUE),
+    median = median(x, na.rm = TRUE),
+    Q3 = quantile(x, 0.75, na.rm = TRUE),
+    max = max(x, na.rm = TRUE),
+    IQR = IQR(x, na.rm = TRUE),
+    skewness = skewness(x, na.rm = TRUE),
+    kurtosis = kurtosis(x, na.rm = TRUE),
+    moda = NA,
+    n_unique = length(unique(x))
+  )
+}
+
+```
+## Funkcja opisująca zmienne nieliczbowe
+```{r}
+opisz_nieliczbowa <- function(x) {
+  tab <- sort(table(x), decreasing = TRUE)
+  najczestsza <- names(tab)[1]
+  najrzadsza <- names(tab)[length(tab)]
+  tibble(
+    typ = "kategoryczna",
+    mean = NA,
+    sd = NA,
+    min = NA,
+    Q1 = NA,
+    median = NA,
+    Q3 = NA,
+    max = NA,
+    IQR = NA,
+    skewness = NA,
+    kurtosis = NA,
+    moda = najczestsza,
+    freq_moda = tab[1],
+    prop_moda = round(tab[1] / sum(tab), 3),
+    n_unique = length(unique(x)),
+    najrzadsza = najrzadsza,
+    n_NA = sum(is.na(x))
+  )
+}
+```
+## Przejście po wszystkich kolumnach
+```{r}
+statystyki <- map_df(names(data), function(nazwa) {
+  x <- data[[nazwa]]
+  if (is.numeric(x)) {
+    opisz_liczbowa(x) %>% mutate(zmienna = nazwa)
+  } else {
+    opisz_nieliczbowa(x) %>% mutate(zmienna = nazwa)
+  }
+})
+
+# Przenosimy kolumnę "zmienna" na początek
+statystyki <- statystyki %>% select(zmienna, typ, everything())
+
+```
+## 
+```{r}
+datatable(statystyki, filter="top",
+          options = list(scrollX = TRUE, scrollY = "300px"),
+          caption = "Podsumowanie wszystkich zmiennych")
+```
+## Przedziały ufności
+
+
+
