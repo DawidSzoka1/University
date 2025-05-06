@@ -84,6 +84,69 @@ datatable(statystyki, filter="top",
           caption = "Podsumowanie wszystkich zmiennych")
 ```
 ## Przedziały ufności
+Sprawdzenie stosowalności
+```{r}
+set.seed(20250322)
+values <- na.omit(data$youSaveSpend)
+n <- 40
+values <- sample(values, size = n)
+sh <- shapiro.test(values)
+```
+## Wnisoek dotyczacy stosowalności przedziałów ufności
 
+Dla zmiennej `youSaveSpend` przeprowadzono test normalności Shapiro-Wilks
 
+- liczność próby: `r n`
+- statystyka W: `r round(sh$statistic, 3)`
+- wartość p: `r signif(sh$p.value, 3)`
 
+Wartość p = `r signif(sh$p.value, 3)` jest większa niż 0.05, co oznacza, że nie ma podstaw do odrzucenia hipotezy o normalnym rozkładzie danych. Ponieważ liczność próby przekracza 30 (n = `r n`), możliwe jest stosowanie przedziału ufności dla średniej z wykorzystaniem rozkładu t-Studenta.
+
+W związku z tym uznaje się, że przedziały ufności dla (`youSaveSpend`) są statystycznie stosowalne.
+
+## Wyznacznie przedziałów ufności `youSaveSpend`
+```{r}
+# Przedział ufności dla średniej
+mean_val <- mean(values)
+ci_mean <- t.test(values, conf.level = 0.95)
+# Przedział ufności dla mediany (bootstrap)
+boot_median <- replicate(1000, median(sample(values, replace = TRUE)))
+ci_median <- quantile(boot_median, c(0.025, 0.975))
+# Przedział dla wariancji
+s2 <- var(values)
+alpha <- 0.05
+ci_var <- c(
+  (n - 1) * s2 / qchisq(1 - alpha/2, df = n - 1),
+  (n - 1) * s2 / qchisq(alpha/2, df = n - 1)
+)
+# Liczymy liczbę przypadków spełniających warunek
+successes <- sum(values > 0)
+# Przedział ufności dla proporcji (frakcji)
+ci_frac <- binom.test(successes, n, conf.level = 0.95)
+```
+## Wnioski
+### Średnia
+
+- Średnia z próby: `r round(mean_val, 2)`
+- 95% przedział ufności: [`r round(ci_mean$conf.int[1], 2)`, `r round(ci_mean$conf.int[2], 2)`]
+- Wniosek: Z 95% pewnością średnia wartość zmiennej `youSaveSpend` w populacji mieści się w podanym przedziale.
+
+### Mediana
+
+- Mediana z próby: `r round(median(values), 2)`
+- 95% przedział ufności (bootstrap): [`r round(ci_median[1], 2)`, `r round(ci_median[2], 2)`]
+- Wniosek: Mediana wartości `youSaveSpend` mieści się w przedziale wyznaczonym z wykorzystaniem metody bootstrap.
+
+---
+
+### Wariancja
+
+- Wariancja z próby: `r round(s2, 2)`
+- 95% przedział ufności: [`r round(ci_var[1], 2)`, `r round(ci_var[2], 2)`]
+- Wniosek: Wariancja zmiennej `youSaveSpend` w populacji znajduje się w podanym zakresie. Obliczenia oparto na rozkładzie chi-kwadrat, przy założeniu normalności.
+
+### Frakcja (youSaveSpend > 0)
+
+- Frakcja dodatnich wartości: `r round(successes / n, 2)`
+- 95% przedział ufności: [`r round(ci_frac$conf.int[1], 2)`, `r round(ci_frac$conf.int[2], 2)`]
+- Wniosek: Z 95% pewnością udział przypadków z dodatnim `youSaveSpend` mieści się w tym zakresie.
