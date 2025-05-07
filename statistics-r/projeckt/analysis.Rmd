@@ -8,11 +8,23 @@ output:
     smaller: true
 ---
 ## Wczytywanie danych i biblioteki
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(e1071)
+library(lmtest)
+library(ggplot2)
+library(broom)
 library(DT)
+set.seed(20250322)
 data <- read.csv("fuel_sample.csv")
+sample_data <-data %>% sample_n(100)
+```
+---
+
+```{r echo=FALSE}
+datatable(head(data, 5), filter="top",
+          options = list(scrollX = TRUE, scrollY = "250px"),
+          caption = "Przykladowe dane")
 ```
 ## Parametry liczbowe i pozycyjne
 ```{r}
@@ -78,7 +90,7 @@ statystyki <- statystyki %>% select(zmienna, typ, everything())
 
 ```
 ## 
-```{r}
+```{r echo=FALSE}
 datatable(statystyki, filter="top",
           options = list(scrollX = TRUE, scrollY = "300px"),
           caption = "Podsumowanie wszystkich zmiennych")
@@ -86,11 +98,11 @@ datatable(statystyki, filter="top",
 ## Przedziały ufności
 Sprawdzenie stosowalności
 ```{r}
-set.seed(20250322)
 values <- na.omit(data$youSaveSpend)
 n <- 40
-values <- sample(values, size = n)
-sh <- shapiro.test(values)
+x <- sample(values, size = n)
+sh <- shapiro.test(x)
+sh
 ```
 ## Wnisoek dotyczacy stosowalności przedziałów ufności
 
@@ -106,47 +118,227 @@ W związku z tym uznaje się, że przedziały ufności dla (`youSaveSpend`) są 
 
 ## Wyznacznie przedziałów ufności `youSaveSpend`
 ```{r}
-# Przedział ufności dla średniej
-mean_val <- mean(values)
-ci_mean <- t.test(values, conf.level = 0.95)
-# Przedział ufności dla mediany (bootstrap)
-boot_median <- replicate(1000, median(sample(values, replace = TRUE)))
+# Średnia
+t_result <- t.test(x)
+ci_mean <- t_result$conf.int
+p_mean <- t_result$p.value
+# Mediana
+y <- x + runif(length(x), min = -1e-5, max = 1e-5)
+wilcox_result <- wilcox.test(y, mu = 0)
+p_median <- wilcox_result$p.value
+boot_median <- replicate(1000, median(sample(x, replace = TRUE)))
 ci_median <- quantile(boot_median, c(0.025, 0.975))
-# Przedział dla wariancji
-s2 <- var(values)
+# Wariancja
+n <- length(x)
+s2 <- var(x)
 alpha <- 0.05
-ci_var <- c(
-  (n - 1) * s2 / qchisq(1 - alpha/2, df = n - 1),
-  (n - 1) * s2 / qchisq(alpha/2, df = n - 1)
-)
-# Liczymy liczbę przypadków spełniających warunek
-successes <- sum(values > 0)
-# Przedział ufności dla proporcji (frakcji)
-ci_frac <- binom.test(successes, n, conf.level = 0.95)
+ci_var <- c((n - 1) * s2 / qchisq(1 - alpha/2, df = n - 1),
+            (n - 1) * s2 / qchisq(alpha/2, df = n - 1))
+# Frakcja dodatnich
+frakcja <- sum(x > 0)
+prop_result <- prop.test(frakcja, n, p = 0.5)
+ci_frac <- prop_result$conf.int
+p_frac <- prop_result$p.value
+
 ```
-## Wnioski
-### Średnia
+```{r setup, include=FALSE}
+wniosek_mean <- if (p_mean < 0.05) {
+  "**Wniosek:** Ponieważ p < 0.05, odrzucamy hipotezę zerową (H₀: μ = 0) na rzecz alternatywnej (H₁: μ ≠ 0). Oznacza to, że średnia oszczędność użytkowników istotnie różni się od zera. Użytkownicy przeciętnie albo istotnie zyskują, albo tracą."
+} else {
+  "**Wniosek:** Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej (H₀: μ = 0). Średnia oszczędność użytkowników nie różni się istotnie od zera – przeciętny wpływ finansowy jest neutralny."
+}
+wniosek_median <- if (p_median < 0.05) {
+  "**Wniosek:** Ponieważ p < 0.05, odrzucamy hipotezę zerową (H₀: mediana = 0) na rzecz alternatywnej (H₁: mediana ≠ 0). Mediana oszczędności istotnie różni się od zera – połowa użytkowników osiąga realny zysk lub stratę."
+} else {
+  "**Wniosek:** Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej. Mediana nie różni się istotnie od zera – typowy użytkownik nie zyskuje ani nie traci w sposób istotny statystycznie."
+}
+wniosek_var <- if (s2 > 1e5) {
+  "**Wniosek:** Wysoka wariancja sugeruje dużą rozpiętość wyników – użytkownicy znacznie się różnią pod względem wartości oszczędności/straty. Dla dalszych analiz warto rozważyć podział na grupy."
+} else {
+  "**Wniosek:** Niska lub umiarkowana wariancja – użytkownicy są relatywnie podobni pod względem finansowym. Zmienność danych jest ograniczona."
+}
+wniosek_frac <- if (p_frac < 0.05) {
+  "**Wniosek:** Ponieważ p < 0.05, odrzucamy hipotezę zerową (H₀: p = 0.5) na rzecz alternatywnej (H₁: p ≠ 0.5). Istnieje istotna różnica w proporcji osób, które zyskują względem tracących. Większość (lub mniejszość) korzysta na tym modelu."
+} else {
+  "**Wniosek:** Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej. Proporcja osób zyskujących i tracących jest zbliżona – model nie faworyzuje żadnej grupy."
+}
+```
 
-- Średnia z próby: `r round(mean_val, 2)`
-- 95% przedział ufności: [`r round(ci_mean$conf.int[1], 2)`, `r round(ci_mean$conf.int[2], 2)`]
-- Wniosek: Z 95% pewnością średnia wartość zmiennej `youSaveSpend` w populacji mieści się w podanym przedziale.
+## Średnia – t-test
 
-### Mediana
+**Hipotezy:**  
+- H₀: μ = 0 (średnia oszczędność wynosi 0)  
+- H₁: μ ≠ 0 (średnia oszczędność różna od 0)  
 
-- Mediana z próby: `r round(median(values), 2)`
-- 95% przedział ufności (bootstrap): [`r round(ci_median[1], 2)`, `r round(ci_median[2], 2)`]
-- Wniosek: Mediana wartości `youSaveSpend` mieści się w przedziale wyznaczonym z wykorzystaniem metody bootstrap.
+**Wyniki:**  
+- Średnia: `r round(mean(x), 2)`  
+- 95% CI: [`r round(ci_mean[1], 2)`, `r round(ci_mean[2], 2)`]
+- p-value: `r round(p_mean, 10)`  
+
+`r wniosek_mean`
+
+
+## Mediana – test Wilcoxona
+
+**Hipotezy:**  
+- H₀: mediana = 0  
+- H₁: mediana ≠ 0  
+
+**Wyniki:**  
+- Mediana: `r round(median(x), 2)`
+- 95% CI:  [`r round(ci_median[1], 2)` , `r round(ci_median[2], 2)`]
+- p-value: `r round(p_median, 10)`  
+
+`r wniosek_median`
+
+
+
+## Wariancja – przedział CI
+
+**Obliczenia dla przedziału ufności wariancji:**  
+- Wariancja: `r round(s2, 2)`  
+- 95% CI: [`r round(ci_var[1], 2)`, `r round(ci_var[2], 2)`] 
+
+`r wniosek_var`
+
+
+
+## Frakcja wartości dodatnich – prop.test
+
+**Hipotezy:**  
+- H₀: p = 0.5 (proporcja dodatnich wartości = 50%)  
+- H₁: p ≠ 0.5  
+
+**Wyniki:**  
+- Frakcja: `r frakcja` z `r n` (czyli `r round(frakcja/n, 2)` procent dodatnich)  
+- 95% CI: [`r round(ci_frac[1], 2)`, `r round(ci_frac[2], 2)`] 
+- p-value: `r round(p_frac, 10)`  
+
+`r wniosek_frac`
+
+## Emisja CO2 a pojemność silnika:
+```{r echo=FALSE}
+ggplot(
+  sample_data %>% mutate(co2 = ifelse(co2 == 0, NA, co2)) %>% filter(!is.na(displ), !is.na(co2), !is.na(fuelType1)),
+  aes(x = displ, y = co2, color = fuelType1)
+) +
+  geom_point(alpha = 0.6) +
+  labs(
+    title = "Emisja CO2 vs Pojemność silnika (próbka 100 aut)",
+    x = "Pojemność silnika",
+    y = "CO2 (g/mi)"
+  ) +
+  theme_minimal()
+```
+
+## Boxplot MPG miasto vs napęd
+
+```{r echo=FALSE}
+ggplot(sample_data, aes(x = drive, y = city08)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(title = "MPG w mieście a napęd", x = "Napęd", y = "MPG miasto") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Średnia emisja CO2 w czasie
+```{r echo=FALSE}
+sample_data %>% filter(year >= 2012.5) %>%
+  group_by(year) %>%
+  summarise(średnie_CO2 = mean(co2, na.rm = TRUE)) %>%
+  ggplot(aes(x = year, y = średnie_CO2)) +
+  geom_line(color = "darkred", linewidth = 1.2) +
+  geom_point(color = "red") +
+  labs(title = "Emisja CO2 w czasie", x = "Rok", y = "CO2 (g/mi)") +
+  theme_minimal()
+```
+
+## Heatmapa MPG autostrada vs cylindry i paliwo
+```{r echo=FALSE}
+sample_data  %>%
+  group_by(cylinders, fuelType1) %>%
+  summarise(śr_mpg_autostrada = mean(highway08, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = factor(cylinders), y = fuelType1, fill = śr_mpg_autostrada)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "blue") +
+  labs(title = "MPG autostrada wg cylindrów i paliwa", x = "Cylindry", y = "Rodzaj paliwa") +
+  theme_minimal()
+```
+
+## Analiza regresji
+```{r echo=FALSE}
+data_clean <- data %>% filter(!is.na(city08), !is.na(displ))
+
+## Dopasowanie modelu regresji liniowej
+model <- lm(city08 ~ displ, data = data_clean)
+
+## Podsumowanie modelu
+summary(model)
+```
+
+## Interpretacja modelu:
+
+- **Model regresji liniowej:** `city08 ~ displ`
+- Współczynnik kierunkowy = -2.82 → wraz ze wzrostem pojemności silnika o 1 litr, średnie spalanie w mieście spada o ok. 2.82 mpg.
+- **Wartość R² = 0.51**, co oznacza, że model wyjaśnia 51% zmienności zużycia paliwa.
+- Oba współczynniki istotne statystycznie (**p < 0.05**).
+
+
+## Diagnostyka reszt
+
+```{r echo=FALSE}
+shapiro.test(residuals(model))
+bptest(model)
+```
+### Wnioski diagnostyczne:
+
+- **Test Shapiro-Wilka**: p < 0.05 → reszty nie są rozkładem normalnym.
+- **Test Breuscha-Pagana**: p < 0.05 → występuje heteroskedastyczność.
+- Założenia klasycznego modelu regresji są naruszone. Możliwe konsekwencje:
+  - zaniżone błędy standardowe,
+  - zawyżone testy t,
+  - niepewna interpretacja p-value.
 
 ---
 
-### Wariancja
+```{r echo=FALSE, warning=FALSE}
+ggplot(data_clean, aes(x = displ, y = city08)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") +
+  labs(title = "Zależność zużycia paliwa w mieście od pojemności silnika",
+       x = "Pojemność silnika (litry)",
+       y = "Zużycie paliwa w mieście (MPG)") +
+  theme_minimal()
+```
 
-- Wariancja z próby: `r round(s2, 2)`
-- 95% przedział ufności: [`r round(ci_var[1], 2)`, `r round(ci_var[2], 2)`]
-- Wniosek: Wariancja zmiennej `youSaveSpend` w populacji znajduje się w podanym zakresie. Obliczenia oparto na rozkładzie chi-kwadrat, przy założeniu normalności.
 
-### Frakcja (youSaveSpend > 0)
 
-- Frakcja dodatnich wartości: `r round(successes / n, 2)`
-- 95% przedział ufności: [`r round(ci_frac$conf.int[1], 2)`, `r round(ci_frac$conf.int[2], 2)`]
-- Wniosek: Z 95% pewnością udział przypadków z dodatnim `youSaveSpend` mieści się w tym zakresie.
+## Graficzna diagnostyka modelu
+
+```{r echo=FALSE}
+par(mfrow = c(1,2))
+plot(model, which = 1, main = "Reszty vs dopasowane")
+plot(model, which = 2, main = "Q-Q plot reszt")
+```
+
+- Rozrzut reszt wskazuje na **heteroskedastyczność**.
+- Q-Q plot wskazuje na odchylenia od normalności (szczególnie w ogonach).
+
+
+
+## Podsumowanie
+
+- **Istotny negatywny związek** między `displ` a `city08`.
+- Model istotny statystycznie (**p < 2.2e-16**).
+- **Zastrzeżenia co do jakości modelu**:
+  - Brak normalności reszt.
+  - Zmienna wariancja reszt (heteroskedastyczność).
+
+Zalecenia:
+
+- Rozważyć transformację zmiennych (np. logarytmiczną).
+- Rozważyć użycie regresji odpornych na heteroskedastyczność.
+- Interpretować wartości p z ostrożnością.
+
+## Dziękuje za uwage
+
+Dawid Szoka
