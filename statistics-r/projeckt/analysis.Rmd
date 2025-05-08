@@ -7,8 +7,7 @@ output:
     widescreen: true
     smaller: true
 ---
-## Wczytywanie danych i biblioteki
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, echo=FALSE}
 library(tidyverse)
 library(e1071)
 library(lmtest)
@@ -19,15 +18,14 @@ set.seed(20250322)
 data <- read.csv("fuel_sample.csv")
 sample_data <-data %>% sample_n(100)
 ```
----
+## Przykładowe dane które będziemy analizować
 
 ```{r echo=FALSE}
 datatable(head(data, 5), filter="top",
-          options = list(scrollX = TRUE, scrollY = "250px"),
-          caption = "Przykladowe dane")
+          options = list(scrollX = TRUE, scrollY = "250px"))
 ```
-## Parametry liczbowe i pozycyjne
-```{r}
+
+```{r echo=FALSE}
 opisz_liczbowa <- function(x) {
   tibble(
     typ = "numeryczna",
@@ -46,9 +44,6 @@ opisz_liczbowa <- function(x) {
   )
 }
 
-```
-## Funkcja opisująca zmienne nieliczbowe
-```{r}
 opisz_nieliczbowa <- function(x) {
   tab <- sort(table(x), decreasing = TRUE)
   najczestsza <- names(tab)[1]
@@ -73,9 +68,7 @@ opisz_nieliczbowa <- function(x) {
     n_NA = sum(is.na(x))
   )
 }
-```
-## Przejście po wszystkich kolumnach
-```{r}
+
 statystyki <- map_df(names(data), function(nazwa) {
   x <- data[[nazwa]]
   if (is.numeric(x)) {
@@ -89,11 +82,10 @@ statystyki <- map_df(names(data), function(nazwa) {
 statystyki <- statystyki %>% select(zmienna, typ, everything())
 
 ```
-## 
+## Parametry liczbowe i pozycyjne dla każdej zmiennej
 ```{r echo=FALSE}
 datatable(statystyki, filter="top",
-          options = list(scrollX = TRUE, scrollY = "300px"),
-          caption = "Podsumowanie wszystkich zmiennych")
+          options = list(scrollX = TRUE, scrollY = "300px"))
 ```
 ## Przedziały ufności
 Sprawdzenie stosowalności
@@ -116,7 +108,7 @@ Wartość p = `r signif(sh$p.value, 3)` jest większa niż 0.05, co oznacza, że
 
 W związku z tym uznaje się, że przedziały ufności dla (`youSaveSpend`) są statystycznie stosowalne.
 
-## Wyznacznie przedziałów ufności `youSaveSpend`
+## Wyznacznie przedziałów ufności i przetestowanie hipotez `youSaveSpend`
 ```{r}
 # Średnia
 t_result <- t.test(x)
@@ -124,7 +116,8 @@ ci_mean <- t_result$conf.int
 p_mean <- t_result$p.value
 # Mediana
 y <- x + runif(length(x), min = -1e-5, max = 1e-5)
-wilcox_result <- wilcox.test(y, mu = 0)
+mu_val <- -5000
+wilcox_result <- wilcox.test(y, mu = mu_val)
 p_median <- wilcox_result$p.value
 boot_median <- replicate(1000, median(sample(x, replace = TRUE)))
 ci_median <- quantile(boot_median, c(0.025, 0.975))
@@ -132,6 +125,9 @@ ci_median <- quantile(boot_median, c(0.025, 0.975))
 n <- length(x)
 s2 <- var(x)
 alpha <- 0.05
+sigma0_sq <- 27500000    
+chi_stat <- (n - 1) * s2 / sigma0_sq
+p_value_var <- 2 * min(pchisq(chi_stat, df = n - 1), 1 - pchisq(chi_stat, df = n - 1))
 ci_var <- c((n - 1) * s2 / qchisq(1 - alpha/2, df = n - 1),
             (n - 1) * s2 / qchisq(alpha/2, df = n - 1))
 # Frakcja dodatnich
@@ -142,25 +138,66 @@ p_frac <- prop_result$p.value
 
 ```
 ```{r setup, include=FALSE}
-wniosek_mean <- if (p_mean < 0.05) {
-  "**Wniosek:** Ponieważ p < 0.05, odrzucamy hipotezę zerową (H₀: μ = 0) na rzecz alternatywnej (H₁: μ ≠ 0). Oznacza to, że średnia oszczędność użytkowników istotnie różni się od zera. Użytkownicy przeciętnie albo istotnie zyskują, albo tracą."
+wniosek_mean_test <- if (p_mean < 0.05) {
+  "**Test średniej:** H₀: μ = 0 vs H₁: μ ≠ 0. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – średnia istotnie różni się od zera. Użytkownicy przeciętnie zyskują lub tracą."
 } else {
-  "**Wniosek:** Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej (H₀: μ = 0). Średnia oszczędność użytkowników nie różni się istotnie od zera – przeciętny wpływ finansowy jest neutralny."
+  "**Test średniej:** H₀: μ = 0 vs H₁: μ ≠ 0. Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej – średnia nie różni się istotnie od zera. Użytkownicy w ujęciu średnim są neutralni finansowo."
 }
-wniosek_median <- if (p_median < 0.05) {
-  "**Wniosek:** Ponieważ p < 0.05, odrzucamy hipotezę zerową (H₀: mediana = 0) na rzecz alternatywnej (H₁: mediana ≠ 0). Mediana oszczędności istotnie różni się od zera – połowa użytkowników osiąga realny zysk lub stratę."
+
+
+wniosek_mean_ci <- if (ci_mean[1] > 0) {
+  sprintf("**Przedział ufności dla średniej:** [%.2f; %.2f] – użytkownicy przeciętnie osiągają zysk.", ci_mean[1], ci_mean[2])
+} else if (ci_mean[2] < 0) {
+  sprintf("**Przedział ufności dla średniej:** [%.2f; %.2f] – użytkownicy przeciętnie ponoszą stratę.", ci_mean[1], ci_mean[2])
 } else {
-  "**Wniosek:** Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej. Mediana nie różni się istotnie od zera – typowy użytkownik nie zyskuje ani nie traci w sposób istotny statystycznie."
+  sprintf("**Przedział ufności dla średniej:** [%.2f; %.2f] zawiera 0 – nie możemy określić jednoznacznego trendu (zysk/strata).", ci_mean[1], ci_mean[2])
 }
-wniosek_var <- if (s2 > 1e5) {
-  "**Wniosek:** Wysoka wariancja sugeruje dużą rozpiętość wyników – użytkownicy znacznie się różnią pod względem wartości oszczędności/straty. Dla dalszych analiz warto rozważyć podział na grupy."
+
+
+wniosek_median_test <- if (p_median < 0.05) {
+  sprintf("**Test mediany:** H₀: mediana = %d vs H₁: mediana ≠ %d. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – mediana istotnie różni się od %d. Użytkownik przeciętny zyskuje lub traci inaczej niż zakładano.", mu_val, mu_val, mu_val)
 } else {
-  "**Wniosek:** Niska lub umiarkowana wariancja – użytkownicy są relatywnie podobni pod względem finansowym. Zmienność danych jest ograniczona."
+  sprintf("**Test mediany:** H₀: mediana = %d vs H₁: mediana ≠ %d. Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej – mediana nie różni się istotnie od %d. Typowy wynik użytkownika zgodny z założeniem.", mu_val, mu_val, mu_val)
 }
-wniosek_frac <- if (p_frac < 0.05) {
-  "**Wniosek:** Ponieważ p < 0.05, odrzucamy hipotezę zerową (H₀: p = 0.5) na rzecz alternatywnej (H₁: p ≠ 0.5). Istnieje istotna różnica w proporcji osób, które zyskują względem tracących. Większość (lub mniejszość) korzysta na tym modelu."
+
+
+wniosek_median_ci <- if (ci_median[1] > mu_val) {
+  sprintf("**Przedział ufności dla mediany:** [%.2f; %.2f] – typowy użytkownik osiąga lepszy wynik niż %d.", ci_median[1], ci_median[2], mu_val)
+} else if (ci_median[2] < mu_val) {
+  sprintf("**Przedział ufności dla mediany:** [%.2f; %.2f] – typowy użytkownik osiąga gorszy wynik niż %d.", ci_median[1], ci_median[2], mu_val)
 } else {
-  "**Wniosek:** Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej. Proporcja osób zyskujących i tracących jest zbliżona – model nie faworyzuje żadnej grupy."
+  sprintf("**Przedział ufności dla mediany:** [%.2f; %.2f] zawiera %d – nie można jednoznacznie ocenić, czy użytkownik zyskuje czy traci.", ci_median[1], ci_median[2], mu_val)
+}
+
+
+wniosek_var_test <- if (p_value_var < 0.05) {
+  sprintf("**Test wariancji:** H₀: σ² = %.0f vs H₁: σ² ≠ %.0f. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – wariancja istotnie różni się od %.0f. Zmienność w danych odbiega od przyjętej wartości.", sigma0_sq, sigma0_sq, sigma0_sq)
+} else {
+  sprintf("**Test wariancji:** H₀: σ² = %.0f vs H₁: σ² ≠ %.0f. Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej – wariancja może być zgodna z %.0f. Rozrzut danych zgodny z oczekiwaniami.", sigma0_sq, sigma0_sq, sigma0_sq)
+}
+
+wniosek_var_ci <- if (ci_var[1] > sigma0_sq) {
+  sprintf("**Przedział ufności dla wariancji:** [%.0f; %.0f] – rozrzut danych większy niż zakładano, użytkownicy mocno się różnią.", ci_var[1], ci_var[2])
+} else if (ci_var[2] < sigma0_sq) {
+  sprintf("**Przedział ufności dla wariancji:** [%.0f; %.0f] – użytkownicy są bardziej jednorodni niż przewidywano.", ci_var[1], ci_var[2])
+} else {
+  sprintf("**Przedział ufności dla wariancji:** [%.0f; %.0f] zawiera %.0f – zmienność danych może być zgodna z założeniem.", ci_var[1], ci_var[2], sigma0_sq)
+}
+
+wniosek_frac_test <- if (p_frac < 0.05) {
+  "**Test proporcji:** H₀: p = 0.5 vs H₁: p ≠ 0.5. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – udział osób zyskujących różni się istotnie od 50%. Jedna z grup (zyskujących/tracących) dominuje."
+} else {
+  "**Test proporcji:** H₀: p = 0.5 vs H₁: p ≠ 0.5. Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej – udział zyskujących może wynosić 50%. Brak dominacji jednej z grup."
+}
+
+
+
+wniosek_frac_ci <- if (ci_frac[1] > 0.5) {
+  sprintf("**Przedział ufności dla frakcji zyskujących:** [%.2f; %.2f] – większość użytkowników zyskuje.", ci_frac[1], ci_frac[2])
+} else if (ci_frac[2] < 0.5) {
+  sprintf("**Przedział ufności dla frakcji zyskujących:** [%.2f; %.2f] – większość użytkowników traci.", ci_frac[1], ci_frac[2])
+} else {
+  sprintf("**Przedział ufności dla frakcji zyskujących:** [%.2f; %.2f] zawiera 0.5 – nie można jednoznacznie ocenić, czy przeważają zyskujący czy tracący.", ci_frac[1], ci_frac[2])
 }
 ```
 
@@ -175,31 +212,41 @@ wniosek_frac <- if (p_frac < 0.05) {
 - 95% CI: [`r round(ci_mean[1], 2)`, `r round(ci_mean[2], 2)`]
 - p-value: `r round(p_mean, 10)`  
 
-`r wniosek_mean`
+`r wniosek_mean_test`
+
+`r wniosek_mean_ci` 
 
 
 ## Mediana – test Wilcoxona
 
 **Hipotezy:**  
-- H₀: mediana = 0  
-- H₁: mediana ≠ 0  
+- H₀: mediana = `r mu_val`  
+- H₁: mediana ≠ `r mu_val`
 
 **Wyniki:**  
 - Mediana: `r round(median(x), 2)`
 - 95% CI:  [`r round(ci_median[1], 2)` , `r round(ci_median[2], 2)`]
 - p-value: `r round(p_median, 10)`  
 
-`r wniosek_median`
+`r wniosek_median_test`
+
+`r wniosek_median_ci`
 
 
 
 ## Wariancja – przedział CI
+**Hipotezy:**  
+- H₀: wariancja = `r  sigma0_sq`  
+- H₁: wariancja ≠ `r  sigma0_sq`  
 
 **Obliczenia dla przedziału ufności wariancji:**  
 - Wariancja: `r round(s2, 2)`  
 - 95% CI: [`r round(ci_var[1], 2)`, `r round(ci_var[2], 2)`] 
+- p-value: `r round(p_value_var, 10)`
 
-`r wniosek_var`
+`r wniosek_var_test`
+
+`r wniosek_var_ci`
 
 
 
@@ -214,7 +261,9 @@ wniosek_frac <- if (p_frac < 0.05) {
 - 95% CI: [`r round(ci_frac[1], 2)`, `r round(ci_frac[2], 2)`] 
 - p-value: `r round(p_frac, 10)`  
 
-`r wniosek_frac`
+`r wniosek_frac_test`
+
+`r wniosek_frac_ci`
 
 ## Emisja CO2 a pojemność silnika:
 ```{r echo=FALSE}
