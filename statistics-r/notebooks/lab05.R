@@ -1,0 +1,5 @@
+set.seed(180424)
+x1 <- rnorm(50, mean = 1, sd = 5)
+x2<-rnorm(50, mean= 1, sd= 1)
+x3 <- rnorm(50)
+x4 <- rt(50, df = 1)
