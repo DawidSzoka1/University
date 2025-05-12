@@ -66,6 +66,26 @@ sample_data <-data %>% sample_n(100)
 datatable(head(data, 5), filter="top",
           options = list(scrollX = TRUE, scrollY = "250px"))
 ```
+## Pierwsza część
+Na samym starcie wyznaczymy dla każdej zmiennej odpowiednie parametry liczbowe i pozycjne co zostanie przedstawione w postaci jednej tabeli.
+
+**Parametry liczbowe:**
+
+- średnia (mean)
+- odchylenie standardowe (sd)
+- wartość minimalna (min)
+- wartość maksymalna (max)
+- Skośność (skewness)
+- Kurtoza (kurtosis)
+- liczba unikalnych (n_unique)
+
+**Parametry pozycyjne:**
+
+- mediana (median)
+- kwartyle (Q1, Q3)
+- rozstęp międzykwartylowy (IQR)
+- moda (moda)
+
 
 ```{r echo=FALSE}
 opisz_liczbowa <- function(x) {
@@ -129,6 +149,25 @@ statystyki <- statystyki %>% select(zmienna, typ, everything())
 datatable(statystyki, filter="top",
           options = list(scrollX = TRUE, scrollY = "300px"))
 ```
+## Druga i Trzecia część
+W tych częściach zajmiemy sie przedziałami ufności dla średniej, mediany, wariancji, frakcji
+jak i hipotezami po uwczesnym sprawdzeniu stosowanlości testów.
+
+**Średnia i wariancja: **
+Jako zmienną z rokładem normalnym będzie `youSaveSpend` oczywiście sprawdzimy czy tak jest.
+Do sprawdzenia tego użyjemy `shapiro.test` z próbka o wielkości 40.
+
+**Mediana:**
+Zbadany dla zmiennej `city08` po uwczesnym odrzuceniu hipotezy o rozkładznie normalnym.
+Do sprawdzenia czy można odrzucić hipoteze użyjemy `shapiro.test` z próbka o wielkości 80.
+
+**Frakcja:**
+Weźmiemy zmienną `startStop` dla której sprawdzimy stosowalność jak i jakiego testu należy użyć.
+Z próbka o wielkości 100.
+
+
+Wszystkie próbi są losowe z ustawionym ziarnem na 20250322. Wszystkie zmienne zostaną odpowiednio przygotowane do testowania czyli pominiecie wartości NA i losowa próbka o właściwej wielkości
+
 ## Przedziały ufności
 Sprawdzenie stosowalności
 ```{r}
@@ -230,6 +269,64 @@ wniosek_var_ci <- if (ci_var[1] > sigma0_sq) {
 `r wniosek_var_test`
 
 `r wniosek_var_ci`
+
+## Mediania sprawdzenie stosowalności dla `city08`
+```{r echo=FALSE}
+values_med <- na.omit(data$city08)
+n_med <- 80
+x_med <- sample(values_med, size = n_med)
+sh_med <- shapiro.test(x_med)
+```
+Dla zmiennej `city08` przeprowadzono test normalności Shapiro-Wilks
+
+- liczność próby: `r n_med`
+- statystyka W: `r round(sh_med$statistic, 3)`
+- wartość p: `r signif(sh_med$p.value, 3)`
+
+Wartość p = `r signif(sh_med$p.value, 3)` jest mniejsza niż 0.05, co oznacza, że należy odrzucić hipotezę o normalnym rozkładzie danych. Rozkład zmiennej `city08` **istotnie odbiega od normalności**, dlatego stosowanie testów parametrycznych opartych na średniej (np. test t-Studenta) **nie jest uzasadnione**.
+
+W związku z tym:
+
+- **Do testowania hipotezy dotyczącej mediany** należy zastosować **test Wilcoxona** dla jednej próby (`wilcox.test()`), który nie wymaga założenia normalności rozkładu.
+- **Przedział ufności dla mediany**  wyznaczymy za pomocą **bootstrapowania** 
+
+```{r echo=FALSE}
+mediana0 <- 20  # <- wartość pod hipotezę zerową
+test_median <- wilcox.test(x_med, mu = mediana0)
+p_median <- test_median$p.value
+
+# Bootstrap CI
+boot_median <- replicate(1000, median(sample(x_med, replace = TRUE)))
+ci_median <- quantile(boot_median, c(0.025, 0.975))
+
+# Wnioski
+wniosek_median_test <- if (p_median < 0.05) {
+  sprintf("**Test mediany:** H₀: mediana = %.2f vs H₁: mediana ≠ %.2f. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – mediana istotnie różni się od %.2f. Użytkownicy przeciętnie osiągają wynik inny niż zakładany poziom odniesienia.", mediana0, mediana0, mediana0)
+} else {
+  sprintf("**Test mediany:** H₀: mediana = %.2f vs H₁: mediana ≠ %.2f. Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej – mediana nie różni się istotnie od %.2f. Użytkownicy w ujęciu mediany nie odbiegają znacząco od poziomu odniesienia.", mediana0, mediana0, mediana0)
+}
+
+wniosek_median_ci <- if (ci_median[1] > mediana0) {
+  sprintf("**Przedział ufności dla mediany:** [%.2f; %.2f] – użytkownicy przeciętnie osiągają wynik powyżej %.2f.", ci_median[1], ci_median[2], mediana0)
+} else if (ci_median[2] < mediana0) {
+  sprintf("**Przedział ufności dla mediany:** [%.2f; %.2f] – użytkownicy przeciętnie osiągają wynik poniżej %.2f.", ci_median[1], ci_median[2], mediana0)
+} else {
+  sprintf("**Przedział ufności dla mediany:** [%.2f; %.2f] zawiera %.2f – nie możemy jednoznacznie określić, czy użytkownicy przeciętnie osiągają wynik wyższy czy niższy.", ci_median[1], ci_median[2], mediana0)
+}
+```
+## Mediana - wilcox.test
+**Hipotezy:**  
+
+- H₀: mediana = 20 
+- H₁: mediana ≠ 20 
+
+**Wyniki:**  
+- Mediana: `r round(median(x_med), 2)`  
+- 95% CI: [`r round(ci_median[1], 2)`, `r round(ci_median[2], 2)`]  
+- p-value: `r p_median`  
+
+`r wniosek_median_test`  
+`r wniosek_median_ci`
 
 ## Frakcje sprawdzenie stosowalności dla `startStop`
 Sprawdzamy czy zmiena `startStop` jest binarna i czy minimalna liczność sukcesów
@@ -441,7 +538,6 @@ plot(model, which = 2, main = "Q-Q plot reszt")
 - Q-Q plot wskazuje na odchylenia od normalności (szczególnie w ogonach).
 
 
-
 ## Podsumowanie
 
 - **Istotny negatywny związek** między `displ` a `city08`.
@@ -457,13 +553,24 @@ Zalecenia:
 - Interpretować wartości p z ostrożnością.
 
 ## Podsumowanie i wnioski
-
 - Przeprowadzono pełną analizę statystyczną wybranej próbki danych dotyczących pojazdów.
 - Obliczono parametry liczbowe i pozycyjne dla wszystkich zmiennych.
-- Dla zmiennaje `youSavedSpend` wykonano:
-  - przedziały ufności (średnia, mediana, wariancja, frakcja),
-  - testy istotności (dla średnich, median, wariancji i frakcji),
+- Dla zmiennej `youSavedSpend` wykonano:
+  - przedziały ufności (średnia, wariancja),
+  - testy istotności (dla średnich, wariancji ),
+  - przetestowano hipoteze (średnia, wariancja),
   - analizę regresji liniowej z oceną dopasowania modelu.
+- Dla zmiennej `city08` wykonano:
+  - przedział ufności (mediany),
+  - testy istotności (mediany)
+  - przetestowano hipoteze (mediany)
+- Dla zmiennej `startStop` wykonano:
+  - przedzał ufności (frakcji),
+  - testy istotności (frakcji),
+  - przetestowano hipoteze (frakcji)
+  
+---
+
 - Stosowalność testów była każdorazowo weryfikowana.
 - Przedstawiono co najmniej 4 wykresy ilustrujące zależności w danych.
 - Wszystkie wyniki zostały zinterpretowane w kontekście statystycznym.
