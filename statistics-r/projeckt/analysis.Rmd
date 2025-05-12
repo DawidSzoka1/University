@@ -3,9 +3,10 @@ title: "Analiza danych"
 author: "Dawid Szoka"
 date: "2025-04-17"
 output:
-   ioslides_presentation:
+  ioslides_presentation:
     widescreen: true
     smaller: true
+  beamer_presentation: default
 ---
 ## Potrzebne pakiety
 
@@ -178,7 +179,7 @@ sh <- shapiro.test(x)
 sh
 
 ```
-## Wnisoek dotyczacy stosowalności przedziałów ufności
+## Wniosek dotyczący stosowalności przedziałów ufności
 
 Dla zmiennej `youSaveSpend` przeprowadzono test normalności Shapiro-Wilks
 
@@ -430,6 +431,11 @@ wniosek_ci <- if (hipotetyczna_frakcja < ci[1] || hipotetyczna_frakcja > ci[2]) 
 
 `r wniosek_ci`
 
+## Czwarta część.
+**Wizualizacja danych (na podstawie próbki 150 rekordów)**
+
+W celu uzyskania poglądowej charakterystyki wybranych zmiennych, przeprowadzono wizualizację danych opartą na losowej próbce 150 obserwacji. Poniższe wykresy umożliwiają szybkie uchwycenie rozkładów zmiennych oraz zależności między nimi.
+
 ## Emisja CO2 a pojemność silnika:
 ```{r echo=FALSE}
 ggplot(
@@ -478,6 +484,17 @@ sample_data  %>%
   theme_minimal()
 ```
 
+## Część piąta. Analiza regresji liniowej.
+Celem tej części projektu była analiza zależności pomiędzy pojemnością silnika (displ) a zużyciem paliwa w cyklu miejskim (city08). Obie zmienne mają charakter ilościowy, co uzasadnia zastosowanie modelu regresji liniowej.
+
+**Wizualizacja regresji:**
+
+W celu lepszego zobrazowania zależności, do analizy dołączono wykresy:
+
+- rozrzutu reszt który pomaga ocenić, czy model regresji jest dobrze dopasowany do danych.
+- Q-Q plot by sprawdzić czy dane mają rozkład zbliżony do normalnego  
+- wykres zależności tych zmiennych od siebie.
+
 ## Analiza regresji
 ```{r echo=FALSE}
 data_clean <- data %>% filter(!is.na(city08), !is.na(displ))
@@ -524,8 +541,6 @@ ggplot(data_clean, aes(x = displ, y = city08)) +
   theme_minimal()
 ```
 
-
-
 ## Graficzna diagnostyka modelu
 
 ```{r echo=FALSE}
@@ -559,7 +574,6 @@ Zalecenia:
   - przedziały ufności (średnia, wariancja),
   - testy istotności (dla średnich, wariancji ),
   - przetestowano hipoteze (średnia, wariancja),
-  - analizę regresji liniowej z oceną dopasowania modelu.
 - Dla zmiennej `city08` wykonano:
   - przedział ufności (mediany),
   - testy istotności (mediany)
@@ -570,7 +584,7 @@ Zalecenia:
   - przetestowano hipoteze (frakcji)
   
 ---
-
+- Analiza regresji pomiędzy zmienna `displ` a `city08`
 - Stosowalność testów była każdorazowo weryfikowana.
 - Przedstawiono co najmniej 4 wykresy ilustrujące zależności w danych.
 - Wszystkie wyniki zostały zinterpretowane w kontekście statystycznym.
