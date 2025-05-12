@@ -7,6 +7,15 @@ output:
     widescreen: true
     smaller: true
 ---
+## Potrzebne pakiety
+Należy pobrać następujące pakiety: 
+-tidyverse
+-e1071
+-lmtest
+-ggplot2
+-broom
+-DT
+`Dane które będziemy analizować`
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 library(tidyverse)
 library(e1071)
@@ -19,7 +28,6 @@ data <- read.csv("fuel_sample.csv")
 sample_data <-data %>% sample_n(100)
 ```
 ## Przykładowe dane które będziemy analizować
-
 ```{r echo=FALSE}
 datatable(head(data, 5), filter="top",
           options = list(scrollX = TRUE, scrollY = "250px"))
@@ -95,6 +103,7 @@ n <- 40
 x <- sample(values, size = n)
 sh <- shapiro.test(x)
 sh
+
 ```
 ## Wnisoek dotyczacy stosowalności przedziałów ufności
 
@@ -111,7 +120,15 @@ W związku z tym uznaje się, że przedziały ufności dla (`youSaveSpend`) są 
 ## Wyznacznie przedziałów ufności i przetestowanie hipotez `youSaveSpend`
 ```{r}
 # Średnia
-t_result <- t.test(x)
+if (sh$p.value > 0.05) {
+  # rozkład normalny → t-test
+  t_result <- t.test(x, mu = 0)
+  test_type <- "t-test"
+} else {
+  # brak normalności → test Wilcoxona
+  t_result <- wilcox.test(x, mu = 0)
+  test_type <- "test Wilcoxona"
+}
 ci_mean <- t_result$conf.int
 p_mean <- t_result$p.value
 # Mediana
