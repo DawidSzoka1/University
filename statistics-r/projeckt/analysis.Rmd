@@ -8,14 +8,48 @@ output:
     smaller: true
 ---
 ## Potrzebne pakiety
-Należy pobrać następujące pakiety: 
--tidyverse
--e1071
--lmtest
--ggplot2
--broom
--DT
-`Dane które będziemy analizować`
+
+W analizie wykorzystano następujące pakiety R:
+
+- `tidyverse` – zestaw narzędzi do manipulacji danymi i wizualizacji  
+- `e1071` – do obliczeń statystycznych (np. kurtoza, skośność)  
+- `lmtest` – testowanie modeli liniowych  
+- `ggplot2` – tworzenie estetycznych wykresów  
+- `broom` – porządkowanie wyników modeli statystycznych  
+- `DT` – interaktywne tabele
+
+## Źródło danych
+
+Dane użyte w niniejszym projekcie pochodzą z oficjalnej, ogólnodostępnej bazy danych dostępnej na stronie:  
+[https://www.fueleconomy.gov/feg/download.shtml](https://www.fueleconomy.gov/feg/download.shtml)
+
+Serwis ten jest prowadzony przez amerykańską **Agencję Ochrony Środowiska (EPA)** oraz **Departament Energii USA**.  
+Baza zawiera szczegółowe informacje dotyczące między innymi:
+
+- zużycia paliwa,
+- emisji zanieczyszczeń,
+- parametrów technicznych,
+- efektywności energetycznej pojazdów sprzedawanych na rynku amerykańskim.
+
+## Przygotowanie danych
+
+Ze względu na dużą objętość oryginalnego zbioru danych, w projekcie wykorzystano jego losową próbkę o wielkości 2000.
+
+Dane zostały przetworzone w następujący sposób:
+
+**set.seed(20250322)**
+
+**vehicles <- read.csv("vehicles.csv")**
+
+**fuel_sample <- vehicles[sample(nrow(vehicles), 2000), ]**
+
+**write.csv(fuel_sample, "fuel_sample.csv", row.names = FALSE)**
+
+W dalszej części analizy wykorzystujemy tylko tę próbkę (fuel_sample),
+co pozwala skrócić czas obliczeń i uprościć wizualizacje, 
+zachowując reprezentatywność danych.
+
+
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
 library(tidyverse)
 library(e1071)
@@ -115,29 +149,15 @@ Dla zmiennej `youSaveSpend` przeprowadzono test normalności Shapiro-Wilks
 
 Wartość p = `r signif(sh$p.value, 3)` jest większa niż 0.05, co oznacza, że nie ma podstaw do odrzucenia hipotezy o normalnym rozkładzie danych. Ponieważ liczność próby przekracza 30 (n = `r n`), możliwe jest stosowanie przedziału ufności dla średniej z wykorzystaniem rozkładu t-Studenta.
 
-W związku z tym uznaje się, że przedziały ufności dla (`youSaveSpend`) są statystycznie stosowalne.
+W związku z tym uznaje się, że przedziały ufności dla średniej i wariancji zmiennej (`youSaveSpend`) są statystycznie stosowalne.
 
 ## Wyznacznie przedziałów ufności i przetestowanie hipotez `youSaveSpend`
 ```{r}
 # Średnia
-if (sh$p.value > 0.05) {
-  # rozkład normalny → t-test
-  t_result <- t.test(x, mu = 0)
-  test_type <- "t-test"
-} else {
-  # brak normalności → test Wilcoxona
-  t_result <- wilcox.test(x, mu = 0)
-  test_type <- "test Wilcoxona"
-}
+t_result <- t.test(x, mu = 0)
+test_type <- "t-test"
 ci_mean <- t_result$conf.int
 p_mean <- t_result$p.value
-# Mediana
-y <- x + runif(length(x), min = -1e-5, max = 1e-5)
-mu_val <- -5000
-wilcox_result <- wilcox.test(y, mu = mu_val)
-p_median <- wilcox_result$p.value
-boot_median <- replicate(1000, median(sample(x, replace = TRUE)))
-ci_median <- quantile(boot_median, c(0.025, 0.975))
 # Wariancja
 n <- length(x)
 s2 <- var(x)
@@ -147,12 +167,6 @@ chi_stat <- (n - 1) * s2 / sigma0_sq
 p_value_var <- 2 * min(pchisq(chi_stat, df = n - 1), 1 - pchisq(chi_stat, df = n - 1))
 ci_var <- c((n - 1) * s2 / qchisq(1 - alpha/2, df = n - 1),
             (n - 1) * s2 / qchisq(alpha/2, df = n - 1))
-# Frakcja dodatnich
-frakcja <- sum(x > 0)
-prop_result <- prop.test(frakcja, n, p = 0.5)
-ci_frac <- prop_result$conf.int
-p_frac <- prop_result$p.value
-
 ```
 ```{r setup, include=FALSE}
 wniosek_mean_test <- if (p_mean < 0.05) {
@@ -171,22 +185,6 @@ wniosek_mean_ci <- if (ci_mean[1] > 0) {
 }
 
 
-wniosek_median_test <- if (p_median < 0.05) {
-  sprintf("**Test mediany:** H₀: mediana = %d vs H₁: mediana ≠ %d. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – mediana istotnie różni się od %d. Użytkownik przeciętny zyskuje lub traci inaczej niż zakładano.", mu_val, mu_val, mu_val)
-} else {
-  sprintf("**Test mediany:** H₀: mediana = %d vs H₁: mediana ≠ %d. Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej – mediana nie różni się istotnie od %d. Typowy wynik użytkownika zgodny z założeniem.", mu_val, mu_val, mu_val)
-}
-
-
-wniosek_median_ci <- if (ci_median[1] > mu_val) {
-  sprintf("**Przedział ufności dla mediany:** [%.2f; %.2f] – typowy użytkownik osiąga lepszy wynik niż %d.", ci_median[1], ci_median[2], mu_val)
-} else if (ci_median[2] < mu_val) {
-  sprintf("**Przedział ufności dla mediany:** [%.2f; %.2f] – typowy użytkownik osiąga gorszy wynik niż %d.", ci_median[1], ci_median[2], mu_val)
-} else {
-  sprintf("**Przedział ufności dla mediany:** [%.2f; %.2f] zawiera %d – nie można jednoznacznie ocenić, czy użytkownik zyskuje czy traci.", ci_median[1], ci_median[2], mu_val)
-}
-
-
 wniosek_var_test <- if (p_value_var < 0.05) {
   sprintf("**Test wariancji:** H₀: σ² = %.0f vs H₁: σ² ≠ %.0f. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – wariancja istotnie różni się od %.0f. Zmienność w danych odbiega od przyjętej wartości.", sigma0_sq, sigma0_sq, sigma0_sq)
 } else {
@@ -200,22 +198,6 @@ wniosek_var_ci <- if (ci_var[1] > sigma0_sq) {
 } else {
   sprintf("**Przedział ufności dla wariancji:** [%.0f; %.0f] zawiera %.0f – zmienność danych może być zgodna z założeniem.", ci_var[1], ci_var[2], sigma0_sq)
 }
-
-wniosek_frac_test <- if (p_frac < 0.05) {
-  "**Test proporcji:** H₀: p = 0.5 vs H₁: p ≠ 0.5. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – udział osób zyskujących różni się istotnie od 50%. Jedna z grup (zyskujących/tracących) dominuje."
-} else {
-  "**Test proporcji:** H₀: p = 0.5 vs H₁: p ≠ 0.5. Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej – udział zyskujących może wynosić 50%. Brak dominacji jednej z grup."
-}
-
-
-
-wniosek_frac_ci <- if (ci_frac[1] > 0.5) {
-  sprintf("**Przedział ufności dla frakcji zyskujących:** [%.2f; %.2f] – większość użytkowników zyskuje.", ci_frac[1], ci_frac[2])
-} else if (ci_frac[2] < 0.5) {
-  sprintf("**Przedział ufności dla frakcji zyskujących:** [%.2f; %.2f] – większość użytkowników traci.", ci_frac[1], ci_frac[2])
-} else {
-  sprintf("**Przedział ufności dla frakcji zyskujących:** [%.2f; %.2f] zawiera 0.5 – nie można jednoznacznie ocenić, czy przeważają zyskujący czy tracący.", ci_frac[1], ci_frac[2])
-}
 ```
 
 ## Średnia – t-test
@@ -225,6 +207,7 @@ wniosek_frac_ci <- if (ci_frac[1] > 0.5) {
 - H₁: μ ≠ 0 (średnia oszczędność różna od 0)  
 
 **Wyniki:**  
+
 - Średnia: `r round(mean(x), 2)`  
 - 95% CI: [`r round(ci_mean[1], 2)`, `r round(ci_mean[2], 2)`]
 - p-value: `r round(p_mean, 10)`  
@@ -233,30 +216,13 @@ wniosek_frac_ci <- if (ci_frac[1] > 0.5) {
 
 `r wniosek_mean_ci` 
 
-
-## Mediana – test Wilcoxona
-
-**Hipotezy:**  
-- H₀: mediana = `r mu_val`  
-- H₁: mediana ≠ `r mu_val`
-
-**Wyniki:**  
-- Mediana: `r round(median(x), 2)`
-- 95% CI:  [`r round(ci_median[1], 2)` , `r round(ci_median[2], 2)`]
-- p-value: `r round(p_median, 10)`  
-
-`r wniosek_median_test`
-
-`r wniosek_median_ci`
-
-
-
 ## Wariancja – przedział CI
 **Hipotezy:**  
 - H₀: wariancja = `r  sigma0_sq`  
 - H₁: wariancja ≠ `r  sigma0_sq`  
 
-**Obliczenia dla przedziału ufności wariancji:**  
+**Obliczenia dla przedziału ufności wariancji:**
+
 - Wariancja: `r round(s2, 2)`  
 - 95% CI: [`r round(ci_var[1], 2)`, `r round(ci_var[2], 2)`] 
 - p-value: `r round(p_value_var, 10)`
@@ -265,22 +231,107 @@ wniosek_frac_ci <- if (ci_frac[1] > 0.5) {
 
 `r wniosek_var_ci`
 
+## Frakcje sprawdzenie stosowalności dla `startStop`
+Sprawdzamy czy zmiena `startStop` jest binarna i czy minimalna liczność sukcesów
+i porażek przegracza warunki:
 
+- liczba sukcesów >= 5
+- liczba porażek >= 5
 
-## Frakcja wartości dodatnich – prop.test
+W zależności od tego zdecydujemy czy można użyć testów a jak tak to jakich.
+```{r echo=FALSE}
+x <- data$startStop
+x[x == ""] <- NA
+x <- na.omit(x)
+unikalne <- unique(x)
+is_binary <- length(unikalne) == 2
+if (!is_binary) {
+  wniosek_stosowalnosc <- "**Stosowalność testu frakcji:** Zmienna nie jest binarna – ma więcej lub mniej niż 2 unikalne wartości. Nie można zastosować testu frakcji."
+} else {
+  # Losuj próbkę
+  x_sample <- sample(x, 100)
+  tab <- table(x_sample)
 
+  # Licz sukcesy i porażki
+  success_label <- names(tab)[1]
+  successes <- tab[[success_label]]
+  failures <- sum(tab) - successes
+
+  # Wniosek zależny od liczności
+  if (min(successes, failures) >= 5) {
+    test_type <- "prop.test"
+    wniosek_stosowalnosc <- sprintf("**Stosowalność testu frakcji:** Zmienna można potraktować jako binarną TAK ponieważ ilość unikatowych wartości wynosi 2. Sukcesów: %d, porażek: %d. Obie liczby ≥ 5, więc zastosujemy **test proporcji (%s)**.", successes, failures, test_type)
+  } else {
+    test_type <- "binom.test"
+    wniosek_stosowalnosc <- sprintf("**Stosowalność testu frakcji:**Zmienna można potraktować jako binarną TAK ponieważ ilość unikatowych wartości wynosi 2. Sukcesów: %d, porażek: %d. Przynajmniej jedna liczba < 5, więc zastosujemy **test dokładny (%s)**.", successes, failures, test_type)
+  }
+}
+```
+`r wniosek_stosowalnosc`
+
+## Przedziały ufności i hipotezy dla frakcji zmienna `startStop`.
+```{r echo=FALSE}
+hipotetyczna_frakcja <- 0.5
+
+if(test_type == "prop.test"){
+  test_result <- prop.test(successes, 100, p = hipotetyczna_frakcja, correct = FALSE)
+}else{
+  test_result <- binom.test(successes, 100, p = hipotetyczna_frakcja)
+}
+p_val <- test_result$p.value
+ci <- test_result$conf.int
+frac_hat <- test_result$estimate
+wniosek_test <- if (p_val < alpha) {
+  sprintf(paste0(
+    "**Test frakcji (%s):**\n",
+    "Przeprowadzono test hipotezy H₀: p = %.2f przeciwko H₁: p ≠ %.2f.\n",
+    "Otrzymano wartość p = %.4f, która jest mniejsza niż poziom istotności α = %.2f.\n",
+    "W związku z tym odrzucamy hipotezę zerową.\n",
+    "Oznacza to, że obserwowana frakcja w próbie różni się istotnie statystycznie od %.2f – udział jednej z kategorii dominuje."
+  ),
+  test_type, hipotetyczna_frakcja, hipotetyczna_frakcja, p_val, alpha, hipotetyczna_frakcja)
+} else {
+ sprintf(paste0(
+  "**Test frakcji (%s):**\n",
+  "Przeprowadzono test hipotezy H₀: p = %.2f przeciwko H₁: p ≠ %.2f.\n",
+  "Otrzymano wartość p = %.4f, która jest większa lub równa poziomowi istotności α = %.2f.\n",
+  "W związku z tym brak podstaw do odrzucenia hipotezy zerowej.\n",
+  "Nie wykazano, by udział jednej z kategorii różnił się istotnie od %.1f%%."
+),
+test_type, hipotetyczna_frakcja, hipotetyczna_frakcja, p_val, alpha, hipotetyczna_frakcja * 100)
+}
+
+wniosek_ci <- if (hipotetyczna_frakcja < ci[1] || hipotetyczna_frakcja > ci[2]) {
+  sprintf(paste0(
+    "**Przedział ufności (%.0f%%):** [%.3f; %.3f]\n",
+    "Ponieważ wartość %.2f nie należy do tego przedziału,\n",
+    "możemy uznać, że rzeczywista frakcja populacyjna różni się od tej wartości.\n",
+    "Wynik ten potwierdza odrzucenie hipotezy zerowej – udział jednej z kategorii znacząco przeważa."
+  ),
+  (1 - alpha)*100, ci[1], ci[2], hipotetyczna_frakcja)
+} else {
+  sprintf(paste0(
+    "**Przedział ufności (%.0f%%):** [%.3f; %.3f]\n",
+    "Ponieważ wartość %.2f należy do tego przedziału,\n",
+    "nie ma podstaw do twierdzenia, że rzeczywista frakcja populacyjna różni się od %.2f.\n",
+    "Wniosek: wynik testu i przedział ufności są spójne — rzeczywista frakcja może wynosić %.2f."
+  ),
+  (1 - alpha)*100, ci[1], ci[2], hipotetyczna_frakcja, hipotetyczna_frakcja,hipotetyczna_frakcja)
+}
+```
 **Hipotezy:**  
-- H₀: p = 0.5 (proporcja dodatnich wartości = 50%)  
-- H₁: p ≠ 0.5  
+- H₀: frakcja = 0.50  
+- H₁: frakcja ≠ 0.50  
 
-**Wyniki:**  
-- Frakcja: `r frakcja` z `r n` (czyli `r round(frakcja/n, 2)` procent dodatnich)  
-- 95% CI: [`r round(ci_frac[1], 2)`, `r round(ci_frac[2], 2)`] 
-- p-value: `r round(p_frac, 10)`  
+**Obliczenia dla przedziału ufności frakcji:**
 
-`r wniosek_frac_test`
+- Frakcja: `r round(frac_hat, 4)`  
+- 95% CI: [`r round(ci[1], 2)`, `r round(ci[2], 2)`] 
+- p-value: `r round(p_val, 10)`
 
-`r wniosek_frac_ci`
+`r wniosek_test`
+
+`r wniosek_ci`
 
 ## Emisja CO2 a pojemność silnika:
 ```{r echo=FALSE}
@@ -405,6 +456,16 @@ Zalecenia:
 - Rozważyć użycie regresji odpornych na heteroskedastyczność.
 - Interpretować wartości p z ostrożnością.
 
-## Dziękuje za uwage
+## Podsumowanie i wnioski
 
-Dawid Szoka
+- Przeprowadzono pełną analizę statystyczną wybranej próbki danych dotyczących pojazdów.
+- Obliczono parametry liczbowe i pozycyjne dla wszystkich zmiennych.
+- Dla zmiennaje `youSavedSpend` wykonano:
+  - przedziały ufności (średnia, mediana, wariancja, frakcja),
+  - testy istotności (dla średnich, median, wariancji i frakcji),
+  - analizę regresji liniowej z oceną dopasowania modelu.
+- Stosowalność testów była każdorazowo weryfikowana.
+- Przedstawiono co najmniej 4 wykresy ilustrujące zależności w danych.
+- Wszystkie wyniki zostały zinterpretowane w kontekście statystycznym.
+
+**Dziękuję za uwagę!**
