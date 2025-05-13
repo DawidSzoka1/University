@@ -18,12 +18,32 @@ public class CarController : MonoBehaviour
     private PlayerInput playerInput;
     private InputAction moveAction;
     private InputAction brakeAction;
-
+    private InputAction resetAction;
+    void Start()
+    {
+        Cursor.lockState = CursorLockMode.Locked; 
+        Cursor.visible = false;
+    }
     private void Awake()
     {
         playerInput = GetComponent<PlayerInput>();
         moveAction = playerInput.actions["Move"];
         brakeAction = playerInput.actions["Brake"];
+        resetAction = playerInput.actions["ResetCar"];
+        resetAction.performed += ctx => ResetCarRotation();
+    }
+
+    private void ResetCarRotation()
+    {
+        transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
+        transform.position += Vector3.up * 1f;
+
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
     }
 
     private void FixedUpdate()
