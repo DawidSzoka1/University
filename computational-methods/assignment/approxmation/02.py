@@ -1,10 +1,9 @@
-import math
-
 from utils.main import compute_integral
 
 p_x = 1
 a = -1
 b = 1
+n = 2
 
 
 def wielomian_legendre(x, n):
@@ -14,7 +13,7 @@ def wielomian_legendre(x, n):
         return x
     if n == 2:
         return 1 / 2 * (3 * x ** 2 - 1)
-    return 1 / (n + x) * (2 * n + 1) * x * wielomian_legendre(n - 1, x) - n / (n + 1) * wielomian_legendre(n - 2, x)
+    return ((2 * n * x + x) / (n + 1)) * wielomian_legendre(x, n - 1) - n / (n + 1) * wielomian_legendre(x, n - 2)
 
 
 def calculate_lambdai(i, a, b):
@@ -22,14 +21,22 @@ def calculate_lambdai(i, a, b):
 
 
 def func(x):
-    return math.exp(x)
+    return (x ** 3 - 2 * x + 10) ** (1 / 2)
 
 
-def functio_ci(x, i):
+def function_ci(x, i):
     return p_x * wielomian_legendre(x, i) * func(x)
 
 
 def calculate_ci(i, a, b):
-    return 1/calculate_lambdai(i, a, b) * compute_integral(a, b, 100, i, functio_ci)
+    return 1 / calculate_lambdai(i, a, b) * compute_integral(a, b, 100, i, function_ci)
 
-print(calculate_ci(2, a, b))
+
+def calculate_gx(x, a, b, n):
+    result = 0
+    for i in range(n + 1):
+        result += calculate_ci(i, a, b) * wielomian_legendre(x, i)
+    return result
+
+
+print(calculate_gx(0.4, a, b, n))
