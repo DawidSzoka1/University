@@ -51,7 +51,6 @@
 **/cache/
 **/*.knit.md
 **/*.utf8.md
-**/*.pdf
 **/*.docx
 
 # Ignore Python-related files if using reticulate
