@@ -1,4 +1,4 @@
-from main import compute_integral
+from approxmation.utils.main import compute_integral
 import numpy as np
 
 a = -1
@@ -34,7 +34,7 @@ def calculate_wx(x, n, a, b, func=function):
         b_array[i, 0] = calculate_bi(i, a, b)
     result = np.linalg.solve(a_array, b_array)
     sum = 0
-    for i in range(n):
+    for i in range(n + 1):
         sum += result[i] * (x ** i)
     return sum[0]
 

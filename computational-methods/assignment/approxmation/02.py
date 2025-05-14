@@ -1,43 +1,35 @@
-import numpy as np
+import math
 
-x_values = [-1, -0.5, 0, 0.5, 1]
-n = 10
-m = 4
+from utils.main import compute_integral
 
-
-def calculate_aij(x_values, i, j):
-    result = 0
-    for x in x_values:
-        result += x ** (i + j)
-    return result
+p_x = 1
+a = -1
+b = 1
 
 
-def calculate_bk(x_values, y_values, k):
-    result = 0
-    for i in range(len(x_values)):
-        result += (x_values[i] ** k) * y_values[i]
-    return result
+def wielomian_legendre(x, n):
+    if n == 0:
+        return 1
+    if n == 1:
+        return x
+    if n == 2:
+        return 1 / 2 * (3 * x ** 2 - 1)
+    return 1 / (n + x) * (2 * n + 1) * x * wielomian_legendre(n - 1, x) - n / (n + 1) * wielomian_legendre(n - 2, x)
 
 
-def function(x):
-    return (x ** 3 - 2 * x + 10) ** (1 / 2)
+def calculate_lambdai(i, a, b):
+    return compute_integral(a, b, 100, i, wielomian_legendre, 'lambda')
 
 
-def calculate_wx(look_for_value, x_values, n, m, func=function):
-    y_values = [func(x) for x in x_values]
-    b_array = np.zeros((m + 1, 1))
-    for i in range(m + 1):
-        b_array[i][0] = calculate_bk(x_values, y_values, i)
-
-    a_array = np.zeros((m + 1, m + 1))
-    for i in range(m + 1):
-        for j in range(m + 1):
-            a_array[i, j] = calculate_aij(x_values, i, j)
-    values = np.linalg.solve(a_array, b_array)
-    result = 0
-    for i in range(m):
-        result += values[i][0] * look_for_value ** i
-    return result
+def func(x):
+    return math.exp(x)
 
 
-print(calculate_wx(0.4, x_values, n, m))
+def functio_ci(x, i):
+    return p_x * wielomian_legendre(x, i) * func(x)
+
+
+def calculate_ci(i, a, b):
+    return 1/calculate_lambdai(i, a, b) * compute_integral(a, b, 100, i, functio_ci)
+
+print(calculate_ci(2, a, b))

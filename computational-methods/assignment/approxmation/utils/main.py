@@ -11,7 +11,7 @@ def compute_xi(i, a, b, n):
     return a + i / n * (b - a)
 
 
-def compute_integral(a, b, n, i_value=None, func=None):
+def compute_integral(a, b, n, i_value=None, func=None, type=None):
     h = compute_h(n, a, b)
     x_values = [a]
     for i in range(1, n):
@@ -19,7 +19,10 @@ def compute_integral(a, b, n, i_value=None, func=None):
     x_values.append(b)
     y_values = []
     for xi in x_values:
-        y_values.append(func(xi, i_value))
+        if type == "lambda":
+            y_values.append(func(xi, i_value) ** 2)
+        else:
+            y_values.append(func(xi, i_value))
     sum_first_last = y_values[0] / 2 + y_values[-1] / 2
     sum_full = sum_first_last
     for i in range(1, len(x_values) - 1):
