@@ -11,6 +11,12 @@ namespace playerAssets.FinalCharacterController
         {
             CurrrentPlayerMovementState = playerMovementState;
         }
+
+        public bool InGroundedState()
+        {
+            return CurrrentPlayerMovementState != PlayerMovementState.Jumping &&
+                CurrrentPlayerMovementState != PlayerMovementState.Falling;
+        }
         
        
     }

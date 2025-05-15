@@ -7,7 +7,7 @@ namespace playerAssets.FinalCharacterController
     [DefaultExecutionOrder(-2)]
     public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomotionMapActions
     {
-
+        #region Class Variables
         [SerializeField] private bool holdToSprint = true;
 
         public bool SprintToggledOn { get; private set; }
@@ -15,8 +15,13 @@ namespace playerAssets.FinalCharacterController
         public Vector2 MovementInput { get; private set; }
         public Vector2 LookInput { get; private set; }
 
+        public bool JumpPressed { get; private set; }
+        #endregion
+
+
         public PlayerController Controller { get; private set; }
 
+        #region Game Objects
         [Header("Camera")]
         public Camera firstPersonCamera;
         public Camera thirdPersonCamera;
@@ -26,6 +31,7 @@ namespace playerAssets.FinalCharacterController
         [Header("AudioListner")]
         public AudioListener firstPersonAudio;
         public AudioListener thirdPersonAudio;
+        #endregion
 
         private void OnEnable()
         {
@@ -84,6 +90,19 @@ namespace playerAssets.FinalCharacterController
             {
                 SprintToggledOn = !holdToSprint && SprintToggledOn;
             }
+        }
+        private void LateUpdate()
+        {
+            JumpPressed = false;
+        }
+
+        public void OnJump(InputAction.CallbackContext context)
+        {
+            if(!context.performed)
+            {
+                return;
+            }
+            JumpPressed = true;
         }
     }
 

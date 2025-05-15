@@ -411,13 +411,17 @@ PrefabInstance:
       propertyPath: sprintAcceleration
       value: 50
       objectReference: {fileID: 0}
+    - target: {fileID: 7244948037535274718, guid: 6a78f23a87f71a24aa355ecbd15c1b4d, type: 3}
+      propertyPath: m_SkinWidth
+      value: 0.0001
+      objectReference: {fileID: 0}
     - target: {fileID: 7933179540695784874, guid: 6a78f23a87f71a24aa355ecbd15c1b4d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7933179540695784874, guid: 6a78f23a87f71a24aa355ecbd15c1b4d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1
+      value: 0.093
       objectReference: {fileID: 0}
     - target: {fileID: 7933179540695784874, guid: 6a78f23a87f71a24aa355ecbd15c1b4d, type: 3}
       propertyPath: m_LocalPosition.z
