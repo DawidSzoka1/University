@@ -26,6 +26,12 @@ public class EnemyAiTutorial : MonoBehaviour
     public float sightRange, attackRange;
     public bool playerInSightRange, playerInAttackRange;
 
+    private static int isMovingHash = Animator.StringToHash("isMoving");
+
+    //Animator
+    [SerializeField] private Animator _animator;
+   
+
     private void Awake()
     {
         player = GameObject.Find("PersonController").transform;
@@ -41,7 +47,9 @@ public class EnemyAiTutorial : MonoBehaviour
         if (!playerInSightRange && !playerInAttackRange) Patroling();
         if (playerInSightRange && !playerInAttackRange) ChasePlayer();
         if (playerInAttackRange && playerInSightRange) AttackPlayer();
+
     }
+
 
     private void Patroling()
     {
@@ -50,6 +58,8 @@ public class EnemyAiTutorial : MonoBehaviour
         if (walkPointSet)
             agent.SetDestination(walkPoint);
 
+        _animator.SetBool(isMovingHash, true);
+        
         Vector3 distanceToWalkPoint = transform.position - walkPoint;
 
         //Walkpoint reached
@@ -72,19 +82,24 @@ public class EnemyAiTutorial : MonoBehaviour
     {
         Debug.Log("GOnie gracz!!!");
         agent.SetDestination(player.position);
+        _animator.SetBool(isMovingHash, true);
         transform.LookAt(player);
     }
 
     private void AttackPlayer()
     {
         //Make sure enemy doesn't move
-        Debug.LogWarning("Atakuje");
+        Debug.LogWarning("Atakuje"); 
+        _animator.SetBool(isMovingHash, false);
+
         agent.SetDestination(transform.position);
 
         transform.LookAt(player);
 
         if (!alreadyAttacked)
         {
+            
+            _animator.SetTrigger("Attack");
             ///Attack code here
             //Rigidbody rb = Instantiate(projectile, transform.position, Quaternion.identity).GetComponent<Rigidbody>();
             //rb.AddForce(transform.forward * 32f, ForceMode.Impulse);
