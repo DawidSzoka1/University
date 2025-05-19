@@ -5,9 +5,9 @@ author: |
   Dawid Szoka  
   89221
   
-  Uniwersytet w Białymstoku
+  Wydział Informatyki UwB
   
-  Wydział Informatyki rok 2 semestr 4 
+  rok akademicki 2024/2025
 date: "`r Sys.Date()`"
 output:
    html_document:
@@ -44,6 +44,12 @@ library(ggplot2)
 library(broom)
 library(DT)
 library(DescTools)
+library(lmtest)
+library(olsrr)
+library(nortest)
+library(car)
+library(gvlma)
+library(ggpmisc)
 ```
 
 ## Podstawowe Informacje o danych
@@ -79,11 +85,11 @@ W dalszej części analizy wykorzystujemy tylko tę próbkę (fuel_sample),
 co pozwala skrócić czas obliczeń i uprościć wizualizacje, 
 zachowując reprezentatywność danych.
 
-
+Wczytanie danych
 ```{r}
 set.seed(20250322)
 data <- read.csv("fuel_sample.csv")
-sample_data <-data %>% sample_n(100)
+sample_data <-data %>% sample_n(150)
 ```
 ### Przykładowe dane, które będziemy analizować
 ```{r}
@@ -96,25 +102,23 @@ datatable(head(data, 5), filter="top",
 ### **Parametry liczbowe:**
 
 - średnia (mean)
-- wariancja (var)
-- odchylenie standardowe (sd)
+- wariancja (s2)
+- odchylenie standardowe (s)
 - odchylenie przeciętne (d)
 - współczynniki zmienności Perasona (Vs, Vd)
 - typowy obszar zmienności (Ts, Td)
-- współczynnik asymetri (A) // do zrobienia
+- współczynnik asymetri (A) 
 - współczynnik koncentracji (kurtosis)
-- współczynnik ekscesu// do zrobionia
-- współczynnik Giniego (gini)
+- współczynnik ekscesu (K)
+- współczynnik Giniego (G)
 - wartość minimalna (min)
 - wartość maksymalna (max)
-- Skośność (skewness)
-- Kurtoza (kurtosis)
-- liczba unikalnych (n_unique)
 
 ### **Parametry pozycyjne:**
-- moda (moda)
-- mediana (median)
+- moda (Mo)
+- mediana (Me)
 - kwartyle (Q1, Q3)
+- decyle (D1, D9)
 - rozstęp próby (R)
 - odchylenie ćwiartkowe (Q)
 - rozstęp międzykwartylowy (IQR)
@@ -122,7 +126,7 @@ datatable(head(data, 5), filter="top",
 - typowy obszar zmienności (T_Q)
 - wskaźnik asymetrii (W_sQ)
 - współczynnik asymetrii (A_Q)
-- współczynnik koncentracji // do zrobienia 
+- współczynnik koncentracji (W_s)
 
 
 ```{r warning=FALSE}
@@ -144,28 +148,32 @@ opisz_liczbowa <- function(x) {
   Q3_x <- quantile(x, 0.75, na.rm = TRUE)
   IQR_x <- IQR(x, na.rm = TRUE)
   Q_x <- (Q3_x - Q1_x) / (Q3_x + Q1_x)
+  D1_x = quantile(x, 0.1, na.rm = TRUE)
+  D9_x = quantile(x, 0.9, na.rm = TRUE)
   x_max <- max(x, na.rm = TRUE)
   x_min <- min(x, na.rm = TRUE)
+  kurtosis_x <- e1071::kurtosis(x, na.rm = TRUE)
   tibble(
     mean = mean_x,
-    var = var(x, na.rm = TRUE),
-    sd = sd_x,
+    s2 = var(x, na.rm = TRUE),
+    s = sd_x,
     d = d_x,
     Vsd = sd_x / mean_x,
     Vd = d_x / mean_x,
     Tsd = paste0("(", round(mean_x - sd_x, 2), " - ", round(mean_x + sd_x, 2), ")"),
     Td = paste0("(", round(mean_x - d_x, 2), " - ", round(mean_x + d_x, 2), ")"),
+    A = e1071::skewness(x, na.rm = TRUE),
+    kurtosis = kurtosis_x,
+    K = kurtosis_x - 3,
+    G = gini_coef(x),
     min = x_min,
     max = x_max,
-    kurtosis = e1071::kurtosis(x, na.rm = TRUE),
-    skewness = e1071::skewness(x, na.rm = TRUE),
-    gini = gini_coef(x),
-    
-    
-    moda = as.numeric(names(sort(table(x), decreasing = TRUE)[1])),
-    median = median_x,
+    Mo = as.numeric(names(sort(table(x), decreasing = TRUE)[1])),
+    Me = median_x,
     Q1 = Q1_x,
     Q3 = Q3_x,
+    D1 = D1_x,
+    D9 = D9_x,
     R = x_max - x_min,
     Q = Q_x,
     IQR = IQR_x,
@@ -173,7 +181,8 @@ opisz_liczbowa <- function(x) {
     V_Q1Q3 = (Q3_x - Q1_x) / (Q3_x + Q1_x),
     T_Q = paste0("(", round(median_x - Q_x, 2), " - ", round(median_x + Q_x, 2), ")"),
     W_sQ = (Q3_x - median_x) - (median_x - Q1_x),
-    A_Q = (Q3_x + Q1_x - 2 * median_x) / (2 * Q_x) 
+    A_Q = (Q3_x + Q1_x - 2 * median_x) / (2 * Q_x),
+    W_x = (D9_x - D1_x) / (Q3_x - Q1_x)
   )
 }
 
@@ -542,22 +551,26 @@ sample_data  %>%
 ```
 
 ## Analiza regresji liniowej.
-Celem tej części projektu była analiza zależności pomiędzy pojemnością silnika (displ) a zużyciem paliwa w cyklu miejskim (city08). Obie zmienne mają charakter ilościowy, co uzasadnia zastosowanie modelu regresji liniowej.
+Celem tej części projektu była analiza zależności pomiędzy pojemnością silnika (displ) a efektywnością paliwową w cyklu miejskim (city08). Zmienna city08 reprezentuje liczbę mil, jakie pojazd jest w stanie przejechać w warunkach miejskich na jednym galonie paliwa (MPG – miles per gallon). Oznacza to, że im wyższa jej wartość, tym mniejsze rzeczywiste zużycie paliwa. Obie zmienne mają charakter ilościowy, co uzasadnia zastosowanie modelu regresji liniowej.
 
 **Wizualizacja regresji:**
 
 W celu lepszego zobrazowania zależności, do analizy dołączono wykresy:
 
-- rozrzutu reszt który pomaga ocenić, czy model regresji jest dobrze dopasowany do danych.
-- Q-Q plot by sprawdzić czy dane mają rozkład zbliżony do normalnego  
-- wykres zależności tych zmiennych od siebie.
+- wykres rozrzutu reszt, który pomaga ocenić, czy model regresji jest dobrze dopasowany do danych,
+
+- wykres Q-Q plot, by sprawdzić, czy reszty mają rozkład zbliżony do normalnego,
+
+- wykres zależności badanych zmiennych od siebie.
+
+
 
 ### Analiza regresji
 ```{r}
 data_clean <- data %>% filter(!is.na(city08), !is.na(displ))
 
 ## Dopasowanie modelu regresji liniowej
-model <- lm(city08 ~ displ, data = data_clean)
+model <- lm(city08 ~  displ, data = data_clean)
 
 ## Podsumowanie modelu
 summary(model)
@@ -565,52 +578,84 @@ summary(model)
 
 ### Interpretacja modelu:
 
-- **Model regresji liniowej:** `city08 ~ displ`
-- Współczynnik kierunkowy = -2.82 → wraz ze wzrostem pojemności silnika o 1 litr, średnie spalanie w mieście spada o ok. 2.82 mpg.
-- **Wartość R² = 0.51**, co oznacza, że model wyjaśnia 51% zmienności zużycia paliwa.
-- Oba współczynniki istotne statystycznie (**p < 0.05**).
+- Otrzymany model regresji liniowej opisuje zależność między efektywnością paliwową w mieście (city08) a pojemnością silnika (displ) i ma postać: 
+`city08 = 27.71 - 2.86 x displ`
+
+- **Współczynnik kierunkowy = -2.86**, co oznacza, że każdorazowy wzrost pojemności silnika o 1 litr powoduje spadek efektywności paliwowej w mieście o 2.86 MPG – czyli pojazd przejedzie o 2.86 mil mniej na jednym galonie paliwa.
+- **Wartość R² = 0.4872**, co oznacza, że model wyjaśnia ok. 49% zmienności zmiennej city08. To sugeruje, że pojemność silnika ma znaczący wpływ na efektywność paliwową, jednak warto byłoby rozważyć uwzględnienie dodatkowych predyktorów.
+- Model jest istotny statystycznie (p-value < 2.2e-16).
 
 
 ### Diagnostyka reszt
 
+Test normalności reszt
 ```{r}
-shapiro.test(residuals(model))
-bptest(model)
+shapiro.test(model$residuals)
+harvtest(model)
+dwtest(model)
+gvlma(model)
 ```
 ### Wnioski diagnostyczne:
 
-- **Test Shapiro-Wilka**: p < 0.05 → reszty nie są rozkładem normalnym.
-- **Test Breuscha-Pagana**: p < 0.05 → występuje heteroskedastyczność.
-- Założenia klasycznego modelu regresji są naruszone. Możliwe konsekwencje:
-  - zaniżone błędy standardowe,
-  - zawyżone testy t,
-  - niepewna interpretacja p-value.
+- Shapiro-Wilk (p < 2.2e-16): reszty nie są normalne – silna asymetria i problemy w ogonach.
+- Harvey-Collier (p = 0.8847): brak dowodów na nieliniowość.
+- GVLMA:
+  - Naruszone są założenia: symetria (skewness), kurtoza, liniowość (link).
+  - Heteroskedastyczność nie występuje (p = 0.186).
+- Durbin-Watson (p = 0.44): brak autokorelacji.
 
----
+Podsumowanie:
+
+- Istnieje silna, ujemna zależność pomiędzy pojemnością silnika a zużyciem paliwa w mieście.
+- Model jest statystycznie istotny, ale narusza założenie normalności reszt oraz wykazuje problemy z rozkładem (asymetria i kurtoza).
+- Jednak testy Harvey-Colliera i Durbin-Watsona potwierdzają poprawność założenia liniowości i brak autokorelacji, a brak heteroskedastyczności również wspiera trafność modelu.
+- W interpretacji wyników (szczególnie p-value) należy zachować ostrożność.
+- Mimo ograniczeń, model dobrze ilustruje ogólną zależność i może być użyteczny w analizie porównawczej.
 
 ```{r warning=FALSE}
 ggplot(data_clean, aes(x = displ, y = city08)) +
   geom_point(alpha = 0.5) +
-  geom_smooth(method = "lm", se = TRUE, color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
   labs(title = "Zależność zużycia paliwa w mieście od pojemności silnika",
        x = "Pojemność silnika (litry)",
        y = "Zużycie paliwa w mieście (MPG)") +
   theme_minimal()
 ```
+```{r}
+data_clean |>  ggplot(aes(x= displ, y= city08))+
+ geom_point()+
+ geom_smooth(method= lm,color= 'red') +
+ theme_bw()+
+ labs(x = '"Pojemność silnika (litry)',
+ y = 'Zużycie paliwa w mieście (MPG)') +
+ stat_ma_eq(mapping= use_label(c("R2", "eq")),color= 'red') +
+ stat_fit_tb(label.y= 0.9, label.x= .9)
+```
+
+Dane pokazują wyraźną ujemną zależność: większe silniki są mniej oszczędne w warunkach miejskich.
+
+Linia regresji dobrze odwzorowuje ogólny trend, choć obserwujemy rozproszenie danych szczególnie przy niższych wartościach pojemności – może to sugerować, że inny typ modelu (np. nieliniowy) mógłby lepiej dopasować się do danych.
+
+Model liniowy jest prosty i dobrze nadaje się do celów porównawczych, ale – jak pokazały testy diagnostyczne – narusza założenia (nienormalność reszt, nieliniowość), dlatego jego interpretacja wymaga ostrożności.
+
 
 ### Graficzna diagnostyka modelu
 
 ```{r}
-par(mfrow = c(1,2))
-plot(model, which = 1, main = "Reszty vs dopasowane")
-plot(model, which = 2, main = "Q-Q plot reszt")
+par(mfrow = c(2,2))
+plot(model)
 ```
 
 - Rozrzut reszt wskazuje na **heteroskedastyczność**.
 - Q-Q plot wskazuje na odchylenia od normalności (szczególnie w ogonach).
 
+### Wyznaczanie zbioru zmiennych objaśniających
+```{r}
+model_end <- step(lm(city08 ~ displ, data = data_clean), direction = "both")
+summary(model_end)
+```
 
-### Podsumowanie
+### Wnioski
 
 - **Istotny negatywny związek** między `displ` a `city08`.
 - Model istotny statystycznie (**p < 2.2e-16**).
