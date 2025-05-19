@@ -35,6 +35,12 @@ W analizie wykorzystano następujące pakiety R:
 - `ggplot2` – tworzenie estetycznych wykresów  
 - `broom` – porządkowanie wyników modeli statystycznych  
 - `DT` – interaktywne tabele
+- `DescTools` – zawiera rozszerzony zestaw funkcji statystycznych do analizy opisowej
+- `olsrr` – umożliwia diagnostykę i selekcję zmiennych w regresji liniowej metodami krokowymi i analitycznymi.
+- `nortest` – dostarcza alternatywne testy normalności rozkładu, takie jak Cramer–von Mises czy Anderson–Darling
+- `car` – oferuje zaawansowane narzędzia do analizy i diagnostyki modeli regresji i analizy wariancji.
+- `gvlma` – służy do kompleksowego testowania założeń klasycznego modelu regresji liniowej.
+- `ggpmisc` rozszerza ggplot2 o możliwość dodawania wzorów równań, wartości R² i statystyk bezpośrednio na wykresach.
 
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -44,7 +50,6 @@ library(ggplot2)
 library(broom)
 library(DT)
 library(DescTools)
-library(lmtest)
 library(olsrr)
 library(nortest)
 library(car)
@@ -154,35 +159,35 @@ opisz_liczbowa <- function(x) {
   x_min <- min(x, na.rm = TRUE)
   kurtosis_x <- e1071::kurtosis(x, na.rm = TRUE)
   tibble(
-    mean = mean_x,
-    s2 = var(x, na.rm = TRUE),
-    s = sd_x,
-    d = d_x,
-    Vsd = sd_x / mean_x,
-    Vd = d_x / mean_x,
+    mean = round(mean_x, 3),
+    s2 = round(var(x, na.rm = TRUE), 3),
+    s = round(sd_x, 3),
+    d = round(d_x, 3),
+    Vsd = round(sd_x / mean_x, 3),
+    Vd = round(d_x / mean_x, 3),
     Tsd = paste0("(", round(mean_x - sd_x, 2), " - ", round(mean_x + sd_x, 2), ")"),
     Td = paste0("(", round(mean_x - d_x, 2), " - ", round(mean_x + d_x, 2), ")"),
-    A = e1071::skewness(x, na.rm = TRUE),
-    kurtosis = kurtosis_x,
-    K = kurtosis_x - 3,
-    G = gini_coef(x),
-    min = x_min,
-    max = x_max,
-    Mo = as.numeric(names(sort(table(x), decreasing = TRUE)[1])),
-    Me = median_x,
-    Q1 = Q1_x,
-    Q3 = Q3_x,
-    D1 = D1_x,
-    D9 = D9_x,
-    R = x_max - x_min,
-    Q = Q_x,
-    IQR = IQR_x,
-    V_Q = Q_x / median_x,
-    V_Q1Q3 = (Q3_x - Q1_x) / (Q3_x + Q1_x),
+    A = round(e1071::skewness(x, na.rm = TRUE), 3),
+    kurtosis = round(kurtosis_x, 3),
+    K = round(kurtosis_x - 3, 3),
+    G = round(gini_coef(x), 3),
+    min = round(x_min, 3),
+    max = round(x_max, 3),
+    Mo = round(as.numeric(names(sort(table(x), decreasing = TRUE)[1])), 3),
+    Me = round(median_x, 3),
+    Q1 = round(Q1_x, 3),
+    Q3 = round(Q3_x, 3),
+    D1 = round(D1_x, 3),
+    D9 = round(D9_x, 3),
+    R = round(x_max - x_min, 3),
+    Q = round(Q_x, 3),
+    IQR = round(IQR_x, 3),
+    V_Q = round(Q_x / median_x, 3),
+    V_Q1Q3 = round((Q3_x - Q1_x) / (Q3_x + Q1_x), 3),
     T_Q = paste0("(", round(median_x - Q_x, 2), " - ", round(median_x + Q_x, 2), ")"),
-    W_sQ = (Q3_x - median_x) - (median_x - Q1_x),
-    A_Q = (Q3_x + Q1_x - 2 * median_x) / (2 * Q_x),
-    W_x = (D9_x - D1_x) / (Q3_x - Q1_x)
+    W_sQ = round((Q3_x - median_x) - (median_x - Q1_x), 3),
+    A_Q = round((Q3_x + Q1_x - 2 * median_x) / (2 * Q_x), 3),
+    W_x = round((D9_x - D1_x) / (Q3_x - Q1_x), 3)
   )
 }
 
@@ -553,19 +558,7 @@ sample_data  %>%
 ## Analiza regresji liniowej.
 Celem tej części projektu była analiza zależności pomiędzy pojemnością silnika (displ) a efektywnością paliwową w cyklu miejskim (city08). Zmienna city08 reprezentuje liczbę mil, jakie pojazd jest w stanie przejechać w warunkach miejskich na jednym galonie paliwa (MPG – miles per gallon). Oznacza to, że im wyższa jej wartość, tym mniejsze rzeczywiste zużycie paliwa. Obie zmienne mają charakter ilościowy, co uzasadnia zastosowanie modelu regresji liniowej.
 
-**Wizualizacja regresji:**
-
-W celu lepszego zobrazowania zależności, do analizy dołączono wykresy:
-
-- wykres rozrzutu reszt, który pomaga ocenić, czy model regresji jest dobrze dopasowany do danych,
-
-- wykres Q-Q plot, by sprawdzić, czy reszty mają rozkład zbliżony do normalnego,
-
-- wykres zależności badanych zmiennych od siebie.
-
-
-
-### Analiza regresji
+### Przygotowanie modelu
 ```{r}
 data_clean <- data %>% filter(!is.na(city08), !is.na(displ))
 
