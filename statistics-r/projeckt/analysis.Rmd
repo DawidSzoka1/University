@@ -601,16 +601,18 @@ gvlma(model)
 - Harvey-Collier (p = 0.8847): brak dowodów na nieliniowość.
 - GVLMA:
   - Naruszone są założenia: symetria (skewness), kurtoza, liniowość (link).
-  - Heteroskedastyczność nie występuje (p = 0.186).
-- Durbin-Watson (p = 0.44): brak autokorelacji.
+  - Heteroskedastyczność nie występuje (p = 0.3288).
+- Durbin-Watson (p = 0.9519): brak autokorelacji.
 
 Podsumowanie:
 
-- Istnieje silna, ujemna zależność pomiędzy pojemnością silnika a zużyciem paliwa w mieście.
+- Istnieje silna, ujemna zależność pomiędzy pojemnością silnika a efektywnością paliwową w mieście.
 - Model jest statystycznie istotny, ale narusza założenie normalności reszt oraz wykazuje problemy z rozkładem (asymetria i kurtoza).
 - Jednak testy Harvey-Colliera i Durbin-Watsona potwierdzają poprawność założenia liniowości i brak autokorelacji, a brak heteroskedastyczności również wspiera trafność modelu.
 - W interpretacji wyników (szczególnie p-value) należy zachować ostrożność.
 - Mimo ograniczeń, model dobrze ilustruje ogólną zależność i może być użyteczny w analizie porównawczej.
+
+### Graficzna diagnostyka modelu
 
 ```{r warning=FALSE}
 ggplot(data_clean, aes(x = displ, y = city08)) +
@@ -618,7 +620,7 @@ ggplot(data_clean, aes(x = displ, y = city08)) +
   geom_smooth(method = "lm", se = FALSE, color = "blue") +
   labs(title = "Zależność zużycia paliwa w mieście od pojemności silnika",
        x = "Pojemność silnika (litry)",
-       y = "Zużycie paliwa w mieście (MPG)") +
+       y = "Efektywność paliwowa w mieście (MPG)") +
   theme_minimal()
 ```
 ```{r}
@@ -626,8 +628,8 @@ data_clean |>  ggplot(aes(x= displ, y= city08))+
  geom_point()+
  geom_smooth(method= lm,color= 'red') +
  theme_bw()+
- labs(x = '"Pojemność silnika (litry)',
- y = 'Zużycie paliwa w mieście (MPG)') +
+ labs(x = 'Pojemność silnika (litry)',
+ y = 'Efektywność paliwowa w mieście (MPG)') +
  stat_ma_eq(mapping= use_label(c("R2", "eq")),color= 'red') +
  stat_fit_tb(label.y= 0.9, label.x= .9)
 ```
@@ -638,36 +640,30 @@ Linia regresji dobrze odwzorowuje ogólny trend, choć obserwujemy rozproszenie 
 
 Model liniowy jest prosty i dobrze nadaje się do celów porównawczych, ale – jak pokazały testy diagnostyczne – narusza założenia (nienormalność reszt, nieliniowość), dlatego jego interpretacja wymaga ostrożności.
 
-
-### Graficzna diagnostyka modelu
-
 ```{r}
 par(mfrow = c(2,2))
 plot(model)
 ```
 
-- Rozrzut reszt wskazuje na **heteroskedastyczność**.
-- Q-Q plot wskazuje na odchylenia od normalności (szczególnie w ogonach).
+### Interpretacja wykresów (plot)
 
-### Wyznaczanie zbioru zmiennych objaśniających
-```{r}
-model_end <- step(lm(city08 ~ displ, data = data_clean), direction = "both")
-summary(model_end)
-```
+- **Residuals vs Fitted:** rozrzut reszt nie jest losowy – szczególnie dla wyższych wartości dopasowanych pojawia się wachlarzowaty kształt, co może świadczyć o nieliniowości lub zmiennej wariancji.
+- **Q-Q plot:** reszty nie mają rozkładu normalnego – odchylenia w ogonach są silne i potwierdzają wyniki testu Shapiro-Wilka.
+- **Scale-Location plot:** rosnąca wariancja reszt wraz z wartościami dopasowanymi może wskazywać na heteroskedastyczność, choć testy formalne jej nie wykazały.
+- **Residuals vs Leverage:** kilka punktów może mieć silny wpływ na model. Są to obserwacje z dużymi resztami i wysokim leverage – warto rozważyć ich dalszą analizę lub ewentualne wykluczenie.
 
-### Wnioski
 
-- **Istotny negatywny związek** między `displ` a `city08`.
-- Model istotny statystycznie (**p < 2.2e-16**).
-- **Zastrzeżenia co do jakości modelu**:
-  - Brak normalności reszt.
-  - Zmienna wariancja reszt (heteroskedastyczność).
+### Podsumowanie regresji
 
-Zalecenia:
+Model liniowy dobrze odwzorowuje ogólny trend: większa pojemność silnika wiąże się z mniejszą efektywnością paliwową. Pomimo naruszeń niektórych założeń klasycznej regresji (szczególnie normalności reszt), model pozostaje użyteczny do analizy zależności i celów porównawczych. W interpretacji wyników statystycznych, zwłaszcza p-value, należy jednak zachować ostrożność.
 
-- Rozważyć transformację zmiennych (np. logarytmiczną).
-- Rozważyć użycie regresji odpornych na heteroskedastyczność.
-- Interpretować wartości p z ostrożnością.
+Dla zwiększenia dokładności analizy w przyszłości można rozważyć:
+
+- zastosowanie transformacji zmiennych (np. logarytmicznej),
+
+- użycie regresji odpornej na naruszenia założeń,
+
+- uwzględnienie dodatkowych zmiennych objaśniających (np. ilość cylindrów, typ napędu, rodzaj paliwa).
 
 ## Podsumowanie
 - Przeprowadzono pełną analizę statystyczną wybranej próbki danych dotyczących pojazdów.
