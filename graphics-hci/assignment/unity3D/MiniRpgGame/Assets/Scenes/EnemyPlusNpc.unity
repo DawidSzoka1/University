@@ -531,7 +531,20 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 451442859}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1958549649}
+        m_TargetAssemblyTypeName: playerAssets.FinalCharacterController.PlayerHealth,
+          Assembly-CSharp
+        m_MethodName: ExitGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &451442859
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -788,8 +801,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 34
+  m_fontSizeBase: 34
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1254,8 +1267,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 34
+  m_fontSizeBase: 34
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1623,11 +1636,6 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
---- !u!1 &877856495 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2171598585663885944, guid: 6a78f23a87f71a24aa355ecbd15c1b4d, type: 3}
-  m_PrefabInstance: {fileID: 1998955344}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &893423051
 GameObject:
   m_ObjectHideFlags: 0
@@ -2790,8 +2798,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 157}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: 15, y: 157}
+  m_SizeDelta: {x: 250, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1815385567
 MonoBehaviour:
@@ -2813,7 +2821,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Koniec Gry
+  m_text: KONIEC GRY
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2840,15 +2848,15 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 36.4
+  m_fontSizeBase: 34
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_fontStyle: 1
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -3216,20 +3224,22 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4702229198241056, guid: 0ba258545da721e488ecb71ffd143b6f, type: 3}
   m_PrefabInstance: {fileID: 1914324262}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1958549649
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+--- !u!95 &1958549648 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 2900161209993107820, guid: 6a78f23a87f71a24aa355ecbd15c1b4d, type: 3}
+  m_PrefabInstance: {fileID: 1998955344}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 877856495}
+--- !u!114 &1958549649 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2014661160608029515, guid: 6a78f23a87f71a24aa355ecbd15c1b4d, type: 3}
+  m_PrefabInstance: {fileID: 1998955344}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0005acd2340f68449b61d79157adc745, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
-  gameOverUI: {fileID: 1993838595}
 --- !u!1 &1993838595
 GameObject:
   m_ObjectHideFlags: 0
@@ -3343,6 +3353,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2014661160608029515, guid: 6a78f23a87f71a24aa355ecbd15c1b4d, type: 3}
+      propertyPath: _animator
+      value: 
+      objectReference: {fileID: 1958549648}
+    - target: {fileID: 2014661160608029515, guid: 6a78f23a87f71a24aa355ecbd15c1b4d, type: 3}
+      propertyPath: gameOverUI
+      value: 
+      objectReference: {fileID: 1993838595}
     - target: {fileID: 2171598585663885944, guid: 6a78f23a87f71a24aa355ecbd15c1b4d, type: 3}
       propertyPath: m_Name
       value: PersonController
@@ -3390,10 +3408,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 2171598585663885944, guid: 6a78f23a87f71a24aa355ecbd15c1b4d, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1958549649}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6a78f23a87f71a24aa355ecbd15c1b4d, type: 3}
 --- !u!1001 &2007047669
 PrefabInstance:

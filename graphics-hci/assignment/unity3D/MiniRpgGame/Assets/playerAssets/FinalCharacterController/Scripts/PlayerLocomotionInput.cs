@@ -104,6 +104,11 @@ namespace playerAssets.FinalCharacterController
             }
             JumpPressed = true;
         }
+
+        public void OnAttack(InputAction.CallbackContext context)
+        {
+            Debug.Log("Gracz atakuje");
+        }
     }
 
 }

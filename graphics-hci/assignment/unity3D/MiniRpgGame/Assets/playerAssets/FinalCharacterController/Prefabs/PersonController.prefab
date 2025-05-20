@@ -1402,6 +1402,7 @@ GameObject:
   - component: {fileID: 1991316754864154737}
   - component: {fileID: 1680100948833061657}
   - component: {fileID: 7124206342730154943}
+  - component: {fileID: 2014661160608029515}
   m_Layer: 6
   m_Name: PersonController
   m_TagString: Untagged
@@ -1574,6 +1575,20 @@ CapsuleCollider:
   m_Height: 1.8
   m_Direction: 1
   m_Center: {x: 0, y: 0.9, z: 0}
+--- !u!114 &2014661160608029515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2171598585663885944}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0005acd2340f68449b61d79157adc745, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  gameOverUI: {fileID: 0}
 --- !u!1 &2176681990481709864
 GameObject:
   m_ObjectHideFlags: 0

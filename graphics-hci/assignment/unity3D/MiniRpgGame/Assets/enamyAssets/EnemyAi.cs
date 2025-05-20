@@ -112,7 +112,9 @@ public class EnemyAiTutorial : MonoBehaviour
             _animator.SetTrigger("Attack");
             if (player.TryGetComponent<PlayerHealth>(out PlayerHealth playerHealth))
             {
+              
                 playerHealth.TakeDamage(damageAmount);
+                
             }
 
             alreadyAttacked = true;
