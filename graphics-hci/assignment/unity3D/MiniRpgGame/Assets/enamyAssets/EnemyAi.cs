@@ -1,4 +1,5 @@
 
+using playerAssets.FinalCharacterController;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -21,6 +22,7 @@ public class EnemyAiTutorial : MonoBehaviour
     public float timeBetweenAttacks;
     bool alreadyAttacked;
     public GameObject projectile;
+    public int damageAmount;
 
     //States
     public float sightRange, attackRange;
@@ -30,7 +32,15 @@ public class EnemyAiTutorial : MonoBehaviour
 
     //Animator
     [SerializeField] private Animator _animator;
-   
+
+    //Spawner
+    private EnemySpawner spawner;
+
+    public void SetSpawner(EnemySpawner spawner)
+    {
+        this.spawner = spawner;
+    }
+
 
     private void Awake()
     {
@@ -100,11 +110,10 @@ public class EnemyAiTutorial : MonoBehaviour
         {
             
             _animator.SetTrigger("Attack");
-            ///Attack code here
-            //Rigidbody rb = Instantiate(projectile, transform.position, Quaternion.identity).GetComponent<Rigidbody>();
-            //rb.AddForce(transform.forward * 32f, ForceMode.Impulse);
-            //rb.AddForce(transform.up * 8f, ForceMode.Impulse);
-            ///End of attack code
+            if (player.TryGetComponent<PlayerHealth>(out PlayerHealth playerHealth))
+            {
+                playerHealth.TakeDamage(damageAmount);
+            }
 
             alreadyAttacked = true;
             Invoke(nameof(ResetAttack), timeBetweenAttacks);
@@ -123,6 +132,7 @@ public class EnemyAiTutorial : MonoBehaviour
     }
     private void DestroyEnemy()
     {
+        spawner.OnEnemyDeath(gameObject);
         Destroy(gameObject);
     }
 
