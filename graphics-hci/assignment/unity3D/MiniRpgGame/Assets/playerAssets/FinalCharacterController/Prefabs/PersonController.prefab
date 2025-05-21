@@ -1589,6 +1589,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   gameOverUI: {fileID: 0}
+  _animator: {fileID: 2900161209993107820}
 --- !u!1 &2176681990481709864
 GameObject:
   m_ObjectHideFlags: 0

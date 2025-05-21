@@ -16,6 +16,8 @@ namespace playerAssets.FinalCharacterController
         public Vector2 LookInput { get; private set; }
 
         public bool JumpPressed { get; private set; }
+
+        public bool AttackPressed { get; private set; }
         #endregion
 
 
@@ -94,6 +96,7 @@ namespace playerAssets.FinalCharacterController
         private void LateUpdate()
         {
             JumpPressed = false;
+            AttackPressed = false;
         }
 
         public void OnJump(InputAction.CallbackContext context)
@@ -107,7 +110,11 @@ namespace playerAssets.FinalCharacterController
 
         public void OnAttack(InputAction.CallbackContext context)
         {
-            Debug.Log("Gracz atakuje");
+            if(!context.performed)
+            {
+                return;
+            }
+            AttackPressed = true;
         }
     }
 

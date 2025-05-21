@@ -11,6 +11,7 @@ public class EnemyAiTutorial : MonoBehaviour
 
     public LayerMask whatIsGround, whatIsPlayer;
 
+    public float maxHealth = 100;
     public float health;
 
     //Patroling
@@ -42,6 +43,10 @@ public class EnemyAiTutorial : MonoBehaviour
     }
 
 
+    public void Start()
+    {
+        health = maxHealth;
+    }
     private void Awake()
     {
         player = GameObject.Find("PersonController").transform;
@@ -110,15 +115,21 @@ public class EnemyAiTutorial : MonoBehaviour
         {
             
             _animator.SetTrigger("Attack");
-            if (player.TryGetComponent<PlayerHealth>(out PlayerHealth playerHealth))
-            {
-              
-                playerHealth.TakeDamage(damageAmount);
-                
-            }
+            Invoke(nameof(TryDealDamageToPlayer), 0.5f);
 
             alreadyAttacked = true;
             Invoke(nameof(ResetAttack), timeBetweenAttacks);
+        }
+    }
+    private void TryDealDamageToPlayer()
+    {
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        if (distanceToPlayer <= attackRange)
+        {
+            if (player.TryGetComponent<PlayerHealth>(out PlayerHealth playerHealth))
+            {
+                playerHealth.TakeDamage(damageAmount);
+            }
         }
     }
     private void ResetAttack()
@@ -129,8 +140,9 @@ public class EnemyAiTutorial : MonoBehaviour
     public void TakeDamage(int damage)
     {
         health -= damage;
-
+        _animator.SetTrigger("isHit");
         if (health <= 0) Invoke(nameof(DestroyEnemy), 0.5f);
+        
     }
     private void DestroyEnemy()
     {
