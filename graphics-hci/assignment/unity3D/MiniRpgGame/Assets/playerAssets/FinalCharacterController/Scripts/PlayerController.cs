@@ -30,7 +30,13 @@ namespace playerAssets.FinalCharacterController
 
         [Header("Environment Details")]
         [SerializeField] private LayerMask _groundLayers;
-        
+
+        [Header("Attack settings*")]
+        public float attackRange = 2f;
+        public int attackDamage = 25;
+        public float attackCooldown = 0.8f;
+        private bool canAttack = true;
+        public LayerMask enemyLayers;
 
         private PlayerLocomotionInput _playerLocomotionInput;
         private PlayerState _playerState;
@@ -68,7 +74,35 @@ namespace playerAssets.FinalCharacterController
             UpdateMovementState();
             HandleVerticalMovement();
             HandleLateralMovement();
+            HandleAttack();
         }
+        private void HandleAttack()
+        {
+            if (_playerLocomotionInput.AttackPressed && canAttack)
+            {
+                canAttack = false;
+                Vector3 attackOrigin = transform.position + transform.forward * 1.0f;
+
+                // Szukamy koliderów tylko na warstwie "Enemy"
+                Collider[] hits = Physics.OverlapSphere(attackOrigin, attackRange, enemyLayers);
+
+                foreach (Collider hit in hits)
+                {
+                    if (hit.TryGetComponent<EnemyAiTutorial>(out EnemyAiTutorial enemy))
+                    {
+                        enemy.TakeDamage(attackDamage);
+                        
+                        Debug.Log($"Trafiono {hit.name} i zadano {attackDamage} obra¿eñ.");
+                    }
+                }
+                Invoke(nameof(ResetAttack), attackCooldown);
+            }
+        }
+        private void ResetAttack()
+        {
+            canAttack = true;
+        }
+
 
         private void UpdateMovementState()
         {

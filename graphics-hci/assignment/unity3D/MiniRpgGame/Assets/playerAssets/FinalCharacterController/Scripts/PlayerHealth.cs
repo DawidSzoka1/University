@@ -2,32 +2,46 @@ using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
+using UnityEngine.UI;
 namespace playerAssets.FinalCharacterController
 {
 
     public class PlayerHealth : MonoBehaviour
     {
         public int maxHealth = 100;
-        private int currentHealth;
+        public int currentHealth;
+        public int healthPerKill = 20;
         public GameObject gameOverUI;
         [SerializeField] private Animator _animator;
+      
 
         void Start()
         {
             currentHealth = maxHealth;
             gameOverUI.SetActive(false);
         }
-
+        
         public void TakeDamage(int amount)
         {
             currentHealth -= amount;
+            currentHealth = Mathf.Max(currentHealth, 0);
+
+       
             Debug.Log("Gracz otrzyma³ " + amount + " obra¿eñ. HP = " + currentHealth);
             Invoke(nameof(AnimationOnHit), 0.5f);
             
             if (currentHealth <= 0)
             {
                 EndGame();
+            }
+        }
+
+        public void HealAfterKill()
+        {
+            currentHealth += healthPerKill;
+            if (currentHealth >= maxHealth)
+            {
+                currentHealth = maxHealth;
             }
         }
 

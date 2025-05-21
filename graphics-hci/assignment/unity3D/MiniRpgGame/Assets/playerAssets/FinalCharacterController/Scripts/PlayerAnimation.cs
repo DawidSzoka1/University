@@ -17,6 +17,7 @@ namespace playerAssets.FinalCharacterController
         private static int isGroundedHash = Animator.StringToHash("isGrounded");
         private static int isFallingHash = Animator.StringToHash("isFalling");
         private static int isJumpingHash = Animator.StringToHash("isJumping");
+        private static int isAttackingHash = Animator.StringToHash("isAttacking");
 
         private Vector3 _currentBlendInput = Vector3.zero;
 
@@ -46,6 +47,7 @@ namespace playerAssets.FinalCharacterController
             _animator.SetBool(isGroundedHash, isGrounded);
             _animator.SetBool(isFallingHash, isFalling);
             _animator.SetBool(isJumpingHash, isJumping);
+            _animator.SetBool(isAttackingHash, _playerLocomotionInput.AttackPressed);
             _animator.SetFloat(inputXHash, _currentBlendInput.x);
             _animator.SetFloat(inputYHash, _currentBlendInput.y);
             _animator.SetFloat(inputMagnitudeHash, _currentBlendInput.magnitude);
