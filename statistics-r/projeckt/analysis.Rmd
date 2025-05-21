@@ -531,6 +531,40 @@ ggplot(sample_data, aes(x = drive, y = city08)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+
+#### Wnioski
+
+- **Najwyższa mediana MPG:**
+
+  - 2-Wheel Drive ma najwyższą medianę (ok. 23 MPG), co oznacza, że pojazdy z tym napędem są najbardziej paliwooszczędne w mieście.
+
+  - Front-Wheel Drive i Part-time 4-Wheel Drive również wykazują relatywnie wysokie mediany.
+
+- **Najniższa mediana MPG:**
+
+  - 4-Wheel Drive oraz Rear-Wheel Drive osiągają najniższe mediany MPG (ok. 13–17 MPG), co wskazuje na najmniejszą efektywność paliwową w warunkach miejskich.
+
+- **Rozrzut danych i wartości odstające:**
+
+  - Front-Wheel Drive i Part-time 4-Wheel Drive mają najszerszy rozrzut wartości oraz najwięcej wartości odstających (outliers), co może sugerować dużą różnorodność modeli i silników.
+
+  - All-Wheel Drive i 4-Wheel or All-Wheel Drive mają dość zwarte rozkłady, ale z niskimi wartościami MPG.
+
+- **Efektywność napędów:**
+
+  - Napędy przednie i częściowo 4WD generalnie zapewniają lepszą efektywność w mieście niż klasyczne pełne 4WD czy napędy tylne, co jest zgodne z oczekiwaniami (mniejsze opory i masa układów napędowych).
+
+#### Podsumowanie:
+
+- Pojazdy z napędem na przednie koła (Front-Wheel Drive) lub na dwa koła (2-Wheel Drive) są najbardziej ekonomiczne w warunkach miejskich.
+
+- Pełne napędy 4x4 (4-Wheel Drive, AWD) i napędy tylne zużywają więcej paliwa w mieście.
+
+- Obecność wartości odstających może świadczyć o różnorodności modeli i technologii w danej kategorii napędu.
+
+- Dla kierowców poruszających się głównie w warunkach miejskich, napęd FWD lub 2WD będzie optymalny pod względem oszczędności paliwa.
+
+
 ### Średnia emisja CO2 w czasie
 ```{r}
 sample_data %>% filter(year >= 2012.5) %>%
@@ -543,6 +577,51 @@ sample_data %>% filter(year >= 2012.5) %>%
   theme_minimal()
 ```
 
+#### Wnioski z danych:
+
+- **Lata 2013–2014:**
+
+  - Emisja CO₂ utrzymywała się na stosunkowo stabilnym poziomie – około 360 g/mi.
+
+- **Lata 2015–2018:**
+
+  - Wzrost emisji do około 470 g/mi w 2018 – zauważalny trend wzrostowy, możliwie związany z większą liczbą pojazdów o wyższym zużyciu paliwa (np. SUV-y, silniki wysokiej mocy).
+
+- **Lata 2019–2021:**
+
+  - Stopniowy spadek emisji, z wyraźnym minimum w 2021 r. (~270 g/mi). Może być efektem:
+
+  - wzrostu popularności pojazdów hybrydowych/elektrycznych,
+spadku aktywności transportowej w okresie pandemii COVID-19.
+
+- **Lata 2022–2024:**
+
+  - Nagły wzrost emisji, osiągając maksimum (~580 g/mi) w 2024. Wzrost może być spowodowany:
+
+    - wzrostem sprzedaży pojazdów o wyższym spalaniu,
+
+    - ożywieniem gospodarczym i zwiększoną mobilnością po pandemii.
+
+- **Rok 2025:**
+
+  - Ponowny spadek emisji do ok. 420 g/mi – możliwy efekt regulacji emisji, wdrażania technologii niskoemisyjnych lub zmian rynkowych.
+
+
+
+
+#### Podsumowanie
+- **Emisja CO₂ z pojazdów zmieniała się dynamicznie w ostatnich latach, co może być związane z:**
+
+  - zmianami w preferencjach konsumenckich (np. wzrost SUV-ów vs auta elektryczne),
+
+  - wpływem polityk klimatycznych,
+
+  - globalnymi wydarzeniami (np. pandemia COVID-19).
+
+- **Najniższy poziom emisji (2021) i najwyższy (2024) pokazują silną zmienność rynku transportowego.**
+
+- **Potencjalnie pozytywny trend na rok 2025 – spadek emisji – warto obserwować w kolejnych latach.**
+
 ### Heatmapa MPG autostrada vs cylindry i paliwo
 ```{r}
 sample_data  %>%
@@ -554,6 +633,31 @@ sample_data  %>%
   labs(title = "MPG autostrada wg cylindrów i paliwa", x = "Cylindry", y = "Rodzaj paliwa") +
   theme_minimal()
 ```
+
+#### Wnioski statystyczne:
+
+- **Najwyższa efektywność paliwowa:**
+Samochody na Regular Gasoline z 3 cylindrami osiągają najwyższe wartości MPG na autostradzie (ponad 40 MPG – najciemniejszy niebieski kolor).
+
+- **Spadek wydajności wraz z liczbą cylindrów:**
+Niezależnie od rodzaju paliwa, wzrost liczby cylindrów powoduje spadek efektywności paliwowej. Dla 8 i 12 cylindrów średnie MPG spada poniżej 25 MPG (jasnofioletowy kolor).
+
+- **Paliwa wysokooktanowe i diesel:**
+
+  - Diesel oraz Premium Gasoline przy 4 cylindrach osiągają stosunkowo dobre wyniki, ale gorsze niż Regular Gasoline przy tej samej liczbie cylindrów.
+  
+  - Diesel przy 4 cylindrach ma nieco niższe MPG niż Regular Gasoline, ale lepsze niż przy wyższych liczbach cylindrów.
+
+- **Niedostępność danych (brak koloru):**
+Braki kolorów przy niektórych kombinacjach (np. Diesel z 6, 8 lub 12 cylindrami) sugerują, że dla tych kategorii brak jest danych lub nie były reprezentowane w zestawie.
+
+#### Podsumowanie:
+
+- Małe silniki (3–4 cylindry) zasilane Regular Gasoline są najbardziej efektywne paliwowo na autostradzie.
+
+- Wraz ze wzrostem liczby cylindrów spada efektywność paliwowa niezależnie od rodzaju paliwa.
+
+- Regular Gasoline zapewnia najlepszy kompromis między wydajnością a liczbą cylindrów.
 
 ## Analiza regresji liniowej.
 Celem tej części projektu była analiza zależności pomiędzy pojemnością silnika (displ) a efektywnością paliwową w cyklu miejskim (city08). Zmienna city08 reprezentuje liczbę mil, jakie pojazd jest w stanie przejechać w warunkach miejskich na jednym galonie paliwa (MPG – miles per gallon). Oznacza to, że im wyższa jej wartość, tym mniejsze rzeczywiste zużycie paliwa. Obie zmienne mają charakter ilościowy, co uzasadnia zastosowanie modelu regresji liniowej.
