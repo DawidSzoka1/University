@@ -41,6 +41,8 @@ W analizie wykorzystano następujące pakiety R:
 - `car` – oferuje zaawansowane narzędzia do analizy i diagnostyki modeli regresji i analizy wariancji.
 - `gvlma` – służy do kompleksowego testowania założeń klasycznego modelu regresji liniowej.
 - `ggpmisc` rozszerza ggplot2 o możliwość dodawania wzorów równań, wartości R² i statystyk bezpośrednio na wykresach.
+- `knitr`- umożliwia tworzenie dynamicznych raportów w RMarkdown.
+- `kableExtra` - rozszerza funkcje knitr::kable() do tworzenia bardziej zaawansowanych i estetycznych tabel w raportach.
 
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -55,6 +57,8 @@ library(nortest)
 library(car)
 library(gvlma)
 library(ggpmisc)
+library(knitr)
+library(kableExtra)
 ```
 
 ## Podstawowe Informacje o danych
@@ -90,13 +94,26 @@ W dalszej części analizy wykorzystujemy tylko tę próbkę (fuel_sample),
 co pozwala skrócić czas obliczeń i uprościć wizualizacje, 
 zachowując reprezentatywność danych.
 
-Wczytanie danych
+Wczytanie danych i globalne ustawienia
 ```{r}
 set.seed(20250322)
 data <- read.csv("fuel_sample.csv")
-sample_data <-data %>% sample_n(150)
+sample_data <- data %>% sample_n(150)
 ```
-### Przykładowe dane, które będziemy analizować
+### Przegląd struktury danych
+
+Lista kolumn:
+
+```{r}
+cols <- colnames(data)
+matrix_cols <- matrix(cols, ncol = 6, byrow = TRUE)
+
+kable(matrix_cols, col.names = NULL) %>%
+  kable_styling(full_width = FALSE)
+```
+
+Pierwsze pieć wierszy tabeli:
+
 ```{r}
 datatable(head(data, 5), filter="top",
           options = list(scrollX = TRUE, scrollY = "250px"))
@@ -263,6 +280,7 @@ chi_stat <- (n - 1) * s2 / sigma0_sq
 p_value_var <- 2 * min(pchisq(chi_stat, df = n - 1), 1 - pchisq(chi_stat, df = n - 1))
 ci_var <- c((n - 1) * s2 / qchisq(1 - alpha/2, df = n - 1),
             (n - 1) * s2 / qchisq(alpha/2, df = n - 1))
+t_result
 ```
 ```{r setup, include=FALSE}
 wniosek_mean_test <- if (p_mean < 0.05) {
@@ -337,6 +355,7 @@ values_med <- na.omit(data$city08)
 n_med <- 80
 x_med <- sample(values_med, size = n_med)
 sh_med <- shapiro.test(x_med)
+sh_med
 ```
 
 #### Wnioski do `shapiro.test` dla `city08`
@@ -379,6 +398,10 @@ wniosek_median_ci <- if (ci_median[1] > mediana0) {
 }
 ```
 #### Wyniki i wnioski
+
+```{r}
+test_median
+```
 
 **Mediana - wilcox.test**
 
@@ -488,6 +511,10 @@ wniosek_ci <- if (hipotetyczna_frakcja < ci[1] || hipotetyczna_frakcja > ci[2]) 
 ```
 #### Wyniki i wnioski
 
+```{r}
+test_result
+```
+
 *Hipotezy:* 
 
 - H₀: frakcja = 0.50  
@@ -507,27 +534,59 @@ wniosek_ci <- if (hipotetyczna_frakcja < ci[1] || hipotetyczna_frakcja > ci[2]) 
 
 W celu uzyskania poglądowej charakterystyki wybranych zmiennych, przeprowadzono wizualizację danych opartą na losowej próbce 150 obserwacji. Poniższe wykresy umożliwiają szybkie uchwycenie rozkładów zmiennych oraz zależności między nimi.
 
-### Emisja CO2, a pojemność silnika:
+### Średni koszt paliwa (2008) wg klasy pojazdu:
 ```{r}
-ggplot(
-  sample_data %>% mutate(co2 = ifelse(co2 == 0, NA, co2)) %>% filter(!is.na(displ), !is.na(co2), !is.na(fuelType1)),
-  aes(x = displ, y = co2, color = fuelType1)
-) +
-  geom_point(alpha = 0.6) +
+sample_data %>%
+  group_by(VClass) %>%
+  summarise(Średni_koszt = mean(fuelCost08, na.rm = TRUE)) %>%
+  ggplot(aes(x = reorder(VClass, Średni_koszt), y = Średni_koszt)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
   labs(
-    title = "Emisja CO2 vs Pojemność silnika (próbka 100 aut)",
-    x = "Pojemność silnika",
-    y = "CO2 (g/mi)"
-  ) +
+       x = "Klasa pojazdu", y = "Koszt paliwa (USD)",
+       caption = "Źródło: dane EPA") +
   theme_minimal()
 ```
+
+#### Wnioski
+
+- **Najdroższe w eksploatacji:**
+
+  - Midsize Station Wagons, Vans, Passenger Type oraz Special Purpose Vehicle 4WD charakteryzują się najwyższym średnim kosztem paliwa, sięgającym ponad 4000 USD rocznie.
+
+  - Są to pojazdy często większe, cięższe, o większej pojemności silnika i niższej efektywności paliwowej.
+
+- **Pojazdy typu SUV, Pickup i Van:**
+
+  - Większość pojazdów użytkowych (np. Sport Utility Vehicle - 4WD, Standard Pickup Trucks) znajduje się w górnej części wykresu, co potwierdza ich wysokie zużycie paliwa.
+
+- **Najbardziej ekonomiczne:**
+
+  - Small Station Wagons, Small Sport Utility Vehicle 2WD oraz Subcompact Cars należą do pojazdów o najniższym koszcie paliwa – poniżej 2000 USD rocznie.
+
+  - Te pojazdy są zazwyczaj lżejsze i bardziej paliwooszczędne, często z mniejszym silnikiem.
+
+- **Niska pozycja samochodów osobowych:**
+
+  - Klasyczne segmenty osobowe jak Compact Cars, Midsize Cars i Minicompact Cars znajdują się w środku lub dolnej części zestawienia, potwierdzając ich umiarkowaną opłacalność paliwową.
+
+#### Podsumowanie:
+
+- Rodzaj pojazdu ma znaczący wpływ na koszty eksploatacji związane z paliwem.
+
+- Wybierając pojazd, konsumenci powinni brać pod uwagę nie tylko cenę zakupu, ale również koszty utrzymania, w tym zużycie paliwa.
+
+- Dla osób szukających oszczędności w codziennej jeździe – subcompact i compact cars są rozsądnym wyborem.
+
+- Polityki ekologiczne mogłyby kierować użytkowników w stronę bardziej ekonomicznych i przyjaznych środowisku pojazdów.
 
 ### Boxplot MPG miasto vs napęd
 
 ```{r}
 ggplot(sample_data, aes(x = drive, y = city08)) +
   geom_boxplot(fill = "lightblue") +
-  labs(title = "MPG w mieście a napęd", x = "Napęd", y = "MPG miasto") +
+  labs(title = "MPG w mieście a napęd", x = "Napęd", y = "MPG miasto"
+       , caption = "Źródło: dane EPA") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
@@ -573,7 +632,7 @@ sample_data %>% filter(year >= 2012.5) %>%
   ggplot(aes(x = year, y = średnie_CO2)) +
   geom_line(color = "darkred", linewidth = 1.2) +
   geom_point(color = "red") +
-  labs(title = "Emisja CO2 w czasie", x = "Rok", y = "CO2 (g/mi)") +
+  labs(title = "Emisja CO2 w czasie", x = "Rok", y = "CO2 (g/mi)", caption = "Źródło: dane EPA") +
   theme_minimal()
 ```
 
@@ -630,7 +689,7 @@ sample_data  %>%
   ggplot(aes(x = factor(cylinders), y = fuelType1, fill = śr_mpg_autostrada)) +
   geom_tile() +
   scale_fill_gradient(low = "white", high = "blue") +
-  labs(title = "MPG autostrada wg cylindrów i paliwa", x = "Cylindry", y = "Rodzaj paliwa") +
+  labs(title = "MPG autostrada wg cylindrów i paliwa", x = "Cylindry", y = "Rodzaj paliwa", caption = "Źródło: dane EPA") +
   theme_minimal()
 ```
 
