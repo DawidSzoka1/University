@@ -41,6 +41,8 @@ W analizie wykorzystano następujące pakiety R:
 - `car` – oferuje zaawansowane narzędzia do analizy i diagnostyki modeli regresji i analizy wariancji.
 - `gvlma` – służy do kompleksowego testowania założeń klasycznego modelu regresji liniowej.
 - `ggpmisc` rozszerza ggplot2 o możliwość dodawania wzorów równań, wartości R² i statystyk bezpośrednio na wykresach.
+- `knitr`- umożliwia tworzenie dynamicznych raportów w RMarkdown.
+- `kableExtra` - rozszerza funkcje knitr::kable() do tworzenia bardziej zaawansowanych i estetycznych tabel w raportach.
 
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -55,6 +57,8 @@ library(nortest)
 library(car)
 library(gvlma)
 library(ggpmisc)
+library(knitr)
+library(kableExtra)
 ```
 
 ## Podstawowe Informacje o danych
@@ -90,16 +94,27 @@ W dalszej części analizy wykorzystujemy tylko tę próbkę (fuel_sample),
 co pozwala skrócić czas obliczeń i uprościć wizualizacje, 
 zachowując reprezentatywność danych.
 
-Wczytanie danych
+Wczytanie danych i globalne ustawienia
 ```{r}
 set.seed(20250322)
 data <- read.csv("fuel_sample.csv")
-sample_data <-data %>% sample_n(150)
+sample_data <- data %>% sample_n(150)
 ```
-### Przykładowe dane, które będziemy analizować
+### Przegląd struktury danych
+
+Lista kolumn:
 
 ```{r}
-cat(paste0("- ", colnames(data), collapse = "\n"))
+cols <- colnames(data)
+matrix_cols <- matrix(cols, ncol = 6, byrow = TRUE)
+
+kable(matrix_cols, col.names = NULL) %>%
+  kable_styling(full_width = FALSE)
+```
+
+Pierwsze pieć wierszy tabeli:
+
+```{r}
 datatable(head(data, 5), filter="top",
           options = list(scrollX = TRUE, scrollY = "250px"))
 ```
@@ -265,6 +280,7 @@ chi_stat <- (n - 1) * s2 / sigma0_sq
 p_value_var <- 2 * min(pchisq(chi_stat, df = n - 1), 1 - pchisq(chi_stat, df = n - 1))
 ci_var <- c((n - 1) * s2 / qchisq(1 - alpha/2, df = n - 1),
             (n - 1) * s2 / qchisq(alpha/2, df = n - 1))
+t_result
 ```
 ```{r setup, include=FALSE}
 wniosek_mean_test <- if (p_mean < 0.05) {
@@ -339,6 +355,7 @@ values_med <- na.omit(data$city08)
 n_med <- 80
 x_med <- sample(values_med, size = n_med)
 sh_med <- shapiro.test(x_med)
+sh_med
 ```
 
 #### Wnioski do `shapiro.test` dla `city08`
@@ -381,6 +398,10 @@ wniosek_median_ci <- if (ci_median[1] > mediana0) {
 }
 ```
 #### Wyniki i wnioski
+
+```{r}
+test_median
+```
 
 **Mediana - wilcox.test**
 
@@ -489,6 +510,10 @@ wniosek_ci <- if (hipotetyczna_frakcja < ci[1] || hipotetyczna_frakcja > ci[2]) 
 }
 ```
 #### Wyniki i wnioski
+
+```{r}
+test_result
+```
 
 *Hipotezy:* 
 
