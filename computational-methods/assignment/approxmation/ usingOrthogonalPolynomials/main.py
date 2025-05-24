@@ -1,9 +1,9 @@
-from utils.main import compute_integral
+from approxmation.utils.main import compute_integral
 
 p_x = 1
 a = -1
 b = 1
-n = 2
+n = 6
 
 
 def wielomian_legendre(x, n):
@@ -13,7 +13,8 @@ def wielomian_legendre(x, n):
         return x
     if n == 2:
         return 1 / 2 * (3 * x ** 2 - 1)
-    return ((2 * n * x + x) / (n + 1)) * wielomian_legendre(x, n - 1) - n / (n + 1) * wielomian_legendre(x, n - 2)
+    return ((2 * n - 1) * x * wielomian_legendre(x, n - 1) -
+            (n - 1) * wielomian_legendre(x, n - 2)) / n
 
 
 def calculate_lambdai(i, a, b):
@@ -39,4 +40,5 @@ def calculate_gx(x, a, b, n):
     return result
 
 
-print(calculate_gx(0.4, a, b, n))
+print("g(0.4) = ", calculate_gx(0.4, a, b, n))
+print(func(0.4) - calculate_gx(0.4, a, b, n))

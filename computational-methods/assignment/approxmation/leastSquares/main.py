@@ -1,7 +1,7 @@
 import numpy as np
 
-x_values = [-1, -0.5, 0, 0.5, 1]
-n = 3
+x_values = [-1, -0.1, 0, 0.9, 1]
+n = 2
 m = 5
 
 
@@ -33,11 +33,12 @@ def calculate_wx(look_for_value, x_values, n, m, func=function):
     for i in range(n + 1):
         for j in range(n + 1):
             a_array[i, j] = calculate_sij(x_values, i, j, m)
-    values, *_ = np.linalg.lstsq(a_array, b_array, rcond=None)
+    values = np.linalg.solve(a_array, b_array)
     result = 0
+    print(values)
     for i in range(n+1):
         result += values[i][0] * look_for_value ** i
     return result
 
 
-print(calculate_wx(0.4, x_values, n, m))
+print("W(0.4) = ", calculate_wx(0.4, x_values, n, m))
