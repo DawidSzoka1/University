@@ -230,7 +230,7 @@ jak i hipotezami po wcześniejszym sprawdzeniu stosowanlości testów.
 
 **Średnia i wariancja: **
 Jako zmienną z rokładem normalnym przyjmiemy `youSaveSpend`, uprzednio sprawdzając hipoteze o jej rozkładzie.
-Do weryfikacji tego zastosujemy `shapiro.test` z próbą o wielkości 40.
+Do weryfikacji tego zastosujemy `shapiro.test` z próbą o wielkości 30.
 
 **Mediana:**
 Zbadany dla zmiennej `city08` po uprzednim odrzuceniu hipotezy o rozkładznie normalnym.
@@ -243,10 +243,23 @@ Jako zmienną przyjmiemy `startStop`, sprawdzając jej stosowalność oraz jakie
 Wszystkie próby są losowe z ziarnem ustawionym na 20250322. Wszystkie zmienne zostaną odpowiednio przygotowane do testowania, czyli pominiecie wartości NA i losowa próbą o właściwej wielkości
 
 ### Przedziały ufności i hipotezy dla Średnia i wariancja
+
+#### Cel analizy statystycznej 
+W niniejszej analizie badamy zmienną opisującą oszczędność użytkowników. Celem testów statystycznych jest:
+
+- Oszacowanie przedziałów ufności dla wartości oczekiwanej oraz wariancji,
+
+- Weryfikacja hipotez statystycznych dotyczących:
+
+  - czy średnia oszczędność różni się od zera (czy użytkownicy rzeczywiście oszczędzają lub tracą),
+
+  - oraz czy rozrzut danych jest zgodny z założonym poziomem wariancji.
+
+
 Sprawdzenie stosowalności
 ```{r}
 values <- na.omit(data$youSaveSpend)
-n <- 40
+n <- 30
 x <- sample(values, size = n)
 sh <- shapiro.test(x)
 sh
@@ -260,7 +273,7 @@ Dla zmiennej `youSaveSpend` przeprowadzono test normalności Shapiro-Wilks
 - statystyka W: `r round(sh$statistic, 3)`
 - wartość p: `r signif(sh$p.value, 3)`
 
-Wartość p = `r signif(sh$p.value, 3)` jest większa niż 0.05, co oznacza, że nie ma podstaw do odrzucenia hipotezy o normalnym rozkładzie danych. Ponieważ liczność próby przekracza 30 (n = `r n`), możliwe jest stosowanie przedziału ufności dla średniej z wykorzystaniem rozkładu t-Studenta.
+Wartość p = `r signif(sh$p.value, 3)` jest większa niż 0.05, co oznacza, że nie ma podstaw do odrzucenia hipotezy o normalnym rozkładzie danych. Ponieważ liczność próby nieprzekracza 30 (n = `r n`), możliwe jest stosowanie przedziału ufności dla średniej z wykorzystaniem rozkładu t-Studenta.
 
 W związku z tym uznaje się, że przedziały ufności dla średniej i wariancji zmiennej (`youSaveSpend`) są statystycznie stosowalne.
 
@@ -290,13 +303,9 @@ wniosek_mean_test <- if (p_mean < 0.05) {
 }
 
 
-wniosek_mean_ci <- if (ci_mean[1] > 0) {
-  sprintf("*Przedział ufności dla średniej:* [%.2f; %.2f] – użytkownicy przeciętnie osiągają zysk.", ci_mean[1], ci_mean[2])
-} else if (ci_mean[2] < 0) {
-  sprintf("*Przedział ufności dla średniej:* [%.2f; %.2f] – użytkownicy przeciętnie ponoszą stratę.", ci_mean[1], ci_mean[2])
-} else {
-  sprintf("*Przedział ufności dla średniej:* [%.2f; %.2f] zawiera 0 – nie możemy określić jednoznacznego trendu (zysk/strata).", ci_mean[1], ci_mean[2])
-}
+wniosek_mean_ci <- 
+  sprintf("*Przedział ufności dla średniej:* [%.2f; %.2f] – z 95%% pewnością można stwierdzić żę średnia mieści sie w tym przedziale. Cały przedział znajduje się poniżej zera, co wskazuje, że przeciętnie użytkownicy ponoszą strate.", ci_mean[1], ci_mean[2])
+
 
 
 wniosek_var_test <- if (p_value_var < 0.05) {
@@ -348,7 +357,23 @@ wniosek_var_ci <- if (ci_var[1] > sigma0_sq) {
 
 `r wniosek_var_ci`
 
-### Przedziały ufności dla mediany
+#### Podsumowanie całościowe
+Analiza statystyczna pokazuje, że:
+
+- Średnia oszczędność jest ujemna i istotnie różna od zera, co oznacza, że użytkownicy przeciętnie ponoszą straty.
+
+- Wariancja oszczędności mieści się w oczekiwanym zakresie, co sugeruje, że rozproszenie danych nie odbiega znacząco od przyjętego modelu.
+
+Uzyskane wyniki są statystycznie wiarygodne i mogą stanowić podstawę do dalszej interpretacji oraz ewentualnych decyzji projektowych lub wdrożeniowych.
+
+
+
+### Przedział ufności i hipoteza dla mediany
+
+#### Wstęp 
+
+Celem analizy jest ocena, czy dane dotyczące efektywności paliwowej pojazdów w mieście (zmienna city08) spełniają założenia niezbędne do zastosowania testów statystycznych, a następnie porównanie tej cechy z wartością odniesienia. W szczególności sprawdzamy, czy rozkład zmiennej city08 jest zgodny z rozkładem normalnym. Od tego zależy wybór odpowiednich metod – parametrycznych (np. test t-Studenta) lub nieparametrycznych (np. test Wilcoxona).
+
 Sprawdzenie stosowalności dla `city08`
 ```{r}
 values_med <- na.omit(data$city08)
@@ -381,7 +406,8 @@ p_median <- test_median$p.value
 # Bootstrap CI
 boot_median <- replicate(1000, median(sample(x_med, replace = TRUE)))
 ci_median <- quantile(boot_median, c(0.025, 0.975))
-
+```
+```{r include=FALSE}
 # Wnioski
 wniosek_median_test <- if (p_median < 0.05) {
   sprintf("*Test mediany:* H₀: mediana = %.2f vs H₁: mediana ≠ %.2f. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – mediana istotnie różni się od %.2f. Użytkownicy przeciętnie osiągają wynik inny niż zakładany poziom odniesienia.", mediana0, mediana0, mediana0)
@@ -390,11 +416,11 @@ wniosek_median_test <- if (p_median < 0.05) {
 }
 
 wniosek_median_ci <- if (ci_median[1] > mediana0) {
-  sprintf("*Przedział ufności dla mediany:* [%.2f; %.2f] – użytkownicy przeciętnie osiągają wynik powyżej %.2f.", ci_median[1], ci_median[2], mediana0)
+  sprintf("*Przedział ufności dla mediany:* [%.2f; %.2f] –  przy poziomie ufności 95%% nie zawiera wartości %.2f. Oznacza to, że z dużym prawdopodobieństwem (95%%) prawdziwa mediana populacji mieści się w tym przedziale i jest wyższa niż wartość referencyjna.", ci_median[1], ci_median[2], mediana0)
 } else if (ci_median[2] < mediana0) {
-  sprintf("*Przedział ufności dla mediany:* [%.2f; %.2f] – użytkownicy przeciętnie osiągają wynik poniżej %.2f.", ci_median[1], ci_median[2], mediana0)
+  sprintf("*Przedział ufności dla mediany:* [%.2f; %.2f] – przy poziomie ufności 95%% nie zawiera wartości %.2f. Oznacza to, że z dużym prawdopodobieństwem (95%%) prawdziwa mediana populacji mieści się w tym przedziale i jest niższa niż wartość referencyjna.", ci_median[1], ci_median[2], mediana0)
 } else {
-  sprintf("*Przedział ufności dla mediany:* [%.2f; %.2f] zawiera %.2f – nie możemy jednoznacznie określić, czy użytkownicy przeciętnie osiągają wynik wyższy czy niższy.", ci_median[1], ci_median[2], mediana0)
+  sprintf("*Przedział ufności dla mediany:* [%.2f; %.2f] zawiera %.2f – Sugeruje to, że na podstawie dostępnych danych nie można jednoznacznie stwierdzić, że mediana różni się od %.2f. Brak istotnej statystycznie różnicy – rzeczywista mediana w populacji może być równa %.2f.", ci_median[1], ci_median[2], mediana0, mediana0, mediana0)
 }
 ```
 #### Wyniki i wnioski
@@ -583,31 +609,37 @@ sample_data %>%
 ### Boxplot MPG miasto vs napęd
 
 ```{r}
-ggplot(sample_data, aes(x = drive, y = city08)) +
+sample_data %>%
+  filter(!is.na(drive)) %>%
+  ggplot(aes(x = drive, y = city08)) +
   geom_boxplot(fill = "lightblue") +
-  labs(title = "MPG w mieście a napęd", x = "Napęd", y = "MPG miasto"
-       , caption = "Źródło: dane EPA") +
+  labs(title = "MPG w mieście a napęd", 
+       x = "Napęd", 
+       y = "MPG miasto",
+       caption = "Źródło: dane EPA") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 
 #### Wnioski
-
+- **Problemy z danymi:**
+  - dwa typu napędu mają tylko jedna obserwacje co wypław na to żę nie maja pudełka
+  - jeden z nich nie ma wogle opisu
+  
 - **Najwyższa mediana MPG:**
 
-  - 2-Wheel Drive ma najwyższą medianę (ok. 23 MPG), co oznacza, że pojazdy z tym napędem są najbardziej paliwooszczędne w mieście.
+  - Front-Wheel Drive cechuje się najwyższym MPG w mieście (najlepsza efektywność paliwowa).
 
-  - Front-Wheel Drive i Part-time 4-Wheel Drive również wykazują relatywnie wysokie mediany.
+  - All-Wheel Drive również wykazują relatywnie wysokie mediany.
 
 - **Najniższa mediana MPG:**
 
-  - 4-Wheel Drive oraz Rear-Wheel Drive osiągają najniższe mediany MPG (ok. 13–17 MPG), co wskazuje na najmniejszą efektywność paliwową w warunkach miejskich.
+  - 4-Wheel or All-Wheel Drive osiągają najniższe mediany MPG (ok. 15 MPG), co wskazuje na najmniejszą efektywność paliwową w warunkach miejskich.
 
 - **Rozrzut danych i wartości odstające:**
 
-  - Front-Wheel Drive i Part-time 4-Wheel Drive mają najszerszy rozrzut wartości oraz najwięcej wartości odstających (outliers), co może sugerować dużą różnorodność modeli i silników.
+  - Front-Wheel Drive i All-Wheel Drive mają najszerszy rozrzut wartości oraz najwięcej wartości odstających (outliers), co może sugerować dużą różnorodność modeli i silników.
 
-  - All-Wheel Drive i 4-Wheel or All-Wheel Drive mają dość zwarte rozkłady, ale z niskimi wartościami MPG.
 
 - **Efektywność napędów:**
 
@@ -615,13 +647,13 @@ ggplot(sample_data, aes(x = drive, y = city08)) +
 
 #### Podsumowanie:
 
-- Pojazdy z napędem na przednie koła (Front-Wheel Drive) lub na dwa koła (2-Wheel Drive) są najbardziej ekonomiczne w warunkach miejskich.
+- Pojazdy z napędem na przednie koła (Front-Wheel Drive) są najbardziej ekonomiczne w warunkach miejskich.
 
 - Pełne napędy 4x4 (4-Wheel Drive, AWD) i napędy tylne zużywają więcej paliwa w mieście.
 
 - Obecność wartości odstających może świadczyć o różnorodności modeli i technologii w danej kategorii napędu.
 
-- Dla kierowców poruszających się głównie w warunkach miejskich, napęd FWD lub 2WD będzie optymalny pod względem oszczędności paliwa.
+- Dla kierowców poruszających się głównie w warunkach miejskich, napęd FWD będzie optymalny pod względem oszczędności paliwa.
 
 
 ### Średnia emisja CO2 w czasie
