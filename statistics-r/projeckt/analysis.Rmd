@@ -242,7 +242,7 @@ Jako zmienną przyjmiemy `startStop`, sprawdzając jej stosowalność oraz jakie
 
 Wszystkie próby są losowe z ziarnem ustawionym na 20250322. Wszystkie zmienne zostaną odpowiednio przygotowane do testowania, czyli pominiecie wartości NA i losowa próbą o właściwej wielkości
 
-### Przedziały ufności i hipotezy dla Średnia i wariancja
+### Przedziały ufności i hipotezy dla Średniej i wariancji
 
 #### Cel analizy statystycznej 
 W niniejszej analizie badamy zmienną opisującą oszczędność użytkowników. Celem testów statystycznych jest:
@@ -297,9 +297,9 @@ t_result
 ```
 ```{r setup, include=FALSE}
 wniosek_mean_test <- if (p_mean < 0.05) {
-  "*Test średniej:* H₀: μ = 0 vs H₁: μ ≠ 0. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – średnia istotnie różni się od zera. Użytkownicy przeciętnie zyskują lub tracą."
+  "*Test średniej:* H₀: μ = 0 vs H₁: μ ≠ 0. Na poziomie istotności $\\alpha = 0.05$. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – średnia istotnie różni się od zera. Użytkownicy przeciętnie zyskują lub tracą."
 } else {
-  "*Test średniej:* H₀: μ = 0 vs H₁: μ ≠ 0. Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej – średnia nie różni się istotnie od zera. Użytkownicy w ujęciu średnim są neutralni finansowo."
+  "*Test średniej:* H₀: μ = 0 vs H₁: μ ≠ 0. Na poziomie istotności $\\alpha = 0.05$. Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej – średnia nie różni się istotnie od zera. Użytkownicy w ujęciu średnim są neutralni finansowo."
 }
 
 
@@ -309,9 +309,9 @@ wniosek_mean_ci <-
 
 
 wniosek_var_test <- if (p_value_var < 0.05) {
-  sprintf("*Test wariancji:* H₀: σ² = %.0f vs H₁: σ² ≠ %.0f. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – wariancja istotnie różni się od %.0f. Zmienność w danych odbiega od przyjętej wartości.", sigma0_sq, sigma0_sq, sigma0_sq)
+  sprintf("*Test wariancji:* H₀: σ² = %.0f vs H₁: σ² ≠ %.0f. Na poziomie istotności $\\alpha = 0.05$. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – wariancja istotnie różni się od %.0f. Zmienność w danych odbiega od przyjętej wartości.", sigma0_sq, sigma0_sq, sigma0_sq)
 } else {
-  sprintf("*Test wariancji:* H₀: σ² = %.0f vs H₁: σ² ≠ %.0f. Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej – wariancja może być zgodna z %.0f. Rozrzut danych zgodny z oczekiwaniami.", sigma0_sq, sigma0_sq, sigma0_sq)
+  sprintf("*Test wariancji:* H₀: σ² = %.0f vs H₁: σ² ≠ %.0f. Na poziomie istotności $\\alpha = 0.05$. Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej – wariancja może być zgodna z %.0f. Rozrzut danych zgodny z oczekiwaniami.", sigma0_sq, sigma0_sq, sigma0_sq)
 }
 
 wniosek_var_ci <- if (ci_var[1] > sigma0_sq) {
@@ -396,7 +396,7 @@ W związku z tym:
 - **Do testowania hipotezy dotyczącej mediany** należy zastosować **test Wilcoxona** dla jednej próby (`wilcox.test()`), który nie wymaga założenia normalności rozkładu.
 - **Przedział ufności dla mediany**  wyznaczymy za pomocą **bootstrapowania** 
 
-#### Wyznacznie przedziału ufności i przetesotowanie hipotezy `city08`
+#### Wyznacznie przedziału ufności i przetesotowanie hipotezy mediany - `city08`
 
 ```{r}
 mediana0 <- 20  # <- wartość pod hipotezę zerową
@@ -410,9 +410,9 @@ ci_median <- quantile(boot_median, c(0.025, 0.975))
 ```{r include=FALSE}
 # Wnioski
 wniosek_median_test <- if (p_median < 0.05) {
-  sprintf("*Test mediany:* H₀: mediana = %.2f vs H₁: mediana ≠ %.2f. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – mediana istotnie różni się od %.2f. Użytkownicy przeciętnie osiągają wynik inny niż zakładany poziom odniesienia.", mediana0, mediana0, mediana0)
+  sprintf("*Test mediany:* H₀: mediana = %.2f vs H₁: mediana ≠ %.2f. Na poziomie istotności $\\alpha = 0.05$. Ponieważ p < 0.05, odrzucamy hipotezę zerową na rzecz alternatywnej – mediana istotnie różni się od %.2f. Użytkownicy przeciętnie osiągają wynik inny niż zakładany poziom odniesienia.", mediana0, mediana0, mediana0)
 } else {
-  sprintf("*Test mediany:* H₀: mediana = %.2f vs H₁: mediana ≠ %.2f. Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej – mediana nie różni się istotnie od %.2f. Użytkownicy w ujęciu mediany nie odbiegają znacząco od poziomu odniesienia.", mediana0, mediana0, mediana0)
+  sprintf("*Test mediany:* H₀: mediana = %.2f vs H₁: mediana ≠ %.2f. Na poziomie istotności $\\alpha = 0.05$. Ponieważ p ≥ 0.05, brak podstaw do odrzucenia hipotezy zerowej – mediana nie różni się istotnie od %.2f. Użytkownicy w ujęciu mediany nie odbiegają znacząco od poziomu odniesienia.", mediana0, mediana0, mediana0)
 }
 
 wniosek_median_ci <- if (ci_median[1] > mediana0) {
@@ -497,10 +497,12 @@ if(test_type == "prop.test"){
 p_val <- test_result$p.value
 ci <- test_result$conf.int
 frac_hat <- test_result$estimate
+```
+```{r include=FALSE}
 wniosek_test <- if (p_val < alpha) {
   sprintf(paste0(
     "*Test frakcji (%s):*\n",
-    "Przeprowadzono test hipotezy H₀: p = %.2f przeciwko H₁: p ≠ %.2f.\n",
+    "Przeprowadzono test hipotezy H₀: p = %.2f przeciwko H₁: p ≠ %.2f.\n Na poziomie istotności $\\alpha = 0.05$ ",
     "Otrzymano wartość p = %.4f, która jest mniejsza niż poziom istotności α = %.2f.\n",
     "W związku z tym odrzucamy hipotezę zerową.\n",
     "Oznacza to, że obserwowana frakcja w próbie różni się istotnie statystycznie od %.2f – udział jednej z kategorii dominuje."
@@ -509,7 +511,7 @@ wniosek_test <- if (p_val < alpha) {
 } else {
  sprintf(paste0(
   "*Test frakcji (%s):*\n",
-  "Przeprowadzono test hipotezy H₀: p = %.2f przeciwko H₁: p ≠ %.2f.\n",
+  "Przeprowadzono test hipotezy H₀: p = %.2f przeciwko H₁: p ≠ %.2f.\n Na poziomie istotności $\\alpha = 0.05$. ",
   "Otrzymano wartość p = %.4f, która jest większa lub równa poziomowi istotności α = %.2f.\n",
   "W związku z tym brak podstaw do odrzucenia hipotezy zerowej.\n",
   "Nie wykazano, by udział jednej z kategorii różnił się istotnie od %.1f%%."
@@ -558,7 +560,11 @@ test_result
 
 ## Hipotezy równości dla średnich, median, wariancji i frakcji  w zależności od typu napędu.
 
+W tej części zajmiemy sie hipotezami równości średnich, median, wariancji, frakcji  po wcześniejszym sprawdzeniu stosowanlości testów.
+
 Na potrzeby testów porównawczych potrzebujesz podziału danych na grupy.
+Pierwsza grupa będzie budowana w następujący sposób `filter(drive == "Rear-Wheel Drive")`.
+Druga jako `filter(drive == "Front-Wheel Drive")`.
 
 ### Hipotezy równości dla średnich, wariancji dla `fuelCost08`
 
@@ -623,17 +629,15 @@ t_test_result
 ```{r include=FALSE}
 pval <- t_test_result$p.value
 wniosek_mean <- if(pval > 0.05){
-    paste0("Nie ma podstaw do odrzucenia $H_0$ na poziomie istotności 
-    $\\alpha = 0.05$ (p = ", pval, " > 0.05).  
-Oznacza to, że nie istnieje **statystycznie istotna różnica** w średnich kosztach paliwa pomiędzy samochodami z napędem na tylne i przednie koła.")
+    paste0("Na poziomie istotności $\\alpha = 0.05$ (p = ", pval, " > 0.05) nie ma podstaw do odrzucenia $H_0$. Oznacza to, że nie istnieje **statystycznie istotna różnica** w średnich kosztach paliwa pomiędzy samochodami z napędem na tylne i przednie koła.")
   } else {
-    paste0("Odrzucamy $H_0$ na rzecz hipotezy alternatywnej $H_1$ na poziomie istotności $\\alpha = 0.05$ (p = ", pval, " < 0.05).  
-Oznacza to, że istnieje **statystycznie istotna różnica** w średnich kosztach paliwa pomiędzy samochodami z napędem na tylne i przednie koła.")
+    paste0("Na poziomie istotności $\\alpha = 0.05$ (p = ", pval, " < 0.05) należy odrzucić $H_0$, że średnie koszty paliwa w obu grupach są równe na korzyść hipotezy alternatywnej $H_1$,
+że  istnieje **statystycznie istotna różnica** w średnich kosztach paliwa pomiędzy samochodami z napędem na tylne i przednie koła.")
   }
 ```
 `r wniosek_mean`
 
-#### Przetestowanie hipotez równości `fuelCost08` dla wariacji 
+#### Przetestowanie hipotezy równości `fuelCost08` dla wariacji 
 
 ```{r}
 f_test <- var.test(gr1, gr2)
@@ -654,12 +658,10 @@ f_test
 
 ```{r include=FALSE}
 wniosek_var <- if (pval_var > 0.05) {
-  paste0("Nie ma podstaw do odrzucenia $H_0$ na poziomie istotności $\\alpha = 0.05$ 
-  (p = ", round(pval_var, 4), " > 0.05).  
+  paste0("Na poziomie istotności $\\alpha = 0.05$ (p = ", round(pval_var, 4), " > 0.05) nie ma podstaw do odrzucenia $H_0$.  
 Oznacza to, że nie istnieje **statystycznie istotna różnica** w wariancjach kosztów paliwa pomiędzy samochodami z napędem na tylne i przednie koła.")
 } else {
-  paste0("Odrzucamy $H_0$ na rzecz hipotezy alternatywnej $H_1$ na poziomie istotności 
-  $\\alpha = 0.05$ (p = ", round(pval_var, 4), " < 0.05).  
+  paste0("Na poziomie istotności $\\alpha = 0.05$ (p = ", round(pval_var, 4), " < 0.05) należy odrzucić $H_0$ na korzyść hipotezy alternatywnej $H_1$ .  
 Oznacza to, że istnieje **statystycznie istotna różnica** w wariancjach kosztów paliwa pomiędzy samochodami z napędem na tylne i przednie koła.")
 }
 ```
@@ -716,7 +718,7 @@ wilcox_result
 - Mediana gr2 (Front-Wheel Drive): `r median(gr2_med)`
 - Wartość p (test Wilcoxona): `r wilcox_result$p.value`
 
-Ponieważ wartość p = `r signif(wilcox_result$p.value, 5)` jest mniejsza niż 0,05, odrzucamy hipoteze zerową $H_0$ na rzecz hipotezy alternatywnej $H_1$ na poziomie istotności $\alpha = 0.05$. Oznacza to, że istnieje statystycznie istotna różnica w medianie rocznego zużycia paliwa między pojazdami z napędem na tylne i przednie koła.
+Na poziomie istotności $\alpha = 0.05$ należy odrzucić hipoteze zerową $H_0$, że mediany w zużyciu paliwa w tych grupach są równe na korzyść hipotezy alternatywnej $H_1$. Oznacza to, że istnieje statystycznie istotna różnica w medianie rocznego zużycia paliwa między pojazdami z napędem na tylne i przednie koła.
 
 ### Hipoteza równości dla frackji - `startStop`
 
@@ -1069,7 +1071,17 @@ Dla zwiększenia dokładności analizy w przyszłości można rozważyć:
   - przedzał ufności (frakcji),
   - testy istotności (frakcji),
   - przetestowano hipoteze (frakcji)
-  
+- Hipotezy równościowe:
+  - Podzielono zmienne na dwie grupy:
+    - grupa 1 - drive == "Rear-Wheel Drive"
+    - grupa 2 - drive == "Front-Wheel Drive"
+  - Dla zmiennej `fuelCost08` wykonano:
+    - hipoteze równości dla średnich 
+    - hipoteze równości dla wariancji
+  - Dla zmiennej `barrels08` wykonano:
+    - hipoteze równości dla median
+  - Dla zmiennej `startStop` wykonano:
+    - hipoteze równości dla frakcji
 - Analiza regresji pomiędzy zmienna `displ` a `city08`
 - Stosowalność testów była każdorazowo weryfikowana.
 - Przedstawiono co najmniej 4 wykresy ilustrujące zależności w danych.
