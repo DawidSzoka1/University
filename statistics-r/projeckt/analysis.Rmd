@@ -556,6 +556,177 @@ test_result
 
 `r wniosek_ci`
 
+## Hipotezy równości dla średnich, median, wariancji i frakcji  w zależności od typu napędu.
+
+Na potrzeby testów porównawczych potrzebujesz podziału danych na grupy.
+
+### Hipotezy równości dla średnich, wariancji dla `fuelCost08`
+
+#### Cel testu równości średnich
+Celem tego testu jest sprawdzenie, czy średni koszt paliwa `(fuelCost08)` różni się istotnie między pojazdami z napędem na tylne koła `(Rear-Wheel Drive)` a napędem na przednie koła `(Front-Wheel Drive)`. Aby przeprowadzić test t-Studenta, sprawdzono wcześniej założenie o normalności rozkładu w obu grupach.
+
+Zakładamy poziom istotności: $\alpha = 0{,}05$
+
+#### Sprawdzenie stosowalności testu t-Studenta i testu F-Snedecora
+
+```{r}
+gr1 <- data %>% filter(drive == "Rear-Wheel Drive") %>% pull(fuelCost08)
+gr2 <- data %>% filter(drive == "Front-Wheel Drive") %>% pull(fuelCost08)
+gr1 <- na.omit(gr1)[1:30]
+gr2 <- na.omit(gr2)[1:30]
+n1 <- length(gr1)
+n2 <- length(gr2)
+gr1_test <- shapiro.test(gr1)  
+gr2_test <- shapiro.test(gr2)
+gr1_test
+gr2_test
+```
+
+#### Wniosek dotyczący rozkładu normalnego
+
+- Dla Rear-Wheel Drive
+  - liczność: $n_1$ = `r n1`
+
+  - statystyka W = `r round(gr1_test$statistic, 3)`
+
+  - p-value = `r signif(gr1_test$p.value, 3)`
+  
+- Dla Front-Wheel Drive
+
+  - liczność: $n_2$ = `r n2`
+
+  - statystyka W = `r round(gr2_test$statistic, 3)`
+
+  - p-value = `r signif(gr2_test$p.value, 3)`
+
+W obu przypadkach p-value > 0.05 jak i liczebność mniejsza równa 30, co oznacza, że brak podstaw do odrzucenia hipotezy o normalnym rozkładzie danych. Możliwe jest więc zastosowanie testu t-Studenta dla dwóch prób niezależnych. Możemy również użyc testu F-Snedecora dla hipotezy wariancji.
+
+
+#### Przetestowanie hipotez równości `fuelCost08` dla średnich
+```{r}
+t_test_result <- t.test(gr1, gr2)
+t_test_result
+```
+
+#### Wyniki i wniskok
+
+*Hipotezy:* 
+
+- $H_0$: $\mu_1 = \mu_2$ – średnie koszty paliwa są równe w obu grupach
+
+- $H_1$: $\mu_1 \neq \mu_2$ – średnie koszty paliwa różnią się między grupami
+
+- Średnia gr1 (Rear-Wheel Drive): `r mean(gr1)`
+- Średnia gr2 (Front-Wheel Drive): `r mean(gr2)`
+- Wartość p: `r signif(t_test_result$p.value, 5)`
+
+```{r include=FALSE}
+pval <- t_test_result$p.value
+wniosek_mean <- if(pval > 0.05){
+    paste0("Nie ma podstaw do odrzucenia $H_0$ na poziomie istotności 
+    $\\alpha = 0.05$ (p = ", pval, " > 0.05).  
+Oznacza to, że nie istnieje **statystycznie istotna różnica** w średnich kosztach paliwa pomiędzy samochodami z napędem na tylne i przednie koła.")
+  } else {
+    paste0("Odrzucamy $H_0$ na rzecz hipotezy alternatywnej $H_1$ na poziomie istotności $\\alpha = 0.05$ (p = ", pval, " < 0.05).  
+Oznacza to, że istnieje **statystycznie istotna różnica** w średnich kosztach paliwa pomiędzy samochodami z napędem na tylne i przednie koła.")
+  }
+```
+`r wniosek_mean`
+
+#### Przetestowanie hipotez równości `fuelCost08` dla wariacji 
+
+```{r}
+f_test <- var.test(gr1, gr2)
+pval_var <- f_test$p.value
+f_test
+```
+
+#### Wyniki i wniskok
+
+*Hipotezy:* 
+
+- $H_0$: $\sigma_1^2 = \sigma_2^2$ – wariancje kosztów paliwa są równe w obu grupach  
+- $H_1$: $\sigma_1^2 \neq \sigma_2^2$ – wariancje kosztów paliwa różnią się między grupami  
+
+- Wariancja gr1 (Rear-Wheel Drive): `r round(var(gr1), 2)`  
+- Wariancja gr2 (Front-Wheel Drive): `r round(var(gr2), 2)`  
+- Wartość p: `r signif(f_test$p.value, 5)`
+
+```{r include=FALSE}
+wniosek_var <- if (pval_var > 0.05) {
+  paste0("Nie ma podstaw do odrzucenia $H_0$ na poziomie istotności $\\alpha = 0.05$ 
+  (p = ", round(pval_var, 4), " > 0.05).  
+Oznacza to, że nie istnieje **statystycznie istotna różnica** w wariancjach kosztów paliwa pomiędzy samochodami z napędem na tylne i przednie koła.")
+} else {
+  paste0("Odrzucamy $H_0$ na rzecz hipotezy alternatywnej $H_1$ na poziomie istotności 
+  $\\alpha = 0.05$ (p = ", round(pval_var, 4), " < 0.05).  
+Oznacza to, że istnieje **statystycznie istotna różnica** w wariancjach kosztów paliwa pomiędzy samochodami z napędem na tylne i przednie koła.")
+}
+```
+
+`r wniosek_var`
+
+### Hipoteza równości median - `barrels08` w zależności od typu napędu
+
+Celem niniejszego testu jest sprawdzenie, czy mediana zużycia paliwa (barrels08) istotnie różni się między pojazdami z napędem na tylne koła (Rear-Wheel Drive) a pojazdami z napędem na przednie koła (Front-Wheel Drive).
+```{r}
+gr1_med <- na.omit(data$barrels08[data$drive == "Rear-Wheel Drive"])
+gr2_med <- na.omit(data$barrels08[data$drive == "Front-Wheel Drive"])
+
+shapiro_gr1 <- shapiro.test(sample(gr1_med, size = 60))
+shapiro_gr2 <- shapiro.test(sample(gr2_med, size = 60))
+shapiro_gr1
+shapiro_gr2
+```
+
+#### Wnioski dotyczące rozkładu normalnego
+
+- Dla Rear-Wheel Drive
+  - liczność: $n_1$ = 60
+
+  - statystyka W = `r round(shapiro_gr1$statistic, 3)`
+
+  - p-value = `r shapiro_gr1$p.value`
+  
+- Dla Front-Wheel Drive
+
+  - liczność: $n_2$ = 60
+
+  - statystyka W = `r round(shapiro_gr2$statistic, 3)`
+
+  - p-value = `r shapiro_gr2$p.value`
+  
+Ponieważ w obu przypadkach p < 0.05, **odrzucamy hipotezę o normalnym rozkładzie danych**. Możemy zastosować **nieparametryczny test Wilcoxona**. 
+
+#### Przetesotowanie hipotez równości `barrels08` dla median
+
+```{r}
+wilcox_result <- wilcox.test(gr1_med, gr2_med)
+wilcox_result
+```
+
+#### Wyniki i wniskok
+
+*Hipotezy:*  
+
+- $H_0$: Mediana gr1 = Mediana gr2 – brak różnicy w medianie zużycia paliwa  
+- $H_1$: Mediana gr1 $\neq$ Mediana gr2 – istnieje różnica w medianie zużycia paliwa
+
+- Mediana gr1 (Rear-Wheel Drive): `r median(gr1_med)`
+- Mediana gr2 (Front-Wheel Drive): `r median(gr2_med)`
+- Wartość p (test Wilcoxona): `r wilcox_result$p.value`
+
+Ponieważ wartość p = `r signif(wilcox_result$p.value, 5)` jest mniejsza niż 0,05, odrzucamy hipoteze zerową $H_0$ na rzecz hipotezy alternatywnej $H_1$ na poziomie istotności $\alpha = 0.05$. Oznacza to, że istnieje statystycznie istotna różnica w medianie rocznego zużycia paliwa między pojazdami z napędem na tylne i przednie koła.
+
+### Hipoteza równości dla frackji - `startStop`
+
+#### Cel testu
+
+Celem testu jest sprawdzenie, czy udział pojazdów wyposażonych w system start-stop (startStop == "Yes") różni się istotnie między samochodami z napędem na tylne (Rear-Wheel Drive) i przednie (Front-Wheel Drive) koła.
+
+Zakładamy poziom istotności: $\alpha = 0{,}05$.
+
+
 ## Wizualizacja danych.
 
 W celu uzyskania poglądowej charakterystyki wybranych zmiennych, przeprowadzono wizualizację danych opartą na losowej próbce 150 obserwacji. Poniższe wykresy umożliwiają szybkie uchwycenie rozkładów zmiennych oraz zależności między nimi.
@@ -696,8 +867,6 @@ spadku aktywności transportowej w okresie pandemii COVID-19.
 - **Rok 2025:**
 
   - Ponowny spadek emisji do ok. 420 g/mi – możliwy efekt regulacji emisji, wdrażania technologii niskoemisyjnych lub zmian rynkowych.
-
-
 
 
 #### Podsumowanie
