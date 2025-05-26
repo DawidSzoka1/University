@@ -751,7 +751,39 @@ Braki kolorów przy niektórych kombinacjach (np. Diesel z 6, 8 lub 12 cylindram
 - Regular Gasoline zapewnia najlepszy kompromis między wydajnością a liczbą cylindrów.
 
 ## Analiza regresji liniowej.
-Celem tej części projektu była analiza zależności pomiędzy pojemnością silnika (displ) a efektywnością paliwową w cyklu miejskim (city08). Zmienna city08 reprezentuje liczbę mil, jakie pojazd jest w stanie przejechać w warunkach miejskich na jednym galonie paliwa (MPG – miles per gallon). Oznacza to, że im wyższa jej wartość, tym mniejsze rzeczywiste zużycie paliwa. Obie zmienne mają charakter ilościowy, co uzasadnia zastosowanie modelu regresji liniowej.
+Celem tej części projektu była analiza zależności pomiędzy pojemnością silnika (displ) a efektywnością paliwową w cyklu miejskim (city08). Zmienna city08 reprezentuje liczbę mil, jakie pojazd jest w stanie przejechać w warunkach miejskich na jednym galonie paliwa (MPG – miles per gallon). Oznacza to, że im wyższa jej wartość, tym mniejsze rzeczywiste zużycie paliwa. 
+
+### Uzasadnienie wyboru zmiennych:
+
+Aby uzasadnić wybór zmiennej `displ` jako objaśniającej, przeanalizowano współczynniki korelacji pomiędzy `city08` a wszystkimi zmiennymi ilościowymi w zbiorze danych.
+
+Wyniki korelacji (|r| > 0.6):
+```{r}
+# Wybieramy tylko zmienne numeryczne
+num_vars <- data[sapply(data, is.numeric)]
+# Korelacja ze wszystkimi zmiennymi względem city08
+korelacje_city <- cor(num_vars, use = "complete.obs")["city08", ]
+korelacje_city <- sort(korelacje_city, decreasing = TRUE)
+korelacje_city[abs(korelacje_city) > 0.6]
+target <- "city08"
+zmienne_istotne <- names(korelacje_city[abs(korelacje_city) > 0.6 & names(korelacje_city) != target])
+data_clean <- data %>% filter(!is.na(city08), !is.na(displ))
+# Wybieramy tylko kolumny: city08 + istotne predyktory
+model_data <- data_clean %>%
+  select(all_of(c(target, zmienne_istotne))) %>%
+  drop_na()  # Usunięcie wierszy z NA we wszystkich użytych zmiennych
+
+# Tworzymy formułę
+formul <- as.formula(paste("city08 ~", paste(zmienne_istotne, collapse = " + ")))
+
+# Dopasowujemy model
+model <- lm(formul, data = model_data)
+vif(model)
+```
+
+Jak widać, zmienna `displ` ma silną ujemną korelację z efektywnością paliwową w mieście (city08), co oznacza, że większa pojemność silnika wiąże się z wyraźnie gorszym zużyciem paliwa. Na tej podstawie została wybrana jako jeden z predyktorów w analizie regresji.
+
+Dodatkowo, w celu ograniczenia problemu współliniowości, wykluczono zmienne o bardzo wysokich wartości współczynnika VIF (powyżej 10), gdyż mogą one zakłócać interpretację modelu. Zostawia to nas z dwoma zmiennymi `cylinders` i `displ`. Zmienne te są ze sobą silnie powiązane – liczba cylindrów zazwyczaj rośnie wraz z pojemnością silnika – dlatego zdecydowano się zachować jedynie zmienną `displ`, która lepiej oddaje wpływ na efektywność paliwową.
 
 ### Przygotowanie modelu
 ```{r}
