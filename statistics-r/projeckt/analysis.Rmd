@@ -88,7 +88,7 @@ Dane zostały przetworzone w następujący sposób:
 
 **fuel_sample <- vehicles[sample(nrow(vehicles), 2000), ]**
 
-**write.csv(fuel_sample, "fuel_sample.csv", row.names = FALSE)**
+**write.csv(fuel_sample, "89221_Szoka.csv", row.names = FALSE)**
 
 W dalszej części analizy wykorzystujemy tylko tę próbkę (fuel_sample),
 co pozwala skrócić czas obliczeń i uprościć wizualizacje, 
@@ -120,8 +120,9 @@ datatable(head(data, 5), filter="top",
 ```
 ## Parametry liczbowe i pozycyjne
 
+### Dla zmiennych numerycznych
 
-### **Parametry liczbowe:**
+#### **Parametry liczbowe:**
 
 - średnia (mean)
 - wariancja (s2)
@@ -136,7 +137,7 @@ datatable(head(data, 5), filter="top",
 - wartość minimalna (min)
 - wartość maksymalna (max)
 
-### **Parametry pozycyjne:**
+#### **Parametry pozycyjne:**
 - moda (Mo)
 - mediana (Me)
 - kwartyle (Q1, Q3)
@@ -149,6 +150,7 @@ datatable(head(data, 5), filter="top",
 - wskaźnik asymetrii (W_sQ)
 - współczynnik asymetrii (A_Q)
 - współczynnik koncentracji (W_s)
+
 
 
 ```{r warning=FALSE}
@@ -215,15 +217,61 @@ statystyki <- map_df(names(data), function(nazwa) {
   } 
 })
 
-
 statystyki <- statystyki %>% select(zmienna, everything())
-
 ```
+
+### Analiza zmiennych kategorycznych
+
+Dla zmiennych kategorycznych wyznaczono podstawowe statystyki opisowe, w tym liczbę unikalnych wartości, najczęściej i najrzadziej występujące kategorie wraz z ich liczebnościami. Wartości puste ("") zostały potraktowane jako brakujące dane (NA) i wykluczone z analizy.
+
+```{r}
+analyze_cat_var <- function(var_name) {
+  var_data <- data[[var_name]]
+  var_data <- var_data[!is.na(var_data) & var_data != ""]  
+  tab <- table(var_data)
+  if (length(tab) == 0) {
+    return(NULL) 
+  }
+
+  num_unique <- length(tab)
+  most_common <- names(tab)[which.max(tab)]
+  least_common <- names(tab)[which.min(tab)]
+  
+  list(
+    zmienna = var_name,
+    liczba_unikalnych = num_unique,
+    najczestsza_wartosc = most_common,
+    liczba_najczestszej = max(tab),
+    najrzadsza_wartosc = least_common,
+    liczba_najrzadszej = min(tab)
+  )
+}
+
+
+cat_vars <- names(Filter(function(x) is.factor(x) || is.character(x), data))
+
+
+wyniki_kat <- lapply(cat_vars, analyze_cat_var)
+wyniki_kat <- Filter(Negate(is.null), wyniki_kat) 
+
+wyniki_df <- bind_rows(wyniki_kat)
+```
+
 ### Wyniki
+
+**Zmienne numeryczne:**
+
 ```{r}
 datatable(statystyki, filter="top",
           options = list(scrollX = TRUE, scrollY = "300px"))
 ```
+
+**Zmienne kategoryczne:**
+```{r}
+datatable(wyniki_df, filter="top",
+          options = list(scrollX = TRUE, scrollY = "300px"))
+```
+
 ## Przedziały ufności i przetesotowanie hipotez
 W tych częściach zajmiemy sie przedziałami ufności dla średniej, mediany, wariancji, frakcji
 jak i hipotezami po wcześniejszym sprawdzeniu stosowanlości testów.
@@ -570,14 +618,18 @@ Druga jako `filter(drive == "Front-Wheel Drive")`.
 
 #### Cel testu równości średnich
 Celem tego testu jest sprawdzenie, czy średni koszt paliwa `(fuelCost08)` różni się istotnie między pojazdami z napędem na tylne koła `(Rear-Wheel Drive)` a napędem na przednie koła `(Front-Wheel Drive)`. Aby przeprowadzić test t-Studenta, sprawdzono wcześniej założenie o normalności rozkładu w obu grupach.
+```{r}
+gr1_all <- data[data$drive == "Rear-Wheel Drive", ]
+gr2_all <- data[data$drive == "Front-Wheel Drive", ]
+```
 
 Zakładamy poziom istotności: $\alpha = 0{,}05$
 
 #### Sprawdzenie stosowalności testu t-Studenta i testu F-Snedecora
 
 ```{r}
-gr1 <- data %>% filter(drive == "Rear-Wheel Drive") %>% pull(fuelCost08)
-gr2 <- data %>% filter(drive == "Front-Wheel Drive") %>% pull(fuelCost08)
+gr1 <- gr1_all %>% pull(fuelCost08)
+gr2 <- gr2_all %>% pull(fuelCost08)
 gr1 <- na.omit(gr1)[1:30]
 gr2 <- na.omit(gr2)[1:30]
 n1 <- length(gr1)
@@ -728,6 +780,57 @@ Celem testu jest sprawdzenie, czy udział pojazdów wyposażonych w system start
 
 Zakładamy poziom istotności: $\alpha = 0{,}05$.
 
+#### Sprawdzenie stosowalności testu
+Warunki stosowalności testu proporcji:
+
+- Rear-Wheel Drive: sukcesów >= 5, porażek >= 5
+- Front-Wheel Drive: sukcesów >= 5, porażek >=5
+```{r}
+gr1_all <- gr1_all[gr1_all$startStop != "", ]
+gr2_all <- gr2_all[gr2_all$startStop != "", ]
+gr1_frak <- gr1_all[sample(nrow(gr1_all), 100), ]
+gr2_frak <- gr2_all[sample(nrow(gr2_all), 100), ]
+
+n1 <- nrow(gr1_frak)
+n2 <- nrow(gr2_frak)
+k1 <- sum(gr1_frak$startStop == "Y", na.rm = TRUE)
+k2 <- sum(gr2_frak$startStop == "Y", na.rm = TRUE)
+
+p1 <- k1 / n1
+p2 <- k2 / n2
+
+check1 <- k1 >= 5 && (n1 - k1) >= 5
+check2 <- k2 >= 5 && (n2 - k2) >= 5
+stosowalny_test <- check1 && check2
+```
+
+Wnioski stosowalności:
+
+- Rear-Wheel Drive: sukcesów = `r k1`, porażek = `r n1 - k1` 
+- Front-Wheel Drive: sukcesów = `r k2`, porażek = `r n2 - k2` 
+
+Obie grupy spełniaja warunek: liczba sukcesów i porażek ≥ 5
+
+Test proporcji z przybliżeniem normalnym **może być stosowany**
+
+#### Przetestowanie hipotezy równości `startStop` dla frakcji 
+```{r}
+prop_result <- prop.test(x = c(k1, k2), n = c(n1, n2), correct = FALSE)
+p_val <- signif(prop_result$p.value, 5)
+prop_result
+```
+
+#### Wyniki i wnioski
+  *Hipotezy:*  
+  
+  - $H_0$: $p_1$ = $p_2$ – frakcje samochodów z systemem start-stop są równe w obu grupach 
+  - $H_1$: $p_1$ $\neq$ $p_2$ – frakcje różnią się między grupami
+  
+  - Frakcja startStop = "Y" w grupie 1 (Rear-Wheel Drive): `r round(p1, 4)`
+  - Frakcja startStop = "Y" w grupie 2 (Front-Wheel Drive): `r round(p2, 4)`
+  - Wartość p: `r p_val`
+  
+  Na poziomie istotności $\alpha = 0,05$ nie ma podstaw do odrzucenie $H_0$, że frakcje samochodów z systemem startStop pomiędzy grupami Rear-Wheel Drive i Front-Wheel Drive są równe.
 
 ## Wizualizacja danych.
 
