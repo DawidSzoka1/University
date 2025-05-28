@@ -18,6 +18,7 @@ def find_result(a, b, e, func=function):
     bottom = a
     x_m = x_middl(a, b)
     top = b
+    iteration = 1
     while not accuracy_meet(x_m, e, func):
         if condition_met(bottom, x_m, func):
             top = x_m
@@ -26,7 +27,8 @@ def find_result(a, b, e, func=function):
         else:
             return "warunek konieczny nie jest spełniony"
         x_m = x_middl(bottom, top)
-    return x_m
+        iteration += 1
+    return x_m, iteration
 
 
 print(find_result(a, b, e, function))
