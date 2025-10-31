@@ -1,4 +1,4 @@
-from myFunction import funkcja
+from myFunction import funkcja, przykladowa
 
 calculated_value = {'0': 1, '1': 1}
 
@@ -62,11 +62,13 @@ def calculate(a, b, e, function=funkcja, maks=False):
     print(f"n = {n}")
     x1 = calculate_x1(a, b, calculated_value.get(f'{n - 1}'), calculated_value.get(f'{n}'))
     x2 = calculate_x2(a, b, calculated_value.get(f'{n - 1}'), calculated_value.get(f'{n}'))
+    iteration = 1
     while abs(x2 - x1) >= e and n > 1:
         x1_y = function(x1)
         x2_y = function(x2)
-        print(f"f(x1) = {x1_y}, f(x2) = {x2_y}, x1 = {x1}, x2= {x2}, a = {a}, b = {b}, n = {n}")
+        print(f"Iteracja {iteration}: f(x1) = {x1_y}, f(x2) = {x2_y}, x1 = {x1}, x2= {x2}, a = {a}, b = {b}, n = {n}")
         n -= 1
+        iteration += 1
         fib_prev = calculated_value.get(f'{n - 1}')
         fib_cur = calculated_value.get(f'{n}')
         if not fib_prev:
@@ -79,13 +81,18 @@ def calculate(a, b, e, function=funkcja, maks=False):
             a, b, x1, x2 = maksimum(x1_y, x2_y, x1, x2, a, b, fib_prev, fib_cur)
         else:
             a, b, x1, x2 = minimum(x1_y, x2_y, x1, x2, a, b, fib_prev, fib_cur)
-    print(f"f(x1) = {x1_y}, f(x2) = {x2_y}, x1 = {x1}, x2= {x2}, a = {a}, b = {b}, n = {n}")
+    print(f"Iteracja {iteration}: f(x1) = {x1_y}, f(x2) = {x2_y}, x1 = {x1}, x2= {x2}, a = {a}, b = {b}, n = {n}")
     return (a + b) / 2
 
 
 a = 0.6
 b = 5.8
-e = 0.1
+e = 0.01
 
 
-print(calculate(a, b, e, maks=False))
+moj_przyklad = calculate(a, b, e, maks=False)
+print(f"Minimum funkcji mojej jest w punkcie: {moj_przyklad}")
+
+test = calculate(60, 150, 3, przykladowa, maks=False)
+
+print(f"Minimum funkcji przykladowe jest w punkcie: {test}")
