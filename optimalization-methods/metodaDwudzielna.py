@@ -38,12 +38,12 @@ def minimum(x1_y, xsr_y, x2_y, xsr, x1, x2, a, b):
 colors = ['red', 'blue', 'green', 'purple', 'orange', 'brown']
 
 
-def calculate(a, b, e, function=funkcja, maks=True, num_iterations=100):
+def calculate(a, b, e, function=funkcja, maks=True, iteration=100, poch_f=None, poch2=None, poch3=None):
     xsr = (a + b) / 2
     L = b - a
     xsr_y = function(xsr)
     print(f"Iteracja {1}, xsr = {xsr}, L = {L}, a = {a}, b = {b}, f(xsr) = {xsr_y}")
-    for i in range(num_iterations):
+    for i in range(iteration):
         L = b -a
         x1 = a + L / 4
         x2 = b - L / 4
@@ -51,7 +51,7 @@ def calculate(a, b, e, function=funkcja, maks=True, num_iterations=100):
         xsr_y = function(xsr)
         x2_y = function(x2)
         if L <= e:
-            return xsr
+            return xsr, function(xsr), i
         if i < 5:
             plt.axvline(a, color=colors[i], linestyle='--')
             plt.axvline(b, color=colors[i], linestyle='--')
@@ -61,19 +61,20 @@ def calculate(a, b, e, function=funkcja, maks=True, num_iterations=100):
             a, b, xsr = minimum(x1_y, xsr_y, x2_y, xsr, x1, x2, a, b)
         L = b - a
         print(f"Iteracja {i + 2}, x1 = {x1}, x2 = {x2}, xsr = {xsr}, L = {L}, a = {a}, b = {b}, f(x1) = {x1_y}, f(x2) = {x2_y}, f(xsr) = {xsr_y}")
-    return xsr
+    return xsr, function(xsr), i
 
 
-plt.figure(figsize=(6, 6))
-xsr = calculate(a, b, e, maks=False, num_iterations=1000)
-x = np.linspace(a, b, 1000)
-y = funkcja(x)
-plt.plot(x, y)
-plt.scatter(xsr, funkcja(xsr), color='black', label='minimum')
-plt.legend()
-plt.grid(True)
-plt.show()
-print(f"minimum f(x) jest w punkcie {xsr}")
+if __name__ == "__main__":
+    plt.figure(figsize=(6, 6))
+    xsr = calculate(a, b, e, maks=False, num_iterations=1000)
+    x = np.linspace(a, b, 1000)
+    y = funkcja(x)
+    plt.plot(x, y)
+    plt.scatter(xsr, funkcja(xsr), color='black', label='minimum')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+    print(f"minimum f(x) jest w punkcie {xsr}")
 
-test = calculate(60, 150, 12, przykladowa, maks=False, num_iterations=10)
-print(f"Minimum funkcji przykladowe jest w punkcie: {test}")
+    test = calculate(60, 150, 12, przykladowa, maks=False, num_iterations=10)
+    print(f"Minimum funkcji przykladowe jest w punkcie: {test}")

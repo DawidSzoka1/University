@@ -57,18 +57,20 @@ def minimum(x1_y, x2_y, x1, x2, a, b, fib_prev, fib_cur):
     return a, b, x1, x2
 
 
-def calculate(a, b, e, function=funkcja, maks=False):
+def calculate(a, b, e, function=None, maks=True, iteration=100, poch_f=None, poch2=None, poch3=None):
     n = find_max_n(a, b, e)
     print(f"n = {n}")
     x1 = calculate_x1(a, b, calculated_value.get(f'{n - 1}'), calculated_value.get(f'{n}'))
     x2 = calculate_x2(a, b, calculated_value.get(f'{n - 1}'), calculated_value.get(f'{n}'))
-    iteration = 1
-    while abs(x2 - x1) >= e and n > 1:
+    for i in range(iteration):
+        if abs(x2 - x1) < e:
+            return (a + b) / 2, function((a + b) / 2), i
+        if n <= 1:
+            return (a + b) / 2, function((a + b) / 2), i
         x1_y = function(x1)
         x2_y = function(x2)
-        print(f"Iteracja {iteration}: f(x1) = {x1_y}, f(x2) = {x2_y}, x1 = {x1}, x2= {x2}, a = {a}, b = {b}, n = {n}")
+        print(f"Iteracja {i+1}: f(x1) = {x1_y}, f(x2) = {x2_y}, x1 = {x1}, x2= {x2}, a = {a}, b = {b}, n = {n}")
         n -= 1
-        iteration += 1
         fib_prev = calculated_value.get(f'{n - 1}')
         fib_cur = calculated_value.get(f'{n}')
         if not fib_prev:
@@ -81,18 +83,18 @@ def calculate(a, b, e, function=funkcja, maks=False):
             a, b, x1, x2 = maksimum(x1_y, x2_y, x1, x2, a, b, fib_prev, fib_cur)
         else:
             a, b, x1, x2 = minimum(x1_y, x2_y, x1, x2, a, b, fib_prev, fib_cur)
-    print(f"Iteracja {iteration}: f(x1) = {x1_y}, f(x2) = {x2_y}, x1 = {x1}, x2= {x2}, a = {a}, b = {b}, n = {n}")
-    return (a + b) / 2
+    print(f"Iteracja {i+1}: f(x1) = {x1_y}, f(x2) = {x2_y}, x1 = {x1}, x2= {x2}, a = {a}, b = {b}, n = {n}")
+    return (a + b) / 2, function((a + b) / 2), i
 
 
-a = 0.6
-b = 5.8
-e = 0.01
+if __name__ == "__main__":
+    a = 0.6
+    b = 5.8
+    e = 0.01
 
+    moj_przyklad = calculate(a, b, e, maks=False)
+    print(f"Minimum funkcji mojej jest w punkcie: {moj_przyklad}")
 
-moj_przyklad = calculate(a, b, e, maks=False)
-print(f"Minimum funkcji mojej jest w punkcie: {moj_przyklad}")
+    test = calculate(60, 150, 3, przykladowa, maks=False)
 
-test = calculate(60, 150, 3, przykladowa, maks=False)
-
-print(f"Minimum funkcji przykladowe jest w punkcie: {test}")
+    print(f"Minimum funkcji przykladowe jest w punkcie: {test}")
