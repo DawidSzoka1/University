@@ -16,7 +16,7 @@ a, b = 0.6, 5.8
 methods = [newton, fibonnaci, bisekcji, dwudzielna, siecznych, zlotego_podzialu]
 methods_name = ["Newton", "Fibonaci", "Bisekcja", "Dwudzielna", "Siecznych", "Złotego podziału"]
 
-epsilons = [0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001]
+epsilons = [0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001]
 iterations_list = [2, 5, 7, 10, 100, 1000]
 results = []
 
@@ -119,30 +119,30 @@ def plot_logx(df_subset, x, y, title, xlabel, ylabel, filename):
 # === Eksperyment A ===
 expA = df[df["Eksperyment"] == "A_epsilon"]
 plot_logx(expA, "Epsilon", "Iteracje_wyk",
-          "Liczba faktycznych iteracji vs dokładność ε (100000 iteracji)",
-          "Dokładność ε (log)", "Faktyczne iteracje", "iteracje_vs_eps")
+          "Liczba faktycznych iteracji vs dokładność epsilon (100000 iteracji)",
+          "Dokładność epsilon", "Faktyczne iteracje", "iteracje_vs_eps")
 
 plot_logx(expA, "Epsilon", "Czas_s",
-          "Czas działania vs dokładność ε (100000 iteracji)",
-          "Dokładność ε (log)", "Czas [s]", "czas_vs_eps")
+          "Czas działania vs dokładność epsilon (100000 iteracji)",
+          "Dokładność epsilon", "Czas [s]", "czas_vs_eps")
 
 plot_logx(expA, "Epsilon", "f(x_opt)",
-          "Wartość funkcji vs dokładność ε (100000 iteracji)",
-          "Dokładność ε (log)", "f(x_opt)", "fopt_vs_eps")
+          "Wartość funkcji vs dokładność epsilon (100000 iteracji)",
+          "Dokładność epsilon", "f(x_opt)", "fopt_vs_eps")
 
 # === Eksperyment B ===
 expB = df[df["Eksperyment"] == "B_iteracje"]
 plot_logx(expB, "Iteracje_max", "Iteracje_wyk",
-          "Faktyczne iteracje vs maksymalna liczba iteracji (ε = 1e-7)",
-          "Maksymalna liczba iteracji (log)", "Faktyczne iteracje", "iter_wyk_vs_itermax")
+          "Faktyczne iteracje vs maksymalna liczba iteracji (epsilon = 1e-7)",
+          "Maksymalna liczba iteracji", "Faktyczne iteracje", "iter_wyk_vs_itermax")
 
 plot_logx(expB, "Iteracje_max", "Czas_s",
-          "Czas działania vs maksymalna liczba iteracji (ε = 1e-7)",
-          "Maksymalna liczba iteracji (log)", "Czas [s]", "czas_vs_itermax")
+          "Czas działania vs maksymalna liczba iteracji (epsilon = 1e-7)",
+          "Maksymalna liczba iteracji", "Czas [s]", "czas_vs_itermax")
 
-plot_logx(expB, "Iteracje_max", "x_opt",
-          "x_opt vs maksymalna liczba iteracji (ε = 1e-7)",
-          "Maksymalna liczba iteracji (log)", "x_opt", "xopt_vs_itermax")
+plot_logx(expB, "Iteracje_wyk", "x_opt",
+          "x_opt vs faktyczna liczba iteracji (epsilon = 1e-7)",
+          "Faktyczna liczba iteracji", "x_opt", "xopt_vs_itermax")
 
 print("✅ Wygenerowano 6 wykresów w folderze 'plots/'")
 
@@ -195,11 +195,11 @@ table_eps_err = expA.pivot(index="Epsilon_label", columns="Metoda", values="blad
 table_iter_err = expB.pivot(index="Iteracje_max", columns="Metoda", values="blad_fmt")
 
 # --- Wyświetlenie w konsoli ---
-print("\n=== Tabela 1: Wyniki dla różnych ε (wartość + iteracje) ===")
+print("\n=== Tabela 1: Wyniki dla różnych epsilon (wartość + iteracje) ===")
 print(table_eps)
 print("\n=== Tabela 2: Wyniki dla różnych liczby iteracji ===")
 print(table_iter)
-print("\n=== Tabela 3: Błędy względne dla różnych ε ===")
+print("\n=== Tabela 3: Błędy względne dla różnych epsilon ===")
 print(table_eps_err)
 print("\n=== Tabela 4: Błędy względne dla różnych liczby iteracji ===")
 print(table_iter_err)
@@ -221,23 +221,23 @@ for name, group in expA.groupby("Metoda"):
     plt.plot(group["Epsilon"], group["blad_wzgledny"], marker="s", label=name)
 plt.xscale("log")
 plt.yscale("log")
-plt.xlabel("Dokładność ε (log)")
-plt.ylabel("Błąd względny [%] (log)")
+plt.xlabel("Dokładność epsilon")
+plt.ylabel("Błąd względny [%]")
 plt.title("Porównanie błędów względnych dla różnych metod")
 plt.legend()
 plt.grid(True, which="both", linestyle="--", linewidth=0.5)
 plt.tight_layout()
-plt.savefig("plots/bledy_vs_eps.png", dpi=300)
+plt.savefig("plots/bledy_vs_eps.png")
 
 plt.figure(figsize=(8,6))
 for name, group in expB.groupby("Metoda"):
     plt.plot(group["Iteracje_max"], group["blad_wzgledny"], marker="^", label=name)
 plt.xscale("log")
 plt.yscale("log")
-plt.xlabel("Maksymalna liczba iteracji (log)")
-plt.ylabel("Błąd względny [%] (log)")
+plt.xlabel("Maksymalna liczba iteracji")
+plt.ylabel("Błąd względny [%]")
 plt.title("Porównanie błędów względnych w funkcji liczby iteracji")
 plt.legend()
 plt.grid(True, which="both", linestyle="--", linewidth=0.5)
 plt.tight_layout()
-plt.savefig("plots/bledy_vs_iteracje.png", dpi=300)
+plt.savefig("plots/bledy_vs_iteracje.png")
