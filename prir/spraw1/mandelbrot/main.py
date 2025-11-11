@@ -167,7 +167,7 @@ def plot_all(df):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig('speedup_vs_rdzenie_clean.png', dpi=300)
+    plt.savefig('speedup_vs_rdzenie_local.png', dpi=300)
 
 
 def main():
