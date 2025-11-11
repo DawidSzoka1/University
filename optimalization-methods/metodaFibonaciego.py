@@ -1,4 +1,4 @@
-from myFunction import funkcja, przykladowa
+from myFunction import funkcja
 
 calculated_value = {'0': 1, '1': 1}
 
@@ -84,7 +84,7 @@ def calculate(a, b, e, function=None, maks=True, iteration=100, poch_f=None, poc
         else:
             a, b, x1, x2 = minimum(x1_y, x2_y, x1, x2, a, b, fib_prev, fib_cur)
     print(f"Iteracja {i+1}: f(x1) = {x1_y}, f(x2) = {x2_y}, x1 = {x1}, x2= {x2}, a = {a}, b = {b}, n = {n}")
-    return (a + b) / 2, function((a + b) / 2), i
+    return (a + b) / 2, function((a + b) / 2), iteration
 
 
 if __name__ == "__main__":
@@ -92,9 +92,9 @@ if __name__ == "__main__":
     b = 5.8
     e = 0.01
 
-    moj_przyklad = calculate(a, b, e, maks=False)
+    moj_przyklad = calculate(a, b, 1e-7, maks=False, iteration=100, function=funkcja)
     print(f"Minimum funkcji mojej jest w punkcie: {moj_przyklad}")
 
-    test = calculate(60, 150, 3, przykladowa, maks=False)
-
-    print(f"Minimum funkcji przykladowe jest w punkcie: {test}")
+    # test = calculate(60, 150, 3, przykladowa, maks=False)
+    #
+    # print(f"Minimum funkcji przykladowe jest w punkcie: {test}")

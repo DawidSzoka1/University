@@ -37,4 +37,4 @@ def calculate(a, b, e, function=funkcja, maks=True, iteration=100, poch_f=None, 
 
 if __name__ == "__main__":
     a, b = 0.6, 5.8
-    print(calculate(a, b, 0.0000001, maks=False, iteration=100))
+    print(calculate(a, b, 1e-7, maks=False, iteration=10))

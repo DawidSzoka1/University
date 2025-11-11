@@ -17,7 +17,7 @@ methods = [newton, fibonnaci, bisekcji, dwudzielna, siecznych, zlotego_podzialu]
 methods_name = ["Newton", "Fibonaci", "Bisekcja", "Dwudzielna", "Siecznych", "Złotego podziału"]
 
 epsilons = [0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001]
-iterations_list = [2, 5, 7, 10, 100, 1000]
+iterations_list = [2, 5, 7, 10, 20,100]
 results = []
 
 # --- Eksperyment A: różne e, iteration=100000 ---
@@ -141,8 +141,8 @@ plot_logx(expB, "Iteracje_max", "Czas_s",
           "Maksymalna liczba iteracji", "Czas [s]", "czas_vs_itermax")
 
 plot_logx(expB, "Iteracje_wyk", "x_opt",
-          "x_opt vs faktyczna liczba iteracji (epsilon = 1e-7)",
-          "Faktyczna liczba iteracji", "x_opt", "xopt_vs_itermax")
+          "minimum vs faktyczna liczba iteracji (epsilon = 1e-7)",
+          "Faktyczna liczba iteracji", "x_min", "x_min_vs_itermax")
 
 print("✅ Wygenerowano 6 wykresów w folderze 'plots/'")
 
@@ -184,8 +184,8 @@ table_iter = expB.pivot(index="Iteracje_max", columns="Metoda", values="display_
 
 # --- Błędy względne ---
 x_true = 3.3
-expA["blad_wzgledny"] = abs((x_true - expA["x_opt"] ) / x_true) * 100
-expB["blad_wzgledny"] = abs((x_true - expB["x_opt"] ) / x_true) * 100
+expA["blad_wzgledny"] = abs((x_true - round(expA["x_opt"], DECIMALS) ) / x_true) * 100
+expB["blad_wzgledny"] = abs((x_true - round(expB["x_opt"], DECIMALS) ) / x_true) * 100
 
 
 expA["blad_fmt"] = expA["blad_wzgledny"].apply(format_fixed)

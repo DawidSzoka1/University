@@ -1,9 +1,9 @@
-def poch_fun(x):
-    return pow(x, 2) + x - 5
-
-
-def poch3_fun(x):
-    return 2
+# def poch_fun(x):
+#     return pow(x, 2) + x - 5
+#
+#
+# def poch3_fun(x):
+#     return 2
 
 
 def find_montionless(a, b, poch_f, poch3_f):
@@ -32,8 +32,9 @@ def calculate(a, b, e, function=None, maks=True, iteration=100, poch_f=None, poc
         if abs(xn1 - xn) < e:
             return xn1, function(xn1), i
         xn = xn1
-    return xn1, function(xn1), i
+    return xn1, function(xn1), iteration
 
 
 if __name__ == "__main__":
-    print(calculate(1, 2, 0.01, poch_fun, poch3_fun))
+    from myFunction import funkcja,poch_funkcja, poch2_funkcja, poch3_funkcja, a, b
+    print(calculate(a, b, 1e-7, function=funkcja,poch_f=poch_funkcja, poch2=poch2_funkcja, poch3=poch3_funkcja))

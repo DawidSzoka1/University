@@ -1,13 +1,13 @@
-def poch2_funkcja(x):
-    return 2 * x + 1
-
-
-def poch1_funkcja(x):
-    return x ** 2 + x - 5
-
-
-def poch3_funkcja(x):
-    return 2
+# def poch2_funkcja(x):
+#     return 2 * x + 1
+#
+#
+# def poch1_funkcja(x):
+#     return x ** 2 + x - 5
+#
+#
+# def poch3_funkcja(x):
+#     return 2
 
 
 def calculate(a, b, e, function=None, maks=True, iteration=100, poch_f=None, poch2=None, poch3=None):
@@ -21,9 +21,9 @@ def calculate(a, b, e, function=None, maks=True, iteration=100, poch_f=None, poc
         if abs(xn1 - xn) < e:
             return xn1, function(xn1), i
         xn = xn1
-    return xn1, function(xn1), i
-
+    return xn1, function(xn1), iteration
 
 
 if __name__ == "__main__":
-    print(calculate(1, 2, 0.01, poch1_funkcja, poch2_funkcja, poch3_funkcja))
+    from myFunction import funkcja,poch_funkcja, poch2_funkcja, poch3_funkcja, a, b
+    print(calculate(a, b, 1e-7, function=funkcja,poch_f=poch_funkcja, poch2=poch2_funkcja, poch3=poch3_funkcja))
