@@ -25,9 +25,6 @@ def testFunctionPochy(x, y):
     return 12 * x + 20 * y
 
 
-def reversed_matrix(matrix):
-    return np.array([[matrix[1, 1], -matrix[0, 1]], [-matrix[1, 0], matrix[0, 0]]])
-
 
 def calculate(x0, y0, e, function=function, pochxy=functionPochxy, pochx=functionPochx, pochy=functionPochy,
               poch2x=functionPoch2x, poch2y=functionPoch2y, iterations=100):
@@ -37,12 +34,19 @@ def calculate(x0, y0, e, function=function, pochxy=functionPochxy, pochx=functio
         hessego = np.array(
             [[poch2x(xk, yk), pochxy(xk, yk)], [pochxy(xk, yk), poch2y(xk, yk)]])
 
-        xk2, yk2 = np.array([xk, yk]) - 1 / (hessego[0, 0] * hessego[1, 1] - hessego[0, 1] * hessego[1, 0]) * np.dot(
-            reversed_matrix(hessego), gradient)
-        if abs(xk2 - xk) <= e and abs(yk2 - yk) <= e:
-            return xk2, yk2
+        xk2, yk2 = np.array([xk, yk]) - np.dot(reversed_matrix(hessego), gradient)
+        print(
+            f"iteracja {i + 1}: gradtient: \n{gradient}\nmacierz hessego: \n{hessego}\nx_{i + 1}={xk2}, y_{i + 1}={yk2}")
+        gradient_k2 = np.array([pochx(xk2, yk2), pochy(xk2, yk2)])
+        if np.linalg.norm(gradient_k2) <= e or (abs(xk2 - xk) <= e and abs(yk2 - yk) <= e):
+            print()
+            return xk2, yk2, i + 1
         xk, yk = xk2, yk2
-    return xk, yk
+    return xk, yk, iterations
 
-print(calculate(10, 12, 10, pochxy=testFunctionPochxy, pochx=testFunctionPochx, pochy=testFunctionPochy,
-          poch2x=testFunctionPochxx, poch2y=testFUnctionPochyy))
+
+if __name__ == "__main__":
+    print(calculate(10, 12, 0.01, pochxy=testFunctionPochxy, pochx=testFunctionPochx, pochy=testFunctionPochy,
+                    poch2x=testFunctionPochxx, poch2y=testFUnctionPochyy))
+
+    print(calculate(2, 2, 0.01))
