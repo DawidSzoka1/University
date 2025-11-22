@@ -6,7 +6,6 @@ import threading
 import multiprocessing
 from multiprocessing import Manager, Process
 
-
 # -----------------------------
 # Ustawienia
 # -----------------------------
@@ -29,7 +28,7 @@ COLORS = {
 # Symulacje
 # -----------------------------
 
-def philosopher_thread(i, states, run_event):
+def philosopher_thread(i, states, run_event, locks):
     left = locks[i]
     right = locks[(i+1) % N]
 
@@ -127,36 +126,50 @@ def start_sequential():
 
 
 def start_threading():
-    global running_sim, run_event, threads, mode
+    global running_sim, run_event, threads, mode, locks, states
+
     running_sim = True
     mode = "thread"
 
+    # nowe locki tylko dla threadingu
+    locks = [threading.Lock() for _ in range(N)]
+
     run_event.set()
     for i in range(N):
-        t = threading.Thread(target=philosopher_thread, args=(i, states, run_event), daemon=True)
+        t = threading.Thread(
+            target=philosopher_thread,
+            args=(i, states, run_event, locks),
+            daemon=True
+        )
         threads.append(t)
         t.start()
 
 
 def start_multiprocessing():
-    global running_sim, processes, mp_manager, run_flag, mode, states
+    global running_sim, processes, mp_manager, run_flag, mode, states, locks
 
     running_sim = True
     mode = "mp"
 
     mp_manager = Manager()
     states = mp_manager.list([0] * N)
+
+    # GLOBALNE locki dla MP — najważniejsza poprawka
     locks = [mp_manager.Lock() for _ in range(N)]
+
     run_flag = mp_manager.Value('b', True)
 
     for i in range(N):
-        p = Process(target=philosopher_process, args=(i, states, locks, run_flag))
+        p = Process(
+            target=philosopher_process,
+            args=(i, states, locks, run_flag)
+        )
         processes.append(p)
         p.start()
 
 
 def stop_all():
-    global running_sim, run_event, run_flag
+    global running_sim, run_event, run_flag, locks
     running_sim = False
 
     run_event.clear()
@@ -169,6 +182,9 @@ def stop_all():
 
     for p in processes:
         p.terminate()
+
+    # przywracamy standardowe locki
+    locks = [threading.Lock() for _ in range(N)]
 
 
 # -----------------------------
@@ -214,7 +230,6 @@ while running:
                 if running_sim:
                     stop_all()
                 else:
-                    # wznowienie w tym samym trybie
                     if mode == "seq":
                         start_sequential()
                     elif mode == "thread":
@@ -225,13 +240,11 @@ while running:
     # rysowanie
     screen.fill((30, 30, 30))
 
-    # rysuj każdego filozofa
     for i, (x, y) in enumerate(positions):
         pygame.draw.circle(screen, COLORS[states[i]], (x, y), 60)
         txt = font.render(f"F{i}", True, (5, 5, 5))
         screen.blit(txt, (x - 20, y - 15))
 
-    # opis
     mode_txt = font.render(f"Tryb: {mode.upper()}", True, (200, 200, 200))
     screen.blit(mode_txt, (20, 20))
     pygame.draw.rect(screen, (50,50,50), (15, 50, 400, 120), border_radius=10)
