@@ -5,40 +5,18 @@ x0 = 2
 y0 = 2
 
 
-def testFunctionPochxy(x, y):
-    return 12
-
-
-def testFunctionPochxx(x, y):
-    return 20
-
-
-def testFUnctionPochyy(x, y):
-    return 20
-
-
-def testFunctionPochx(x, y):
-    return 20 * x + 12 * y
-
-
-def testFunctionPochy(x, y):
-    return 12 * x + 20 * y
-
-
-
 def calculate(x0, y0, e, function=function, pochxy=functionPochxy, pochx=functionPochx, pochy=functionPochy,
               poch2x=functionPoch2x, poch2y=functionPoch2y, iterations=100):
     xk, yk = x0, y0
     for i in range(iterations):
-        gradient = np.array([pochx(xk, yk), pochy(xk, yk)])
-        hessego = np.array(
-            [[poch2x(xk, yk), pochxy(xk, yk)], [pochxy(xk, yk), poch2y(xk, yk)]])
+        grad = gradient(xk, yk, pochx, pochy)
+        hasse = hassego(xk, yk, pochxx=poch2x, pochyy=poch2y, pochxy=pochxy)
 
-        xk2, yk2 = np.array([xk, yk]) - np.dot(reversed_matrix(hessego), gradient)
+        xk2, yk2 = np.array([xk, yk]) - np.dot(reversed_matrix(hasse), grad)
         print(
-            f"iteracja {i + 1}: gradtient: \n{gradient}\nmacierz hessego: \n{hessego}\nx_{i + 1}={xk2}, y_{i + 1}={yk2}")
-        gradient_k2 = np.array([pochx(xk2, yk2), pochy(xk2, yk2)])
-        if np.linalg.norm(gradient_k2) <= e or (abs(xk2 - xk) <= e and abs(yk2 - yk) <= e):
+            f"iteracja {i + 1}: gradtient: \n{grad}\nmacierz hessego: \n{hasse}\nx_{i + 1}={xk2}, y_{i + 1}={yk2}")
+        grad_k2 = gradient(xk2, yk2, pochx, pochy)
+        if np.linalg.norm(grad_k2) <= e or (abs(xk2 - xk) <= e and abs(yk2 - yk) <= e):
             print()
             return xk2, yk2, i + 1
         xk, yk = xk2, yk2

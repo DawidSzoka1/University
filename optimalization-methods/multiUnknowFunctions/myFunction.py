@@ -30,8 +30,8 @@ def functionPochxy(x, y):
     return -1
 
 
-h = 0.00001
-round_spot = 4
+h = 0.000001
+round_spot = 10
 
 
 def dfdx(f, x, y):
@@ -52,6 +52,58 @@ def dfdydy(f, x, y):
 
 def dfdxdy(f, x, y):
     return round((f(x + h, y + h) - f(x + h, y) - f(x, y + h) + f(x, y)) / (h ** 2), round_spot)
+
+
+def example_function(x, y):
+    return 10 * x ** 2 + 12 * x * y + 10 * y ** 2
+
+
+def testFunctionPochxy(x, y):
+    return 12
+
+
+def testFunctionPochxx(x, y):
+    return 20
+
+
+def testFUnctionPochyy(x, y):
+    return 20
+
+
+def testFunctionPochx(x, y):
+    return 20 * x + 12 * y
+
+
+def testFunctionPochy(x, y):
+    return 12 * x + 20 * y
+
+
+def gradient(x, y, pochx=functionPochx, pochy=functionPochy):
+    return np.array([pochx(x, y), pochy(x, y)])
+
+
+def gradientF(x, y, fun=function):
+    return np.array([dfdx(fun, x, y), dfdy(fun, x, y)])
+
+
+def hassego(x, y, func=None, pochxx=functionPoch2x, pochyy=functionPoch2y, pochxy=functionPochxy):
+    if func:
+        return np.array(
+            [[pochxx(func, x, y), pochxy(func, x, y)],
+             [pochxy(func, x, y), pochyy(func, x, y)]])
+    return np.array(
+        [[pochxx(x, y), pochxy(x, y)],
+         [pochxy(x, y), pochyy(x, y)]])
+
+
+def calculate_alpha(grad, hess):
+    a = grad[0]
+    b = grad[1]
+    c = hess[0][0]
+    d = hess[0][1]
+    e = hess[1][0]
+    f = hess[1][1]
+    return (a ** 2 + b ** 2) / ((a * c + b * e) * a + (a * d + b * f) * b)
 
 
 if __name__ == '__main__':
