@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -104,6 +105,49 @@ def calculate_alpha(grad, hess):
     e = hess[1][0]
     f = hess[1][1]
     return (a ** 2 + b ** 2) / ((a * c + b * e) * a + (a * d + b * f) * b)
+
+
+def plot_trajectory(function, trajectory, zoom_factor=1.25):
+    tx, ty = trajectory[:, 0], trajectory[:, 1]
+    cx, cy = np.mean(tx), np.mean(ty)
+    rx = (tx.max() - tx.min()) * zoom_factor
+    ry = (ty.max() - ty.min()) * zoom_factor
+    x_min, x_max = cx - rx, cx + rx
+    y_min, y_max = cy - ry, cy + ry
+
+    x = np.linspace(x_min, x_max, 400)
+    y = np.linspace(y_min, y_max, 400)
+    X, Y = np.meshgrid(x, y)
+    Z = function(X, Y)
+
+    plt.figure(figsize=(10, 8))
+
+    cp = plt.contour(X, Y, Z,
+                     levels=25,
+                     cmap="coolwarm",
+                     linewidths=1.2)
+    plt.clabel(cp, inline=True, fontsize=8)
+
+    plt.plot(tx, ty,
+             'o-', color='black',
+             markersize=6,
+             linewidth=2.5,
+             label="trajektoria")
+
+    for i in range(len(tx)-1):
+        plt.arrow(tx[i], ty[i],
+                  tx[i+1]-tx[i], ty[i+1]-ty[i],
+                  head_width=0.08,
+                  length_includes_head=True,
+                  color='black')
+
+    plt.title("Wykres gradientu")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.grid(True)
+    plt.legend()
+
+    plt.show()
 
 
 if __name__ == '__main__':
