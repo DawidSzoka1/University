@@ -1,0 +1,58 @@
+\documentclass{article}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage{eurosym}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs, graphicx, xcolor, tcolorbox}
+\usepackage[margin=1in]{geometry}
+\newcommand{\COMMON}[1]{{#1}}
+\newcommand{\BOTANICAL}[1]{{\textbf{#1}}}
+\newcommand{\ZONE}[1]{\fbox{#1}}
+\newcommand{\LIGHT}[1]{{\textbf{#1}}}
+\newcommand{\PRICE}[1]{{#1} \euro}
+\newcommand{\AVAILABILITY}[1]{\textit{#1}}
+\newcommand{\NAME}[1]{{\textsc{#1}}}
+\newcommand{\DESCRIPTION}[1]{{\textsf{#1}}}
+\newcommand{\CALORIES}[1]{{#1} kcal}
+\newcommand{\AUTHOR}[1]{{\textsf{#1}}}
+\newcommand{\TITLE}[1]{{#1}}
+\newcommand{\GENER}[1]{{\textit{#1}}}
+\newcommand{\DATE}[1]{{#1}}
+
+\begin{document}
+\section{PLANT -- Styl Tabeli}
+\begin{tabular}{c|rrrrrr}
+Nr & Common & Botanical & Zone & Light & Price & Availability\\\hline
+1 & \COMMON{rose} & \BOTANICAL{canadensis} & \ZONE{4} & \LIGHT{Shady} & \PRICE{202} & \AVAILABILITY{446}\\
+2 & \COMMON{mango} & \BOTANICAL{sunny} & \ZONE{3} & \LIGHT{shady} & \PRICE{301} & \AVAILABILITY{569}\\
+3 & \COMMON{Marigold} & \BOTANICAL{palustris} & \ZONE{4} & \LIGHT{Sunny} & \PRICE{500} & \AVAILABILITY{799}\\
+4 & \COMMON{carrot} & \BOTANICAL{Caltha} & \ZONE{4} & \LIGHT{sunny} & \PRICE{205} & \AVAILABILITY{679}\\
+\end{tabular}
+
+
+\section{FOOD -- Styl Listy}
+\begin{enumerate}
+\item \NAME{daal fry}, \PRICE{300}, \DESCRIPTION{Famous daal tadka from surat}, \CALORIES{60}
+\item \NAME{Dhosa}, \PRICE{350}, \DESCRIPTION{The famous south indian dish}, \CALORIES{80}
+\item \NAME{Khichdi}, \PRICE{150}, \DESCRIPTION{The famous gujrati dish}, \CALORIES{40}
+\end{enumerate}
+
+
+\section{BOOK -- Styl Kart}
+\begin{tcolorbox}[colback=white, colframe=black!15, title=Element]\textbf{Author}: \AUTHOR{Santosh Bihari} \\ 
+\textbf{Title}: \TITLE{PHP Core} \\ 
+\textbf{Gener}: \GENER{programming} \\ 
+\textbf{Price}: \PRICE{44.95} \\ 
+\textbf{Date}: \DATE{2000-10-01} \\ 
+\end{tcolorbox}\begin{tcolorbox}[colback=white, colframe=black!15, title=Element]\textbf{Author}: \AUTHOR{Shyam N Chawla} \\ 
+\textbf{Title}: \TITLE{.NET Begin} \\ 
+\textbf{Gener}: \GENER{Computer} \\ 
+\textbf{Price}: \PRICE{250} \\ 
+\textbf{Date}: \DATE{2002-17-05} \\ 
+\end{tcolorbox}\begin{tcolorbox}[colback=white, colframe=black!15, title=Element]\textbf{Author}: \AUTHOR{Anci C} \\ 
+\textbf{Title}: \TITLE{Dr. Ruby} \\ 
+\textbf{Gener}: \GENER{Computer} \\ 
+\textbf{Price}: \PRICE{350} \\ 
+\textbf{Date}: \DATE{2001-04-11} \\ 
+\end{tcolorbox}
+\end{document}
