@@ -19,7 +19,7 @@ class XmlToLatex:
         self.kcal_style = r"{#1} kcal"
         # Definicje różnych stylów dla liczb
         self.num_styles = [
-            r"\textbf{\expandafter{\romannumeral #1\relax}}",  # Rzymskie pogrubione
+            r"\textbf{\expandafter{\romannumeral \number\numexpr #1\relax}}",  # Rzymskie pogrubione
             r"{#1\textsuperscript{o}}",  # Z indeksem górnym
             r"\fbox{#1}",  # W ramce
             r"\textit{#1}",  # Kursywa liczbowa
