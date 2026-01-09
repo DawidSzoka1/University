@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import gradient
 import newton
+import gauss_seidla_dok
 
 X_ANALYTICAL = 0.36227
 Y_ANALYTICAL = 1.18110
@@ -25,9 +26,15 @@ def run_newton(x0, y0, eps, max_iter, check_e=True):
     # Przekazujemy check_e do funkcji w newton.py
     return newton.calculate(x0, y0, e=eps, iterations=max_iter, check_e=check_e)
 
+def run_gaussa(x0, y0, eps, max_iter, check_e=True):
+    # Przekazujemy check_e do funkcji w gauss_seidla_dok.py
+    return gauss_seidla_dok.calculate(x0, y0, e=eps, iterations=max_iter, check_e=check_e)
+
+
 METHODS = {
     "Metoda Najszybszego Spadku": run_gradient,
     "Metoda Newtona": run_newton,
+    "Metoda Gaussa-seidla": run_gaussa,
 }
 
 # --- FUNKCJE GENERUJĄCE DANE W FORMACIE MULTIINDEX ---
