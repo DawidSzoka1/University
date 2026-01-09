@@ -6,7 +6,7 @@ y0 = 2
 
 
 def calculate(x0, y0, e, function=function, pochxy=functionPochxy, pochx=functionPochx, pochy=functionPochy,
-              poch2x=functionPoch2x, poch2y=functionPoch2y, iterations=100):
+              poch2x=functionPoch2x, poch2y=functionPoch2y, iterations=100, check_e=True):
     xk, yk = x0, y0
     trajectory = [(xk, yk)]
     for i in range(iterations):
@@ -18,17 +18,13 @@ def calculate(x0, y0, e, function=function, pochxy=functionPochxy, pochx=functio
         print(
             f"iteracja {i + 1}: gradtient: \n{grad}\nmacierz hessego: \n{hasse}\nx_{i + 1}={xk2}, y_{i + 1}={yk2}")
         grad_k2 = gradient(xk2, yk2, pochx, pochy)
-        if np.linalg.norm(grad_k2) <= e or (abs(xk2 - xk) <= e and abs(yk2 - yk) <= e):
-            print()
-            return xk2, yk2, i + 1, np.array(trajectory)
+        if check_e:
+            if np.linalg.norm(grad_k2) <= e or (abs(xk2 - xk) <= e and abs(yk2 - yk) <= e):
+                return xk2, yk2, i + 1, np.array(trajectory)
         xk, yk = xk2, yk2
     return xk, yk, iterations, np.array(trajectory)
 
 
 if __name__ == "__main__":
-    test = calculate(10, 12, 0.01, pochxy=testFunctionPochxy, pochx=testFunctionPochx, pochy=testFunctionPochy,
-                    poch2x=testFunctionPochxx, poch2y=testFUnctionPochyy)
-
     test2 = calculate(2, 2, 0.01)
-    plot_trajectory(function, test2[3])
-    plot_trajectory(example_function, test[3])
+

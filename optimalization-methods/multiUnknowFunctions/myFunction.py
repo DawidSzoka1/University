@@ -122,10 +122,16 @@ def plot_trajectory(function, trajectory, zoom_factor=1.25):
 
     plt.figure(figsize=(10, 8))
 
+    flat_z = Z.flatten()
+
+    # Tworzymy poziomy bazując na procentach występowania wartości
+    # Generujemy np. 35 linii
+    levels = np.unique(np.percentile(flat_z, np.linspace(0, 100, 35)))
+
     cp = plt.contour(X, Y, Z,
-                     levels=25,
-                     cmap="coolwarm",
-                     linewidths=1.2)
+                     levels=levels,
+                     cmap="coolwarm", # lub "viridis" dla lepszego kontrastu
+                     linewidths=1.1)
     plt.clabel(cp, inline=True, fontsize=8)
 
     plt.plot(tx, ty,
@@ -148,6 +154,30 @@ def plot_trajectory(function, trajectory, zoom_factor=1.25):
     plt.legend()
 
     plt.show()
+
+
+def value_k():
+    return (5 ** (1 / 2) - 1) / 2
+
+
+def helper_calculate(a, b, e, function, iteration=100):
+    k = value_k()
+    x1 = b - k * (b - a)
+    x2 = a + k * (b - a)
+    for i in range(iteration):
+        f_x1 = abs(function(x1))
+        f_x2 = abs(function(x2))
+        if f_x1 < f_x2:
+            b = x2
+            x2 = x1
+            x1 = b - k * (b - a)
+        else:
+            a = x1
+            x1 = x2
+            x2 = a + k * (b - a)
+        if abs(b - a) < e:
+            break
+    return (a + b) / 2
 
 
 if __name__ == '__main__':
