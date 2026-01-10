@@ -5,26 +5,26 @@
 \usepackage[T1]{fontenc}
 \usepackage{booktabs, graphicx, xcolor, tcolorbox}
 \usepackage[margin=1in]{geometry}
-\newcommand{\COMMON}[1]{{#1}}
-\newcommand{\BOTANICAL}[1]{{\textsf{#1}}}
-\newcommand{\ZONE}[1]{{#1\textsuperscript{o}}}
-\newcommand{\LIGHT}[1]{{\textbf{#1}}}
+\newcommand{\COMMON}[1]{{\textsf{#1}}}
+\newcommand{\BOTANICAL}[1]{{\textsc{#1}}}
+\newcommand{\ZONE}[1]{\underline{#1}}
+\newcommand{\LIGHT}[1]{{#1}}
 \newcommand{\PRICE}[1]{{#1} \euro}
-\newcommand{\AVAILABILITY}[1]{{#1\textsuperscript{o}}}
-\newcommand{\NAME}[1]{{\textbf{#1}}}
+\newcommand{\AVAILABILITY}[1]{\underline{#1}}
+\newcommand{\NAME}[1]{{\textsc{#1}}}
 \newcommand{\DESCRIPTION}[1]{{#1}}
 \newcommand{\CALORIES}[1]{{#1} kcal}
-\newcommand{\AUTHOR}[1]{{#1}}
-\newcommand{\TITLE}[1]{{\textsc{#1}}}
-\newcommand{\GENER}[1]{{#1}}
-\newcommand{\DATE}[1]{{\textbf{#1}}}
+\newcommand{\AUTHOR}[1]{{\textsc{#1}}}
+\newcommand{\TITLE}[1]{{#1}}
+\newcommand{\GENER}[1]{{\textsf{#1}}}
+\newcommand{\DATE}[1]{{\textsc{#1}}}
 
 \begin{document}
 \section{PLANT -- Styl Tabeli}
 \begin{tabular}{c|rrrrrr}
 Nr & Common & Botanical & Zone & Light & Price & Availability\\\hline
-1 & \COMMON{rose} & \BOTANICAL{canadensis} & \ZONE{4} & \LIGHT{Shady} & \PRICE{202} & \AVAILABILITY{446}\\
-2 & \COMMON{mango} & \BOTANICAL{sunny} & \ZONE{3} & \LIGHT{shady} & \PRICE{301} & \AVAILABILITY{569}\\
+1 & \COMMON{--- brak danych ---} & \BOTANICAL{canadensis} & \ZONE{4} & \LIGHT{--- brak danych ---} & \PRICE{202} & \AVAILABILITY{446}\\
+2 & \COMMON{--- brak danych ---} & \BOTANICAL{--- brak danych ---} & \ZONE{3} & \LIGHT{shady} & \PRICE{301} & \AVAILABILITY{569}\\
 3 & \COMMON{Marigold} & \BOTANICAL{palustris} & \ZONE{4} & \LIGHT{Sunny} & \PRICE{500} & \AVAILABILITY{799}\\
 4 & \COMMON{carrot} & \BOTANICAL{Caltha} & \ZONE{4} & \LIGHT{sunny} & \PRICE{205} & \AVAILABILITY{679}\\
 \end{tabular}

@@ -27,7 +27,7 @@ class XmlToLatex:
         ]
 
     def escape(self, text):
-        if text is None: return ""
+        if text is None or str(text).strip() == "": return "--- brak danych ---"
         chars = {
             '&': r'\&', '$': r'\$', '%': r'\%', '#': r'\#',
             '_': r'\_', '{': r'\{', '}': r'\}'
