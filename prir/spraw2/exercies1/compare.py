@@ -7,6 +7,7 @@ import os
 FILE_LOCAL = 'results.csv'
 FILE_COLAB = 'results_colab.csv'
 FRAKTAL = 'Julia' # Analizujemy Julię
+FILE_BLOCKS = 'benchmark_blocks.csv'
 
 # Sprawdzenie plików
 if not os.path.exists(FILE_LOCAL) or not os.path.exists(FILE_COLAB):
@@ -17,6 +18,7 @@ if not os.path.exists(FILE_LOCAL) or not os.path.exists(FILE_COLAB):
 print("Wczytywanie danych i filtrowanie...")
 df_loc = pd.read_csv(FILE_LOCAL)
 df_col = pd.read_csv(FILE_COLAB)
+df_blocks = pd.read_csv(FILE_BLOCKS)
 
 # Filtrowanie tylko wybranego fraktala
 df_loc = df_loc[df_loc['type'] == FRAKTAL]
@@ -133,3 +135,20 @@ plt.tight_layout()
 plt.savefig('porownanie_totalne.png', dpi=300)
 print("Zrobione! Sprawdź plik porownanie_totalne.png - teraz powinno być czytelnie.")
 plt.show()
+
+
+ax3 = plt.subplot(2, 1, 2)
+ax3.plot(df_blocks['total_threads'], df_blocks['gpu_time_ms'], 'b-D', markersize=8, linewidth=2, label='Czas renderowania 8K')
+ax3.set_title('3. Analiza wydajności bloku (Liczba wątków vs Czas w 8K)', fontweight='bold')
+ax3.set_xlabel('Całkowita liczba wątków w bloku (side x side)')
+ax3.set_ylabel('Czas (ms)')
+ax3.set_xticks(df_blocks['total_threads'])
+ax3.grid(True, alpha=0.3)
+for i, txt in enumerate(df_blocks['gpu_time_ms']):
+    ax3.annotate(f"{txt:.2f}ms", (df_blocks['total_threads'][i], df_blocks['gpu_time_ms'][i]),
+                 textcoords="offset points", xytext=(0,10), ha='center', fontsize=9)
+
+ax3.legend()
+
+plt.tight_layout()
+plt.savefig('analiza_lokalna_sprzetu.png', dpi=300)

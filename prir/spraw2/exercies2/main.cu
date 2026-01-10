@@ -249,36 +249,48 @@ int main() {
     // ==========================================
     // BENCHMARK 2: WĄTKI (BLOKI)
     // ==========================================
+    // ==========================================
+        // BENCHMARK 2: ROZMIAR BLOKU (Liczba wątków)
+        // ==========================================
     std::ofstream blockFile("benchmark_blocks.csv");
     blockFile << "label,block_side,total_threads,gpu_time_ms\n";
 
-    int bw = 3840, bh = 2160; // Testujemy na 4K
+    // Testujemy na wysokiej rozdzielczości 4K, aby GPU miało co robić
+    int bw = 7680, bh = 4320;
     size_t b_size = (size_t)bw * bh * 3;
     unsigned char* d_test;
     cudaMalloc(&d_test, b_size);
 
-    std::vector<int> block_sides = {4, 8, 16, 32};
+    // Rozszerzona lista rozmiarów bloków (kwadratowe: side x side)
+    // 2x2, 4x4, 8x8, 16x16, 20x20, 24x24, 28x28, 32x32
+    std::vector<int> block_sides = {2, 4, 6, 8, 12, 16, 20, 24, 28, 32};
 
-    std::cout << "\n--- Start Benchmarku Watkow (4K) ---\n";
+    std::cout << "\n--- Start Rozszerzonego Benchmarku Bloków (4K) ---\n";
+    std::cout << "Testowanie wydajnosci w zaleznosci od zageszczenia watkow...\n";
 
     for(int b : block_sides) {
         dim3 bs(b, b);
-        dim3 grid((bw + b - 1)/b, (bh + b - 1)/b);
+        dim3 grid((bw + b - 1) / b, (bh + b - 1) / b);
 
         cudaEvent_t start, stop;
         cudaEventCreate(&start); cudaEventCreate(&stop);
         cudaEventRecord(start);
 
-        render_kernel<<<grid, bs>>>(d_test, bw, bh, d_spheres, num_spheres);
+        // Wykonujemy kilka iteracji, aby usrednic wynik
+        for(int i = 0; i < 10; i++) {
+            render_kernel<<<grid, bs>>>(d_test, bw, bh, d_spheres, num_spheres);
+        }
 
         cudaEventRecord(stop);
         cudaEventSynchronize(stop);
         float ms = 0;
         cudaEventElapsedTime(&ms, start, stop);
+        ms /= 10.0f; // Sredni czas z 10 prob
 
         int total_threads = b * b;
         std::string label = std::to_string(b) + "x" + std::to_string(b);
-        std::cout << "Blok " << label << " (" << total_threads << " watkow): " << ms << " ms\n";
+
+        printf("Blok %5s | Watkow: %4d | Czas: %8.4f ms\n", label.c_str(), total_threads, ms);
         blockFile << label << "," << b << "," << total_threads << "," << ms << "\n";
     }
     blockFile.close();

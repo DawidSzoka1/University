@@ -16,60 +16,55 @@ df_res = pd.read_csv('benchmark_resolution.csv')
 df_blocks = pd.read_csv('benchmark_blocks.csv')
 df_scene = pd.read_csv('scene_data.csv')
 
-print(f"Wczytano {len(df_scene)} punktów geometrii (będzie gęsto!).")
-
 # ==========================================
 # 1. WYKRESY WYDAJNOŚCI (Matplotlib)
 # ==========================================
-# Tworzymy 4 wykresy (2x2)
-fig, axs = plt.subplots(2, 2, figsize=(16, 10))
-fig.suptitle('Analiza wydajności Ray Tracingu (CUDA vs CPU)', fontsize=16)
+# Zmieniamy układ na 3x2, aby zmieścić dodatkowe analizy wątków
+fig, axs = plt.subplots(3, 2, figsize=(16, 15))
+fig.suptitle('Zaawansowana Analiza Wydajności Ray Tracingu - RTX 5080', fontsize=20)
 
-# --- A. Czas vs Rozdzielczość ---
+# --- A. Czas vs Rozdzielczość (Log Scale) ---
 valid_cpu = df_res[df_res['cpu_time_ms'] > 0]
-axs[0, 0].plot(valid_cpu['pixels'], valid_cpu['cpu_time_ms'], 'r-o', label='CPU')
-axs[0, 0].plot(df_res['pixels'], df_res['gpu_time_ms'], 'b-s', label='GPU')
+axs[0, 0].plot(valid_cpu['pixels'], valid_cpu['cpu_time_ms'], 'r-o', label='CPU', linewidth=2)
+axs[0, 0].plot(df_res['pixels'], df_res['gpu_time_ms'], 'b-s', label='GPU', linewidth=2)
 axs[0, 0].set_title('Czas wykonania vs Rozdzielczość')
-axs[0, 0].set_ylabel('Czas [ms] (Log)')
-axs[0, 0].set_xlabel('Liczba pikseli')
 axs[0, 0].set_yscale('log')
-axs[0, 0].grid(True, linestyle='--')
+axs[0, 0].grid(True, which="both", linestyle='--', alpha=0.5)
 axs[0, 0].legend()
 
 # --- B. Przyspieszenie (Speedup) ---
 speedup = valid_cpu['cpu_time_ms'].values / df_res.loc[valid_cpu.index, 'gpu_time_ms'].values
-labels_speed = valid_cpu['label'].values
-bars = axs[0, 1].bar(labels_speed, speedup, color='green')
-axs[0, 1].set_title('Przyspieszenie GPU (Ile razy szybciej)')
-axs[0, 1].set_ylabel('Krotność (x)')
+axs[0, 1].bar(valid_cpu['label'], speedup, color='forestgreen')
+axs[0, 1].set_title('Przyspieszenie GPU (Speedup Factor)')
+axs[0, 1].set_ylabel('x-faster')
 axs[0, 1].tick_params(axis='x', rotation=45)
-for bar in bars:
-    axs[0, 1].text(bar.get_x() + bar.get_width()/2, bar.get_height(),
-                   f'{bar.get_height():.0f}x', ha='center', va='bottom', fontsize=9)
 
-# --- C. Czas vs Liczba Wątków w Bloku (TEGO CHCIAŁEŚ) ---
-# Oś X to liczba wątków (16, 64, 256, 1024), Oś Y to czas
-axs[1, 0].plot(df_blocks['total_threads'], df_blocks['gpu_time_ms'], 'o-', color='orange', linewidth=2)
-axs[1, 0].set_title('Czas wykonania vs Liczba wątków w bloku (4K)')
-axs[1, 0].set_xlabel('Liczba wątków w bloku (Block Size^2)')
+# --- C. Czas vs Liczba Wątków w Bloku (Gęste dane) ---
+# To pokazuje "sweet spot" dla Twojej karty
+axs[1, 0].plot(df_blocks['total_threads'], df_blocks['gpu_time_ms'], 'o-', color='darkorange', linewidth=2.5)
+# Zaznaczamy Warp (32 wątki) i standardowy blok (256 wątków) dla odniesienia
+axs[1, 0].set_title('Wpływ rozmiaru bloku na czas (4K)')
+axs[1, 0].set_xlabel('Całkowita liczba wątków w bloku')
 axs[1, 0].set_ylabel('Czas [ms]')
-axs[1, 0].set_xticks(df_blocks['total_threads'])
-axs[1, 0].grid(True)
-for i, row in df_blocks.iterrows():
-    axs[1, 0].text(row['total_threads'], row['gpu_time_ms'],
-                   f"{int(row['gpu_time_ms'])}ms", ha='center', va='bottom')
+axs[1, 0].grid(True, alpha=0.3)
+axs[1, 0].legend()
 
-# --- D. Tabelka z wynikami (pomocnicza) ---
-axs[1, 1].axis('off')
-table_data = df_res[['label', 'gpu_time_ms']].copy()
-table_data['gpu_time_ms'] = table_data['gpu_time_ms'].apply(lambda x: f"{x:.2f}")
-table = axs[1, 1].table(cellText=table_data.values, colLabels=["Rozdzielczość", "Czas GPU (ms)"], loc='center')
-table.scale(1, 1.2)
-axs[1, 1].set_title('Szczegółowe wyniki GPU')
+
+# --- E. Porównanie różnych wielkości bloków (Wykres słupkowy) ---
+axs[2, 0].bar(df_blocks['label'], df_blocks['gpu_time_ms'], color='teal')
+axs[2, 0].set_title('Porównanie konkretnych konfiguracji bloków')
+axs[2, 0].set_ylabel('Czas [ms]')
+for i, val in enumerate(df_blocks['gpu_time_ms']):
+    axs[2, 0].text(i, val, f"{val:.1f}", ha='center', va='bottom')
+
+# --- F. Tabela wyników ---
+axs[2, 1].axis('off')
+table_data = df_blocks[['label', 'total_threads', 'gpu_time_ms']].copy()
+table = axs[2, 1].table(cellText=table_data.values, colLabels=["Blok", "Wątki", "Czas GPU (ms)"], loc='center')
+table.scale(1, 1.5)
 
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-output_2d = 'wykresy_wydajnosc.png'
-plt.savefig(output_2d, dpi=300) # dpi=300 oznacza wysoką jakość
+plt.savefig('analiza_watkow_gpu.png', dpi=300)
 plt.show()
 
 # ==========================================

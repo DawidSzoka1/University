@@ -25,4 +25,4 @@ if __name__ == "__main__":
                       poch2x=testFunctionPochxx, poch2y=testFUnctionPochyy)
     plot_trajectory(example_function, test2[3])
     plot_trajectory(function, test[3])
-    print(test)
+    print(test2)

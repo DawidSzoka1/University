@@ -199,6 +199,45 @@ int main() {
     // Zamykamy plik na końcu
     csv.close();
     printf("Koniec benchmarku. Wyniki w results.csv są bezpieczne.\n");
+    // ==========================================
+    // BENCHMARK 2: ROZMIAR BLOKU (Liczba wątków)
+    // ==========================================
+    std::ofstream blockFile("benchmark_blocks.csv");
+    blockFile << "label,block_side,total_threads,gpu_time_ms\n";
+
+    int bw = 7680, bh = 4320; // Test na 8K
+    size_t b_size = (size_t)bw * bh * sizeof(unsigned char);
+    unsigned char* d_test;
+    CHECK(cudaMalloc(&d_test, b_size));
+
+    std::vector<int> block_sides = {2, 4, 6, 8, 12, 16, 20, 24, 28, 32};
+
+    printf("\n--- Start Benchmarku 2: Rozmiar Bloku (8K) ---\n");
+
+    for(int b : block_sides) {
+        dim3 threads(b, b);
+        dim3 grid((bw + b - 1) / b, (bh + b - 1) / b);
+
+        cudaEvent_t start, stop;
+        cudaEventCreate(&start); cudaEventCreate(&stop);
+
+        cudaEventRecord(start);
+        mandelbrotKernel<<<grid, threads>>>(d_test, bw, bh);
+        cudaEventRecord(stop);
+        cudaEventSynchronize(stop);
+
+        float ms = 0;
+        cudaEventElapsedTime(&ms, start, stop);
+
+        int total_threads = b * b;
+        std::string label = std::to_string(b) + "x" + std::to_string(b);
+        printf("Blok %5s | Czas: %8.4f ms\n", label.c_str(), ms);
+        blockFile << label << "," << b << "," << total_threads << "," << ms << "\n";
+    }
+
+    blockFile.close();
+    CHECK(cudaFree(d_test));
+    printf("\nKoniec benchmarku. Wyniki zapisano do CSV.\n");
 
     return 0;
 }

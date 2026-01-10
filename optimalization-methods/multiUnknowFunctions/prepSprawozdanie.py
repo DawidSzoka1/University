@@ -3,39 +3,51 @@ import numpy as np
 import gradient
 import newton
 import gauss_seidla_dok
+import hook_jeeves
 
-X_ANALYTICAL = 0.36227
-Y_ANALYTICAL = 1.18110
+X_ANALYTICAL = (1 + 145 ** (1/2)) / 36
+Y_ANALYTICAL = 9 * X_ANALYTICAL ** 2
 
 # --- KONFIGURACJA STARTOWA ---
 X0_START = 2
 Y0_START = 2
 
+
 # --- FUNKCJA LICZĄCA BŁĄD WZGLĘDNY [%] ---
 def calculate_relative_error(analytical, measured):
     """Liczy błąd względny w procentach."""
     if analytical == 0:
-        return 0.0 # Zabezpieczenie przed dzieleniem przez zero
+        return 0.0  # Zabezpieczenie przed dzieleniem przez zero
     return abs((analytical - measured) / analytical) * 100.0
+
+
 # Wrapery metod - TERAZ PRZEKAZUJĄ PARAMETR check_e
 def run_gradient(x0, y0, eps, max_iter, check_e=True):
     # Przekazujemy check_e do funkcji w gradient.py
     return gradient.calculate(x0, y0, epsilon=eps, iterations=max_iter, check_e=check_e)
 
+
 def run_newton(x0, y0, eps, max_iter, check_e=True):
     # Przekazujemy check_e do funkcji w newton.py
     return newton.calculate(x0, y0, e=eps, iterations=max_iter, check_e=check_e)
 
+
 def run_gaussa(x0, y0, eps, max_iter, check_e=True):
     # Przekazujemy check_e do funkcji w gauss_seidla_dok.py
-    return gauss_seidla_dok.calculate(x0, y0, e=eps, iterations=max_iter, check_e=check_e)
+    return gauss_seidla_dok.calculate(x0, y0, epsilon=eps, iterations=max_iter, check_e=check_e)
+
+
+def run_hook(x0, y0, eps, max_iter, check_e=True):
+    return hook_jeeves.calculate(x0, y0, epsilon=eps, iterations=max_iter, check_e=check_e, beta=0.5, e_start=0.5)
 
 
 METHODS = {
     "Metoda Najszybszego Spadku": run_gradient,
     "Metoda Newtona": run_newton,
     "Metoda Gaussa-seidla": run_gaussa,
+    "Metoda Hooke’a - Jeevesa": run_hook,
 }
+
 
 # --- FUNKCJE GENERUJĄCE DANE W FORMACIE MULTIINDEX ---
 
@@ -76,6 +88,7 @@ def create_accuracy_dataframe(methods_dict, epsilons):
     df.columns.name = 'Epsilon (ε)'
     return df
 
+
 def create_iteration_dataframe(methods_dict, iterations_list):
     """
     Tabela 2: Różne liczby iteracji.
@@ -109,6 +122,8 @@ def create_iteration_dataframe(methods_dict, iterations_list):
     df = pd.DataFrame(rows_data, columns=iterations_list, index=multi_idx)
     df.columns.name = 'Liczba iteracji'
     return df
+
+
 def create_accuracy_error_dataframe(methods_dict, epsilons):
     """Tabela błędów dla różnych Epsilonów"""
     rows_data = []
@@ -137,6 +152,7 @@ def create_accuracy_error_dataframe(methods_dict, epsilons):
     df = pd.DataFrame(rows_data, columns=epsilons, index=multi_idx)
     df.columns.name = 'Epsilon (ε)'
     return df
+
 
 def create_iteration_error_dataframe(methods_dict, iterations_list):
     """Tabela błędów dla różnej liczby iteracji"""
@@ -167,6 +183,7 @@ def create_iteration_error_dataframe(methods_dict, iterations_list):
     df = pd.DataFrame(rows_data, columns=iterations_list, index=multi_idx)
     df.columns.name = 'Liczba iteracji'
     return df
+
 
 if __name__ == "__main__":
     # Parametry zgodne ze sprawozdaniem
