@@ -4,44 +4,48 @@ import requests
 import time
 import random
 import matplotlib.pyplot as plt
+import csv
 import numpy as np
+import os
 
-# --- 1. PRZYGOTOWANIE DANYCH ---
-print("Pobieranie dzieł Szekspira...")
+# ==========================================
+# 1. PRZYGOTOWANIE DANYCH (Szekspir)
+# ==========================================
+print("--- 1. Pobieranie dzieł Szekspira ---")
 url = "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
-text = requests.get(url).text
+try:
+    text = requests.get(url).text
+except:
+    text = "To be or not to be, that is the question. " * 1000
+
 chars = sorted(list(set(text)))
 char_to_int = {ch: i for i, ch in enumerate(chars)}
 int_to_char = {i: ch for i, ch in enumerate(chars)}
 vocab_size = len(chars)
-print(f"Liczba unikalnych znaków: {vocab_size}")
+print(f"Liczba znaków: {len(text)}, Unikalnych: {vocab_size}")
 
-# Funkcja pomocnicza: pobiera losowy fragment tekstu
 chunk_len = 200
-def get_random_batch(batch_size=100, device='cpu'):
+def get_random_batch(batch_size=64, device='cpu'):
     input_tensor = torch.zeros(batch_size, chunk_len, dtype=torch.long).to(device)
     target_tensor = torch.zeros(batch_size, chunk_len, dtype=torch.long).to(device)
-
     for b in range(batch_size):
         start_index = random.randint(0, len(text) - chunk_len - 1)
         chunk = text[start_index : start_index + chunk_len + 1]
         input_data = [char_to_int[c] for c in chunk[:-1]]
         target_data = [char_to_int[c] for c in chunk[1:]]
-
         input_tensor[b] = torch.tensor(input_data)
         target_tensor[b] = torch.tensor(target_data)
-
     return input_tensor, target_tensor
 
-# --- 2. MODEL LSTM ---
+# ==========================================
+# 2. DEFINICJA MODELU LSTM
+# ==========================================
 class RNN(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size, n_layers=2):
+    def __init__(self, input_size, hidden_size, output_size):
         super(RNN, self).__init__()
-        self.input_size = input_size
         self.hidden_size = hidden_size
-        self.n_layers = n_layers
         self.encoder = nn.Embedding(input_size, hidden_size)
-        self.rnn = nn.LSTM(hidden_size, hidden_size, n_layers, batch_first=True)
+        self.rnn = nn.LSTM(hidden_size, hidden_size, 2, batch_first=True)
         self.decoder = nn.Linear(hidden_size, output_size)
 
     def forward(self, input, hidden):
@@ -51,22 +55,27 @@ class RNN(nn.Module):
         return output, hidden
 
     def init_hidden(self, batch_size, device):
-        return (torch.zeros(self.n_layers, batch_size, self.hidden_size).to(device),
-                torch.zeros(self.n_layers, batch_size, self.hidden_size).to(device))
+        return (torch.zeros(2, batch_size, self.hidden_size).to(device),
+                torch.zeros(2, batch_size, self.hidden_size).to(device))
 
-# --- 3. TEST WYDAJNOŚCI (BENCHMARK) ---
-def run_benchmark(device_name, num_batches=20):
+# ==========================================
+# 3. FAZA BENCHMARKU (Wydajność)
+# ==========================================
+def run_single_test(device_name, iterations):
     device = torch.device(device_name)
-    # Tworzymy model testowy
-    model = RNN(vocab_size, 256, vocab_size, 2).to(device)
+    model = RNN(vocab_size, 256, vocab_size).to(device) # Mniejszy model do testów
     optimizer = torch.optim.Adam(model.parameters(), lr=0.002)
     criterion = nn.CrossEntropyLoss()
 
-    print(f"--- Start testu na: {device_name.upper()} ({num_batches} wsadów) ---")
-    start_time = time.time()
+    # Warmup
+    if device_name == 'cuda':
+        inp, tgt = get_random_batch(1, device)
+        h = model.init_hidden(1, device)
+        model(inp, h)
 
-    for _ in range(num_batches):
-        inp, target = get_random_batch(64, device) # Batch 64
+    start = time.time()
+    for _ in range(iterations):
+        inp, target = get_random_batch(64, device)
         hidden = model.init_hidden(64, device)
         model.zero_grad()
         output, _ = model(inp, hidden)
@@ -74,104 +83,141 @@ def run_benchmark(device_name, num_batches=20):
         loss.backward()
         optimizer.step()
 
-    duration = time.time() - start_time
-    print(f"Zakończono {device_name}. Czas: {duration:.4f} s")
-    return duration
+    if device_name == 'cuda':
+        torch.cuda.synchronize()
 
-# Uruchamiamy testy
-print("\n=== CZĘŚĆ 1: POMIAR AKCELERACJI ===")
-# Mierzymy CPU
-time_cpu = run_benchmark('cpu', num_batches=15)
+    return time.time() - start
 
-# Mierzymy GPU
-if torch.cuda.is_available():
-    time_gpu = run_benchmark('cuda', num_batches=15)
-    speedup = time_cpu / time_gpu
-    print(f"\n>>> PRZYSPIESZENIE GPU: {speedup:.2f}x <<<")
+print("\n--- 2. Rozpoczynam BENCHMARK (10-100 iteracji) ---")
+ITERATION_LIST = [10, 20, 30, 40, 50, 60, 100]
+results = []
+gpu_avail = torch.cuda.is_available()
 
-    # Rysowanie wykresu
-    plt.figure(figsize=(10, 5))
-    plt.bar(['CPU', 'GPU'], [time_cpu, time_gpu], color=['red', 'green'])
-    plt.title(f'Porównanie czasu treningu (15 wsadów)\nPrzyspieszenie: {speedup:.2f}x')
-    plt.ylabel('Czas (sekundy)')
-    plt.show()
-else:
-    print("Błąd: GPU niedostępne! Włącz GPU w ustawieniach Runtime.")
-    time_gpu = time_cpu
+print(f"{'Iteracje':<10} | {'CPU (s)':<10} | {'GPU (s)':<10} | {'Speedup':<10}")
+print("-" * 50)
 
-# --- 4. TRENING WŁAŚCIWY (Dłuższy, na GPU) ---
-print("\n=== CZĘŚĆ 2: TRENING MODELU DO CZATU ===")
-print("Trenuję sieć, aby nauczyła się pisać (ok. 2000 iteracji)...")
+for n in ITERATION_LIST:
+    t_cpu = run_single_test('cpu', n)
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# Większy model dla lepszej jakości
-model = RNN(vocab_size, 512, vocab_size, 2).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.002)
+    if gpu_avail:
+        t_gpu = run_single_test('cuda', n)
+        speedup = t_cpu / t_gpu
+    else:
+        t_gpu = t_cpu
+        speedup = 1.0
+
+    results.append({'iters': n, 'cpu': t_cpu, 'gpu': t_gpu, 'speedup': speedup})
+    print(f"{n:<10} | {t_cpu:<10.4f} | {t_gpu:<10.4f} | {speedup:.2f}x")
+
+# Zapis CSV i PNG
+csv_file = "wyniki_benchmarku.csv"
+with open(csv_file, 'w', newline='') as f:
+    writer = csv.DictWriter(f, fieldnames=['iters', 'cpu', 'gpu', 'speedup'])
+    writer.writeheader()
+    writer.writerows(results)
+
+# Rysowanie
+iters = [r['iters'] for r in results]
+cpu_times = [r['cpu'] for r in results]
+gpu_times = [r['gpu'] for r in results]
+speedups = [r['speedup'] for r in results]
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+ax1.plot(iters, cpu_times, 'o-', color='red', label='CPU')
+if gpu_avail: ax1.plot(iters, gpu_times, 's-', color='green', label='GPU')
+ax1.set_title("Czas wykonania")
+ax1.set_xlabel("Iteracje"); ax1.set_ylabel("Sekundy"); ax1.legend(); ax1.grid(True)
+
+ax2.bar([str(i) for i in iters], speedups, color='purple', alpha=0.7)
+ax2.set_title("Przyspieszenie (Speedup)")
+ax2.set_xlabel("Iteracje"); ax2.set_ylabel("Krotność (x)"); ax2.grid(axis='y', linestyle='--')
+plt.savefig("wykres_benchmark.png")
+print("\n-> Wyniki zapisano: wyniki_benchmarku.csv oraz wykres_benchmark.png")
+
+
+# ==========================================
+# 4. TRENING DO CZATU (Jakość)
+# ==========================================
+print("\n--- 3. Trenowanie modelu do rozmowy ---")
+print("(To zajmie chwilę, ale Szekspir musi się nauczyć mówić...)")
+
+# Wybieramy najlepsze urządzenie do treningu
+device_chat = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+# Większy model i więcej epok dla lepszej jakości tekstu
+chat_model = RNN(vocab_size, 512, vocab_size).to(device_chat)
+optimizer = torch.optim.Adam(chat_model.parameters(), lr=0.002)
 criterion = nn.CrossEntropyLoss()
 
 start_train = time.time()
-loss_history = []
+EPOCHS = 2000 # 2000 epok, żeby tekst miał sens
 
-for epoch in range(2001):
-    inp, target = get_random_batch(100, device)
-    hidden = model.init_hidden(100, device)
+for epoch in range(1, EPOCHS + 1):
+    inp, target = get_random_batch(100, device_chat)
+    hidden = chat_model.init_hidden(100, device_chat)
 
-    model.zero_grad()
-    output, _ = model(inp, hidden)
+    chat_model.zero_grad()
+    output, _ = chat_model(inp, hidden)
     loss = criterion(output.view(-1, vocab_size), target.view(-1))
     loss.backward()
     optimizer.step()
 
     if epoch % 500 == 0:
-        print(f"Epoka {epoch}/2000 | Loss: {loss.item():.4f}")
-        loss_history.append(loss.item())
+        print(f"Postęp: {epoch}/{EPOCHS} | Loss: {loss.item():.4f}")
 
-print(f"Trening zakończony w {time.time()-start_train:.0f} sekund.")
+print(f"Trening zakończony w {time.time()-start_train:.1f}s.")
 
-# --- 5. CZAT ---
-def generate_reply(model, start_sentence):
+# ==========================================
+# 5. INTERAKTYWNY SZEKSPIR
+# ==========================================
+def generate_reply(model, start_sentence, temp=0.8):
     model.eval()
-    hidden = model.init_hidden(1, device)
+    hidden = model.init_hidden(1, device_chat)
 
-    # Konwertujemy tekst usera na tensory
-    inp = torch.tensor([char_to_int[c] for c in start_sentence if c in char_to_int]).unsqueeze(0).to(device)
+    # Przygotowanie wejścia
+    inp_list = [char_to_int[c] for c in start_sentence if c in char_to_int]
+    if not inp_list: return "..."
+    inp = torch.tensor(inp_list).unsqueeze(0).to(device_chat)
 
-    # Jeśli wpisano znaki spoza słownika, zwróć pusty string
-    if inp.size(1) == 0: return "..."
-
-    # "Wczytujemy" zdanie usera do pamięci LSTMa
+    # "Wstępne" przepuszczenie przez sieć
     _, hidden = model(inp, hidden)
     inp = inp[:, -1].unsqueeze(1)
 
     predicted_text = ""
+
+    # Generowanie 200 znaków
     for i in range(200):
         output, hidden = model(inp, hidden)
 
-        # Temperatura (0.7 = bezpieczniej, 1.0 = losowo)
-        output_dist = output.data.view(-1).div(0.7).exp()
+        # Sampling z temperaturą
+        output_dist = output.data.view(-1).div(temp).exp()
         top_i = torch.multinomial(output_dist, 1)[0]
 
         char = int_to_char[top_i.item()]
         predicted_text += char
 
-        if char == '\n' and len(predicted_text) > 10:
+        # Koniec zdania po kropce lub nowej linii (jeśli długie)
+        if (char == '\n' or char == '.') and len(predicted_text) > 20:
             break
-        inp = torch.tensor([[top_i]], device=device)
+
+        inp = torch.tensor([[top_i]], device=device_chat)
 
     return predicted_text
 
-print("\n" + "="*40)
-print("INTERAKTYWNY SZEKSPIR")
-print("Pisz po angielsku (np. 'The King', 'Where art thou').")
-print("Wpisz 'exit', aby zakończyć.")
-print("="*40)
+print("\n" + "="*50)
+print(" INTERAKTYWNY SZEKSPIR (Po testach) ")
+print(" Benchmark zakończony. Teraz możesz porozmawiać.")
+print(" Pisz po angielsku. Wpisz 'exit', aby wyjść.")
+print("="*50)
 
 while True:
     user_input = input("\nTY: ")
-    if user_input.lower() == 'exit':
+    if user_input.lower() in ['exit', 'quit', 'wyjscie']:
+        print("Szekspir: Adieu! Parting is such sweet sorrow...")
         break
+
     try:
-        reply = generate_reply(model, user_input)
+        reply = generate_reply(chat_model, user_input)
         print(f"SZEKSPIR: {reply.strip()}")
     except Exception as e:
-        print("Szekspir: (Nie rozumiem tych znaków...)")
+        print(f"Błąd: {e}")
