@@ -1,3 +1,7 @@
+from math import sqrt
+
+import requests
+
 from myFunction import *
 
 
@@ -15,7 +19,7 @@ def calculate(x0, y0, epsilon, iterations=100, function=function, pochx=function
         print(f"Iteracja {i+1}: x = {xk:.6f}, y = {yk:.6f}")
         if check_e:
             grad = gradient(xk, yk)
-            if np.linalg.norm(grad) <= epsilon or (abs(xk - xk_0) <= epsilon and abs(yk - yk_0) <= epsilon):
+            if np.linalg.norm(grad) <= epsilon:
                 return xk, yk, i + 1, function(xk, yk)
     return xk, yk, iterations, function(xk, yk)
 
@@ -25,5 +29,5 @@ def calculate(x0, y0, epsilon, iterations=100, function=function, pochx=function
 
 if __name__ == "__main__":
     test = calculate(2, 2, 0.01, 100, check_e=True)
-    test2 = calculate(10, 10, 0.07, 100, pochx=testFunctionPochx, pochy=testFunctionPochy)
-    print(test2)
+    # test2 = calculate(10, 10, 0.07, 100, pochx=testFunctionPochx, pochy=testFunctionPochy)
+    print(test)
