@@ -1,0 +1,442 @@
+\documentclass[aspectratio=169]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+
+% --- PAKIETY GRAFICZNE ---
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, backgrounds}
+\usepackage{pgfplots}
+\usepackage{listings}
+\usepackage{xcolor}
+\pgfplotsset{compat=1.15}
+
+% --- KONFIGURACJA TRYBU PREZENTERA ---
+\usepackage{pgfpages}
+\setbeameroption{show notes on second screen=right}
+
+\setbeamertemplate{note page}{
+    \pagecolor{gray!10}
+    \vskip0.5cm
+
+% Używamy kolumn, żeby ustawić rzeczy obok siebie
+    \begin{columns}[t] % [t] wyrównuje do góry
+        % KOLUMNA 1: Miniatura (mała)
+        \begin{column}{0.25\paperwidth}
+            \centering
+            \insertslideintonotes{0.25}
+            \vspace{1cm}
+            \tiny \textbf{Podgląd}
+        \end{column}
+
+        % KOLUMNA 2: Tekst (dużo miejsca)
+        \begin{column}{0.70\paperwidth}
+            \large
+            \color{black}
+            \textbf{Notatki:}\par
+            \vspace{0.2cm}
+            \insertnote
+        \end{column}
+    \end{columns}
+}
+
+% --- NOWOCZESNY STYL ---
+\usetheme{Antibes}
+\usecolortheme{seahorse}
+\usefonttheme{professionalfonts}
+
+\setbeamertemplate{blocks}[rounded][shadow=false]
+\setbeamercovered{transparent}
+
+% Własna stopka z numeracją
+\addtobeamertemplate{navigation symbols}{}{%
+    \usebeamerfont{footline}%
+    \usebeamercolor[fg]{footline}%
+    \hspace{1em}%
+    \insertframenumber/\inserttotalframenumber
+}
+
+\definecolor{gamebg}{HTML}{282A36}    % Ciemne tło
+\definecolor{snakebody}{HTML}{50FA7B} % Neonowy zielony
+\definecolor{snakehead}{HTML}{00FF00} % Jaśniejszy zielony
+\definecolor{applecolor}{HTML}{FF5555}% Neonowy czerwony
+\definecolor{gridcolor}{HTML}{44475A}
+
+
+
+% Konfiguracja wyglądu kodu (C++/Python style)
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize, % Czcionka maszynowa
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\newcommand{\SnakeX}[1]{%
+    \ifcase#1 1\or 2\or 3\or 4\or 5\or 6\or 6\or 6\or 6\or 5\or 4\or 3\or 2\or 1\or 1\or 1\or 2\or 3\or 4\or 5\or 6\or 7\or 8\or 9\else 9\fi%
+}
+\newcommand{\SnakeY}[1]{%
+    \ifcase#1 1\or 1\or 1\or 1\or 1\or 1\or 2\or 3\or 4\or 4\or 4\or 4\or 4\or 4\or 5\or 6\or 6\or 6\or 6\or 6\or 6\or 6\or 6\or 6\else 6\fi%
+}
+% --- DANE PREZENTACJI ---
+\title{Prezentacja Beamer}
+\author{Dawid Szoka 89221}
+\date{\today}
+
+\begin{document}
+
+    \begin{frame}<0>[noframenumbering,label=sekretny_slajd]{Slajd 5: Ukryty (Zdefiniowany na początku)}
+        \centering
+        \colorbox{black}{\textcolor{green}{\textbf{SECRET LEVEL}}}
+
+        \vspace{1cm}
+
+        W kodzie źródłowym jestem na samym poczatku pliku!\\
+        Ale \texttt{againframe} wyświetlił mnie między slajdami 3 i 4.
+
+        \vspace{1cm}
+        \textbf{Kliknij w prawo, aby kontynuować do Slajdu 4.}
+        \note{
+            \textbf{Informacja techniczna:} \\
+            Ten slajd jest zdefiniowany jako \texttt{<0>} (niewidoczny) na początku pliku. \\
+            Wyświetla się tutaj tylko dzięki "teleportacji" komendą \texttt{againframe}. \\
+        }
+    \end{frame}
+    \begin{frame}[plain]
+        \titlepage
+    \end{frame}
+    \begin{frame}{Slajd 2}
+        Jesteśmy na drugim slajdzie. Kliknij w prawo.
+    \end{frame}
+
+    \section{Sekcja Główna}
+    \begin{frame}{Slajd 3: Drzewo}
+        \centering
+        \Huge \textbf{3}
+        \normalsize
+        \vspace{1cm}
+
+        To jest slajd numer 3.\\
+        Gdy klikniesz \textbf{W PRAWO}, przejdziesz do "tajnego" slajdu.
+    \end{frame}
+
+    \againframe[noframenumbering]{sekretny_slajd}
+
+    \begin{frame}{Slajd 4}
+        \centering
+        \Huge \textbf{4}
+        \normalsize
+        \vspace{1cm}
+
+        To jest slajd numer 4.\\
+        Właśnie wróciłeś z ukrytego slajdu, mimo że w kodzie sąsiadujemy ze slajdem 3.
+    \end{frame}
+    \begin{frame}{Snake: Podwójne karmienie}
+        \centering
+        \begin{tikzpicture}[scale=0.7]
+            % TŁO
+            \fill[gamebg] (0,0) rectangle (10,8);
+            \draw[step=1, gridcolor, thin] (0,0) grid (10,8);
+            \draw[ultra thick, gridcolor!50!white] (0,0) rectangle (10,8);
+
+            % --- PARAMETRY GRY ---
+            \def\eatOne{8}  % Czas zjedzenia 1. jabłka
+            \def\eatTwo{15} % Czas zjedzenia 2. jabłka
+            \def\maxFrames{23}
+
+            \foreach \t in {1,...,\maxFrames} {
+                \only<\t>{
+
+                % --- LOGIKA JABŁEK ---
+
+                % JABŁKO 1 (do czasu eatOne)
+                    \ifnum\t<\eatOne
+                    \shade[ball color=apple1] (6.5, 4.5) circle (0.4);
+                    \else
+                    % Moment zjedzenia 1
+                        \ifnum\t=\eatOne
+                        \node[star, star points=5, fill=yellow, draw=red, thick, scale=0.9]
+                        at (6.5, 4.5) {\textbf{YUM!}};
+                        \else
+                        % JABŁKO 2 (między eatOne a eatTwo)
+                            \ifnum\t<\eatTwo
+                            \shade[ball color=apple2] (1.5, 6.5) circle (0.4);
+                            \else
+                            % Moment zjedzenia 2
+                                \ifnum\t=\eatTwo
+                                \node[star, star points=5, fill=white, draw=orange, scale=0.8] at (1.5, 6.5) {BIG!};
+                                \else
+                                % JABŁKO 3 (po eatTwo - pojawia się np. na 9,2)
+                                    \shade[ball color=apple3] (9.5, 2.5) circle (0.4);
+                                \fi
+                            \fi
+                        \fi
+                    \fi
+
+                % --- OBLICZANIE DŁUGOŚCI WĘŻA ---
+                % Logika:
+                % Jeśli t > eatTwo -> Długość 5
+                % Jeśli t > eatOne -> Długość 4
+                % W przeciwnym razie -> Długość 3
+                    \pgfmathsetmacro{\currLen}{\t >= \eatTwo ? 5 : (\t >= \eatOne ? 4 : 3)}
+                    \pgfmathsetmacro{\myScore}{%
+                        int(\t >= \eatTwo ? 200 : (\t >= \eatOne ? 100 : 0))%
+                    }
+                    % --- RYSOWANIE CIAŁA ---
+                    \foreach \i in {1,...,\currLen} {
+                        \pgfmathsetmacro{\tailT}{int(\t-\i)}
+                        \ifnum\tailT>0
+                        % Kolor ogona zmienia się lekko w zależności od segmentu
+                        \fill[snakebody, rounded corners=3pt, opacity=0.9]
+                        (\SnakeX{\tailT}, \SnakeY{\tailT}) rectangle ++(1,1);
+                        \fi
+                    }
+
+                % --- RYSOWANIE GŁOWY ---
+                    \fill[snakehead, rounded corners=4pt] (\SnakeX{\t}, \SnakeY{\t}) rectangle ++(1,1);
+
+                    % Oczy
+                    \fill[black] (\SnakeX{\t}+0.25, \SnakeY{\t}+0.7) circle (0.1);
+                    \fill[black] (\SnakeX{\t}+0.75, \SnakeY{\t}+0.7) circle (0.1);
+
+                    % --- INTERFEJS ---
+                    \node[anchor=north west, white] at (0,8) {Frame: \t};
+                    \node[anchor=north east, white] at (10,8) {
+                        Score: \myScore
+                    };
+                }
+            }
+        \end{tikzpicture}
+        \note<1-7>{
+            \textbf{Krok 1: Inicjalizacja} \\
+            Wąż startuje z długością 3 jednostek. \\
+        }
+
+        % Faza 2: Zjedzenie pierwszego jabłka (Klatka 8)
+        \note<8>{
+            \textbf{EVENT: Kolizja z jedzeniem!} \\
+            Współrzędne głowy pokrywają się z jabłkiem. \\
+            - Flaga wzrostu: TRUE
+        }
+
+        % Faza 3: Ruch do drugiego jabłka (Klatki 9-15)
+        \note<9-14>{
+            \textbf{Krok 2: Wzrost organizmu} \\
+            Zauważ, że ogon jest teraz dłuższy (4 jednostki). \\
+            Wąż zmierza do kolejnego celu.
+        }
+
+        % Faza 4: Zjedzenie drugiego jabłka (Klatka 15)
+        \note<15>{
+            \textbf{EVENT: Drugie karmienie!} \\
+            Kolejny punkt zdobyty. \\
+            Wąż osiąga maksymalną przewidzianą długość.
+        }
+
+        % Faza 5: Koniec sekwencji (Klatki 17-23)
+        \note<16-23>{
+            \textbf{Stan stabilny} \\
+            Wąż ma teraz 5 jednostek długości. \\
+            Pojawia się niebieski cel, ale symulacja dobiega końca.
+        }
+    \end{frame}
+% ----------------------------------------------------------------------
+% 3. GRAF (15 elementów, transparentny)
+% ----------------------------------------------------------------------
+    \section{Struktury danych}
+    \begin{frame}{Drzewo Binarne (Animacja Sekwencyjna)}
+        \centering
+        \begin{tikzpicture}[
+            scale=0.52, transform shape,
+        % Styl węzłów
+            main/.style={
+                circle,
+                draw=blue!40,
+                line width=0.8pt,
+                top color=white,
+                bottom color=blue!15,
+                text=blue!60!black,
+                font=\bfseries\scriptsize,
+                inner sep=1pt,
+                minimum size=0.65cm,
+                drop shadow={opacity=0.2}
+            },
+            connect/.style={
+                ->, thin, color=gray!60, >=stealth, shorten >=1pt
+            }
+        ]
+            % --- BLOKADA SKAKANIA (Kluczowe!) ---
+            \useasboundingbox (-8.5, -7) rectangle (8.5, 1);
+
+
+            % --- POZIOM 0 (Klatka 1) ---
+            \node<1->[main] (1) at (0, 0) {1};
+
+            % --- POZIOM 1 (Klatka 2) ---
+            \foreach \i [count=\n from 0] in {2,3} {
+                \node<2->[main] (\i) at (-4 + \n*8, -1.5) {\i};
+                \draw<2->[connect] (1) -- (\i);
+            }
+
+            % --- POZIOM 2 (Klatki 3 i 4) ---
+            \foreach \i [count=\n from 0] in {4,...,7} {
+                % Obliczamy numer slajdu: dla i<6 slajd 3, dla i>=6 slajd 4
+                \pgfmathsetmacro{\s}{int(3 + (\i>=6))}
+
+                \node<\s->[main] (\i) at (-6 + \n*4, -3.0) {\i};
+
+                \pgfmathsetmacro{\parent}{int(\i/2)}
+                \draw<\s->[connect] (\parent) -- (\i);
+            }
+
+            % --- POZIOM 3 (Klatki 5 i 6) ---
+            \foreach \i [count=\n from 0] in {8,...,15} {
+                \pgfmathsetmacro{\s}{int(5 + (\i>=12))}
+
+                \node<\s->[main] (\i) at (-7 + \n*2, -4.5) {\i};
+
+                \pgfmathsetmacro{\parent}{int(\i/2)}
+                \draw<\s->[connect] (\parent) -- (\i);
+            }
+
+            % --- POZIOM 4 (Klatki 7, 8, 9, 10) ---
+            \foreach \i [count=\n from 0] in {16,...,31} {
+                \pgfmathsetmacro{\s}{int(7 + floor((\i-16)/4))}
+
+                \node<\s->[main] (\i) at (-7.5 + \n*1, -6.0) {\i};
+
+                \pgfmathsetmacro{\parent}{int(\i/2)}
+                \draw<\s->[connect] (\parent) -- (\i);
+            }
+
+        \end{tikzpicture}
+        \note<1-2>{
+            \textbf{Wprowadzenie:} \\
+            Prezentujemy strukturę drzewa binarnego zupełnego. \\
+            - Węzeł korzenia (Root) o indeksie 1. \\
+            - Każdy rodzic posiada co najwyżej dwoje dzieci.
+        }
+
+
+        \note<3-6>{
+            \textbf{Wzrost wykładniczy:} \\
+            Zwróćcie uwagę na symetrię rozrostu. \\
+            - Najpierw wypełniamy lewe poddrzewo. \\
+            - Następnie prawe poddrzewo. \\
+            Liczba węzłów podwaja się na każdym poziomie ($2^k$).
+        }
+
+        \note<7-10>{
+            \textbf{Warstwa liści (Leaf Nodes):} \\
+            Ostatni poziom zawiera aż 16 elementów. \\
+            Łącznie na ekranie mamy $2^5 - 1 = 31$ węzłów. \\
+            To pokazuje, jak szybko rośnie złożoność pamięciowa w strukturach drzewiastych.
+        }
+    \end{frame}
+
+
+    \section{Analiza matematyczna}
+    \begin{frame}{Wizualizacja funkcji tłumionej}
+        \begin{columns}
+            \begin{column}{0.65\textwidth}
+                \centering
+                \begin{tikzpicture}
+                    \begin{axis}[
+                        width=\textwidth, height=0.7\textwidth,
+                        axis lines=middle,
+                        grid=major,
+                        xmin=0, xmax=10, ymin=-1.2, ymax=1.2,
+                        xlabel=$x$, ylabel=$f(x)$,
+                        samples=100
+                    ]
+                        \foreach \i in {1,...,10} {
+                            \only<\i->{
+                                \addplot[
+                                    domain=(\i-1):\i,
+                                    thick,
+                                    blue!80!black
+                                ] {exp(-0.2*x) * cos(deg(2*x))};
+                            }
+                        }
+                    \end{axis}
+                \end{tikzpicture}
+            \end{column}
+
+            \begin{column}{0.3\textwidth}
+                \begin{block}{Definicja funkcji}
+                    \[ f(x) = e^{-a \cdot x} \cos(\omega x) \]
+                \end{block}
+
+                \begin{itemize}
+                    \item<1-> $\alert{a = 0.2}$ (tłumienie)
+                    \item<1-> $\alert{\omega = 2.0}$ (częstość)
+                \end{itemize}
+
+                \only<10->{
+                    \begin{exampleblock}{Status}
+                        Rysowanie zakończone.
+                    \end{exampleblock}
+                }
+            \end{column}
+        \end{columns}
+
+        \note{Prezentacja funkcji harmonicznej z wykładniczym zanikiem amplitudy.}
+    \end{frame}
+
+
+    \appendix
+
+    \begin{frame}[fragile, noframenumbering]{Dodatek Implementacja ruchu (C++)}
+        \begin{lstlisting}[language=C++, title={SnakeMovement.cpp}]
+void updateSnake(int& headX, int& headY, Direction dir) {
+    // Aktualizacja pozycji glowy
+    switch(dir) {
+        case UP:    headY--; break;
+        case DOWN:  headY++; break;
+        case LEFT:  headX--; break;
+        case RIGHT: headX++; break;
+    }
+    // Wykrywanie kolizji ze sciana
+    if (headX < 0 || headX >= GRID_W || headY < 0) {
+        gameOver = true;
+        return;
+    }
+    // Logika ogona (FIFO)
+    tail.insert(tail.begin(), {headX, headY});
+    if (!ateApple) tail.pop_back();
+}
+        \end{lstlisting}
+        \note{
+            \textbf{Szczegóły techniczne kodu:}
+            \begin{itemize}
+                \item Zwrócić uwagę na referencje \texttt{int\& headX} - modyfikujemy zmienne oryginalne, nie kopie.
+            \end{itemize}
+        }
+    \end{frame}
+
+
+    \begin{frame}[noframenumbering]{Kontakt}
+        \centering
+        \Large \textbf{Dziękuję za uwage!} \\
+    \end{frame}
+
+\end{document}
