@@ -9,7 +9,7 @@ public class Shop {
 
     public static Shop getInstance() {
         if (instance == null) {
-            instance = new Sklep();
+            instance = new Shop();
         }
         return instance;
     }
