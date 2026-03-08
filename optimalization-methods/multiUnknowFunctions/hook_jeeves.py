@@ -63,8 +63,4 @@ def calculate(x0, y0, epsilon, iterations=100, function=function, pochx=function
 
 
 if __name__ == "__main__":
-    def example(x, y):
-        return 2.5 * (x ** 2 - y) ** 2 + (1 - x) ** 2
-    print(calculate(10, 12, 0.01, 100, e_start=0.5, beta=0.5, function=example_function))
-    print(calculate(-0.5, 1, 0.01, 100, e_start=0.5, beta=0.5, function=example))
     print(calculate(2, 2, 0.01, 10000, e_start=0.5, beta=0.5))

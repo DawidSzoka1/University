@@ -101,7 +101,7 @@ def run_style_transfer_ui(c, s, d, steps=100):
     img, time_val = run_style_transfer(c, s, d, steps)
     return img, f"{time_val:.2f} s"
 
-# --- FUNKCJA BENCHMARKOWA (NOWOŚĆ) ---
+# --- FUNKCJA BENCHMARKOWA  ---
 def compare_performance(content_img, style_img):
     if not torch.cuda.is_available():
         return None, "Brak GPU (CUDA) w systemie. Nie można przeprowadzić porównania."

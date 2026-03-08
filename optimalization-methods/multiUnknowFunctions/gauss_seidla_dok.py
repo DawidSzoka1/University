@@ -29,5 +29,4 @@ def calculate(x0, y0, epsilon, iterations=100, function=function, pochx=function
 
 if __name__ == "__main__":
     test = calculate(2, 2, 0.01, 100, check_e=True)
-    # test2 = calculate(10, 10, 0.07, 100, pochx=testFunctionPochx, pochy=testFunctionPochy)
     print(test)
