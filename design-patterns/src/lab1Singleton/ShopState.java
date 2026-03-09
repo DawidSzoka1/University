@@ -1,3 +1,5 @@
+package lab1Singleton;
+
 interface ShopState {
     void buy();
 }

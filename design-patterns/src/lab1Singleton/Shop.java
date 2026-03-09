@@ -1,10 +1,12 @@
+package lab1Singleton;
+
 public class Shop {
     private Shop() {
         state = new StateOpen();
     }
 
     public String name;
-    private volatile static Shop instance;
+    private static Shop instance = null;
     private ShopState state;
 
     public static Shop getInstance() {
