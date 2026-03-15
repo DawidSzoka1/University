@@ -1,6 +1,8 @@
 package lab2;
 
-public class Shop {
+import java.util.Observable;
+
+public class Shop extends Observable {
     private String name;
 
     Shop(String name) {
@@ -13,6 +15,8 @@ public class Shop {
 
     void throwStuff(String item) {
         System.out.println("Rzucono dostawę " +  item +  " do " + this.name + "! Tłumy szaleją.");
+        setChanged();
+        notifyObservers(item);
     }
 
     @Override
