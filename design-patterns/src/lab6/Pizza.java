@@ -1,7 +1,5 @@
 package lab6;
 
-import java.util.Locale;
-
 public class Pizza implements iPizza {
     private final int diameter;
 
@@ -40,6 +38,6 @@ public class Pizza implements iPizza {
 
     @Override
     public String toString() {
-        return String.format(Locale.US, "%s, o cenie %.2fzł.", getDescription(), getPrice());
+        return String.format(new java.util.Locale("pl"), "%s, o cenie %.2fzł.", getDescription(), getPrice());
     }
 }

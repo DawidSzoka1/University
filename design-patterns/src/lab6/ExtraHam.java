@@ -1,17 +1,5 @@
 package lab6;
 
-public class ExtraHam extends PizzaDecorator {
-    public ExtraHam(iPizza pizza) {
-        super(pizza);
-    }
-
-    @Override
-    public String getDescription() {
-        return decorateDescription("szynką");
-    }
-
-    @Override
-    public double getPrice() {
-        return pizza.getPrice() + 5.0 * getAreaFactor();
-    }
+public class ExtraHam extends Topping {
+    public ExtraHam(iPizza pizza) { super(pizza, "szynką", 5.0); }
 }
