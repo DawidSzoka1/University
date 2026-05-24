@@ -38,6 +38,6 @@ public abstract class PizzaDecorator implements iPizza {
 
     @Override
     public String toString() {
-        return String.format(new java.util.Locale("pl"), "%s, o cenie %.2fzł.", getDescription(), getPrice());
+        return format();
     }
 }

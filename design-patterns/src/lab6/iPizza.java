@@ -5,4 +5,8 @@ public interface iPizza {
     double getPrice();
     int getDiameter();
     double getAreaFactor();
+
+    default String format() {
+        return String.format(java.util.Locale.forLanguageTag("pl"), "%s, o cenie %.2fzł.", getDescription(), getPrice());
+    }
 }
