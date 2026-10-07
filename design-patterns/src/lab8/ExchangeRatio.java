@@ -23,7 +23,7 @@ public class ExchangeRatio extends Observable {
     public void setRatio(double ratio) {
         this.ratio = ratio;
         setChanged();
-        notifyObservers(ratio);
+        notifyObservers();
     }
 
     @Override

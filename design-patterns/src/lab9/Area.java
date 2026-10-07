@@ -1,5 +1,6 @@
 package lab9;
 
+
 import java.util.Scanner;
 
 public abstract class Area {
@@ -9,10 +10,10 @@ public abstract class Area {
         this.name = name;
     }
 
-    public abstract Area enter(Player player, Scanner scanner);
+    public abstract Area enter();
 
-    protected void printHeader(Player player) {
+    protected void printHeader() {
         System.out.println("\n--- " + name + " ---");
-        System.out.println(player.getStatus());
+        System.out.println(Player.getStatus());
     }
 }

@@ -1,37 +1,37 @@
 package lab9;
 
 public class Player {
-    private int score = 0;
-    private int lives = 3;
-    private boolean won = false;
-    private boolean gameOver = false;
+    private static int score = 0;
+    private static int lives = 3;
+    private static boolean won = false;
+    private static boolean gameOver = false;
 
-    public void addScore(int points) {
+    public static void addScore(int points) {
         score += points;
     }
 
-    public void loseLife() {
+    public static void loseLife() {
         lives--;
         if (lives <= 0) {
             gameOver = true;
         }
     }
 
-    public void win() {
+    public static void win() {
         won = true;
         gameOver = true;
     }
 
-    public void lose() {
+    public static void lose() {
         gameOver = true;
     }
 
-    public int getScore() { return score; }
-    public int getLives() { return lives; }
-    public boolean isWon() { return won; }
-    public boolean isGameOver() { return gameOver; }
+    public static int getScore() { return score; }
+    public static int getLives() { return lives; }
+    public static boolean isWon() { return won; }
+    public static boolean isGameOver() { return gameOver; }
 
-    public String getStatus() {
+    public static String getStatus() {
         StringBuilder sb = new StringBuilder();
         sb.append("Wynik: ").append(score).append("  Życia: ");
         for (int i = 0; i < lives; i++) sb.append("♥");

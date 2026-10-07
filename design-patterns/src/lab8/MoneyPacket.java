@@ -12,10 +12,9 @@ public class MoneyPacket implements Observer {
     public MoneyPacket(double originalAmount, Currency originalCurrency) {
         this.originalAmount = originalAmount;
         this.originalCurrency = originalCurrency;
-        
-        // Register as observer
-        CurrencyRatios.getInstance().addObserver(this);
-        ExchangeRatio er = CurrencyRatios.getInstance().getExchangeRatio(originalCurrency);
+        CurrencyRatios instance = CurrencyRatios.getInstance();
+        instance.addObserver(this);
+        ExchangeRatio er = instance.getExchangeRatio(originalCurrency);
         if (er != null) {
             er.addObserver(this);
         }
@@ -32,7 +31,7 @@ public class MoneyPacket implements Observer {
             if (er != null) {
                 this.value = originalAmount * er.getRatio();
             } else {
-                this.value = 0.0; // Or handle error
+                this.value = 0.0;
             }
         }
     }

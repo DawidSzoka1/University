@@ -43,12 +43,12 @@ public class CurrencyRatios extends Observable {
             }
         }
         setChanged();
-        notifyObservers("BASE_CURRENCY_CHANGED");
+        notifyObservers();
     }
 
     public void refreshAll() {
         setChanged();
-        notifyObservers("REFRESH_ALL");
+        notifyObservers();
     }
 
     @Override

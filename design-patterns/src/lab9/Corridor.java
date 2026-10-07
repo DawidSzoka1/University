@@ -5,15 +5,15 @@ import java.util.Scanner;
 
 public class Corridor extends Area {
     private final List<Area> doors;
-
+    public Scanner scanner = new Scanner(System.in);
     public Corridor(List<Area> doors) {
         super("Korytarz");
         this.doors = doors;
     }
 
     @Override
-    public Area enter(Player player, Scanner scanner) {
-        printHeader(player);
+    public Area enter() {
+        printHeader();
         System.out.println("Korytarz. Widzisz " + doors.size() + " drzwi.");
 
         int choice = 0;

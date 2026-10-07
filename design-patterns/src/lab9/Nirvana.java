@@ -8,10 +8,10 @@ public class Nirvana extends Area {
     }
 
     @Override
-    public Area enter(Player player, Scanner scanner) {
-        printHeader(player);
+    public Area enter() {
+        printHeader();
         System.out.println("Czujesz spokój i harmonię. Wygrywasz! ♥♥♥");
-        player.win();
+        Player.win();
         return null;
     }
 }

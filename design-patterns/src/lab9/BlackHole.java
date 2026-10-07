@@ -8,10 +8,10 @@ public class BlackHole extends Area {
     }
 
     @Override
-    public Area enter(Player player, Scanner scanner) {
-        printHeader(player);
+    public Area enter() {
+        printHeader();
         System.out.println("Wpadasz w czarną dziurę i znikasz na zawsze. Przegrywasz!");
-        player.lose();
+        Player.lose();
         return null;
     }
 }

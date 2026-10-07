@@ -4,19 +4,15 @@ public class Main {
     public static void main(String[] args) {
         ChocolateProducer producer = new ChocolateProducer();
 
-        // Standardowe czekolady
         printProduction(producer, "mleczna");
         printProduction(producer, "gorzka");
         printProduction(producer, "czekolada z orzechami i bakaliami");
 
-        // Warianty
         printProduction(producer, "mocno mleczna");
         printProduction(producer, "ekstra gorzka");
 
-        // Własna receptura
         printProduction(producer, "czekolada z chili i solą morską");
         
-        // Nieznana
         printProduction(producer, "biała");
     }
 

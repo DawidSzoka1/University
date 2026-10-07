@@ -27,7 +27,7 @@ public class Game {
         System.out.println("\n--- Nowa gra. Masz 3 życia. Powodzenia! ---");
 
         while (current != null && !player.isGameOver()) {
-            current = current.enter(player, scanner);
+            current = current.enter();
         }
 
         System.out.println();

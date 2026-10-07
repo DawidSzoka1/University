@@ -18,9 +18,8 @@ public class MapGenerator {
             return buildTerminal();
         }
 
-        double roll = rng.nextDouble();
-
         if (depth >= TERMINAL_MIN_DEPTH) {
+            double roll = rng.nextDouble();
             if (roll < 0.08) return new Nirvana();
             if (roll < 0.16) return new BlackHole();
         }

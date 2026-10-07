@@ -9,6 +9,11 @@ public abstract class Chocolate {
         this.about = "czekolada " + type + ": ";
     }
 
+    public Chocolate(String type, String about) {
+        this.type = type;
+        this.about = about;
+    }
+
     public abstract void prepare();
 
     public String giveChocolate() {
