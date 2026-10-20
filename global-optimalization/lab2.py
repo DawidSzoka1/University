@@ -22,11 +22,21 @@ def find_m(population):
 
 
 def get_all_binary(m, n):
-    max_val = (2 ** m) - 1
-    samples_count = min(n, max_val + 1)
+    samples_count = min(n, 2 ** m)
 
-    random_numbers = random.sample(range(max_val + 1), samples_count)
-    return [bin(num) for num in random_numbers]
+    random_numbers = set()
+    while len(random_numbers) < samples_count:
+        random_numbers.add(random.getrandbits(m))
+    return [format(num, f'0{m}b') for num in random_numbers]
+
+
+def split_chromosome(chromosome, ms):
+    result = []
+    start = 0
+    for m in ms:
+        result.append(chromosome[start:start + m])
+        start += m
+    return result
 
 
 def get_decimals(binar):
@@ -34,23 +44,26 @@ def get_decimals(binar):
     return result
 
 
-def get_scale(decimals, a, b, m,d ):
-    result = [round(a + ((b - a) * i) / (2 ** m - 1), d) for i in decimals]
-    return result
+def get_scale(decimals, data, ms):
+    result = [round(var_data['a'] + ((var_data['b'] - var_data['a']) * i) / (2 ** m_val - 1), var_data['d'])
+              for i, var_data, m_val in zip(decimals, data, ms)]
+    return tuple(result)
 
 
 def calc(data, n, f):
     length_a = [(x.get('b') - x.get('a')) * (10 ** x.get('d')) + 1 for x in data]
     ms = [find_m(leng) for leng in length_a]
-    binarys = [get_all_binary(m, n) for m in ms]
+    chromosomes = get_all_binary(sum(ms), n)
 
-    to_decimal = [get_decimals(all_binary) for all_binary in binarys]
-    scale = []
-    for dec_list, var_data, m_val in zip(to_decimal, data, ms):
-        scale.append(get_scale(dec_list, var_data['a'], var_data['b'], m_val, var_data['d']))
+    points = []
+    print(chromosomes[0])
+    print(split_chromosome(chromosomes[0], ms))
 
-    points = list(zip(*scale))
-    print(points)
+    for chromosome in chromosomes:
+        parts = split_chromosome(chromosome, ms)
+        to_decimal = get_decimals(parts)
+        points.append(get_scale(to_decimal, data, ms))
+
     min_point = points[0]
     fun_min = f(*min_point)
     for pt in points:
