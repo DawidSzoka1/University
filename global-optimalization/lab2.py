@@ -50,10 +50,14 @@ def calc(data, n, f):
         scale.append(get_scale(dec_list, var_data['a'], var_data['b'], m_val, var_data['d']))
 
     points = list(zip(*scale))
+    print(points)
     min_point = points[0]
+    fun_min = f(*min_point)
     for pt in points:
-        if f(*pt) < f(*min_point):
+        candidate = f(*pt)
+        if candidate < fun_min:
             min_point = pt
+            fun_min = candidate
     return min_point
 
 
