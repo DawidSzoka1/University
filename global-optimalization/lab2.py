@@ -56,8 +56,6 @@ def calc(data, n, f):
     chromosomes = get_all_binary(sum(ms), n)
 
     points = []
-    print(chromosomes[0])
-    print(split_chromosome(chromosomes[0], ms))
 
     for chromosome in chromosomes:
         parts = split_chromosome(chromosome, ms)
