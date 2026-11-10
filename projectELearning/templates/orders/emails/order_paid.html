@@ -1,0 +1,12 @@
+{% extends "orders/emails/_layout.html" %}
+{% load core_tags %}
+{% block title %}Płatność za {{ order.number }} przyjęta{% endblock %}
+{% block body %}
+<p style="margin:0 0 12px;">Dzień dobry {{ order.first_name }},</p>
+<p style="margin:0 0 12px;">płatność za zamówienie <strong>{{ order.number }}</strong> została przyjęta. Kursy są już dostępne w „Moich kursach”.</p>
+{% if codes %}
+<p style="margin:0 0 8px;">Kody dostępu dla innych osób (do wpisania na stronie <a href="{{ redeem_url }}" style="color:{{ palette.on_surface }};">Zrealizuj kod</a>):</p>
+<ul style="margin:0 0 16px;padding-left:20px;">{% for code in codes %}<li><code style="font-size:16px;font-weight:bold;">{{ code.code }}</code> — {{ code.order_item.title }}</li>{% endfor %}</ul>
+{% endif %}
+<p style="margin:0;"><a href="{{ courses_url }}" style="display:inline-block;padding:12px 20px;background:{{ palette.primary }};color:{{ palette.on_primary }};font-weight:bold;text-decoration:none;">Przejdź do moich kursów</a></p>
+{% endblock %}

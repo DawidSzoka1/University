@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Statystyki platformy — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'catalog:moderation_submissions' %}">Moderacja</a></li>
+                    <li><span aria-current="page">Statystyki</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Administrator</p>
+            <h1 class="page-head__title">Statystyki platformy</h1>
+            <p class="page-head__lead">Użytkownicy, kursy i ich ukończenia, testy, style uczenia się, asystent AI i sprzedaż — liczone na bieżąco z bazy.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body stats-page">
+    {% include "catalog/includes/moderation_nav.html" with active="stats" %}
+
+    <section aria-labelledby="users-heading">
+        <h2 id="users-heading" class="section-title">01 Użytkownicy</h2>
+        <dl class="stat-grid">
+            <div class="stat-grid__item"><dt>Aktywne konta</dt><dd>{{ users.total }}</dd></div>
+            {% for label, count in users.roles %}<div class="stat-grid__item"><dt>{{ label }}</dt><dd>{{ count }}</dd></div>{% endfor %}
+            <div class="stat-grid__item"><dt>Nowe w ostatnich 30 dniach</dt><dd>{{ users.new_30 }}</dd></div>
+        </dl>
+    </section>
+
+    <section aria-labelledby="courses-heading">
+        <h2 id="courses-heading" class="section-title">02 Kursy i ukończenia</h2>
+        <dl class="stat-grid">
+            <div class="stat-grid__item"><dt>Opublikowane kursy</dt><dd>{{ courses.published }}</dd></div>
+            {% for label, count in courses.statuses %}<div class="stat-grid__item"><dt>Status: {{ label|lower }}</dt><dd>{{ count }}</dd></div>{% endfor %}
+            <div class="stat-grid__item"><dt>Zapisy (rozpoczęte kursy)</dt><dd>{{ courses.started }}</dd></div>
+            <div class="stat-grid__item"><dt>Ukończone</dt><dd>{{ courses.completed }} <span class="stat-grid__sub">({{ courses.rate }}%)</span></dd></div>
+            <div class="stat-grid__item"><dt>W trakcie</dt><dd>{{ courses.in_progress }}</dd></div>
+        </dl>
+        <div class="progress stat-progress" role="img" aria-label="Ukończono {{ courses.completed }} z {{ courses.started }} rozpoczętych kursów ({{ courses.rate }}%)"><span class="progress__bar"><span class="progress__fill" style="width: {{ courses.rate }}%"></span></span><span class="progress__value" aria-hidden="true">{{ courses.rate }}%</span></div>
+
+        <h3 id="per-course-heading" class="section-title section-title--sm">Ukończenia w poszczególnych kursach</h3>
+        <div class="table-wrap" role="region" aria-labelledby="per-course-heading" tabindex="0">
+            <table class="data-table">
+                <caption class="sr-only">Liczba osób, które zaczęły i ukończyły każdy kurs, oraz procent ukończenia</caption>
+                <thead><tr><th scope="col">Kurs</th><th scope="col">Zaczęło</th><th scope="col">Ukończyło</th><th scope="col">Procent ukończenia</th></tr></thead>
+                <tbody>
+                    {% for course in course_page.object_list %}
+                    <tr>
+                        <th scope="row"><a href="{% url 'learning:course_students' course.slug %}">{{ course.title }}</a></th>
+                        <td>{{ course.started }}</td>
+                        <td>{{ course.done }}</td>
+                        <td>{{ course.rate }}%</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">Nikt jeszcze nie zapisał się na kurs.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% include "includes/pagination.html" with page_obj=course_page page_param="kursy" pagination_label="Strony tabeli kursów" %}
+    </section>
+
+    <section aria-labelledby="quiz-heading">
+        <h2 id="quiz-heading" class="section-title">03 Testy</h2>
+        <dl class="stat-grid">
+            <div class="stat-grid__item"><dt>Ocenione podejścia</dt><dd>{{ quizzes.graded }}</dd></div>
+            <div class="stat-grid__item"><dt>Zaliczone</dt><dd>{{ quizzes.passed }} <span class="stat-grid__sub">({{ quizzes.pass_rate }}%)</span></dd></div>
+            <div class="stat-grid__item"><dt>Czekają na ocenę</dt><dd>{{ quizzes.pending }}</dd></div>
+        </dl>
+    </section>
+
+    <section aria-labelledby="styles-heading">
+        <h2 id="styles-heading" class="section-title">04 Style uczenia się</h2>
+        <dl class="stat-grid">
+            <div class="stat-grid__item"><dt>Wypełnione ankiety</dt><dd>{{ styles.surveys }}</dd></div>
+            <div class="stat-grid__item"><dt>Osoby, które wypełniły ankietę</dt><dd>{{ styles.surveyed_users }}</dd></div>
+            <div class="stat-grid__item"><dt>Wersje lekcji dla stylów</dt><dd>{{ styles.variants }}</dd></div>
+            <div class="stat-grid__item"><dt>Uczniowie bez stylu</dt><dd>{{ styles.without }}</dd></div>
+        </dl>
+        <div class="table-wrap" role="region" aria-label="Tabela stylów uczenia się" tabindex="0">
+            <table class="data-table">
+                <caption class="sr-only">Style uczenia się: liczba osób z tym stylem, wyniki ankiet i wersje lekcji</caption>
+                <thead><tr><th scope="col">Styl</th><th scope="col">Wybrało</th><th scope="col">Dominujący w ankiecie</th><th scope="col">Wersje lekcji</th><th scope="col">Aktywny</th></tr></thead>
+                <tbody>
+                    {% for style in styles.rows %}
+                    <tr><th scope="row">{{ style.name }}</th><td>{{ style.learner_total }}</td><td>{{ style.survey_total }}</td><td>{{ style.variant_total }}</td><td>{{ style.is_active|yesno:"tak,nie" }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section aria-labelledby="ai-heading">
+        <h2 id="ai-heading" class="section-title">05 Asystent AI</h2>
+        <dl class="stat-grid">
+            <div class="stat-grid__item"><dt>Rozmowy</dt><dd>{{ assistant.sessions }}</dd></div>
+            <div class="stat-grid__item"><dt>Osoby korzystające</dt><dd>{{ assistant.users }}</dd></div>
+            <div class="stat-grid__item"><dt>Zadane pytania</dt><dd>{{ assistant.questions }}</dd></div>
+            <div class="stat-grid__item"><dt>Odmowy w trakcie testu</dt><dd>{{ assistant.refusals }}</dd></div>
+        </dl>
+    </section>
+
+    <section aria-labelledby="orders-heading">
+        <h2 id="orders-heading" class="section-title">06 Sprzedaż</h2>
+        <dl class="stat-grid">
+            <div class="stat-grid__item"><dt>Zamówienia</dt><dd>{{ orders.total }}</dd></div>
+            {% for label, count in orders.statuses %}<div class="stat-grid__item"><dt>{{ label }}</dt><dd>{{ count }}</dd></div>{% endfor %}
+            <div class="stat-grid__item"><dt>Przychód (opłacone i zrealizowane)</dt><dd>{{ orders.revenue|pln }}</dd></div>
+        </dl>
+    </section>
+</div>
+{% endblock %}

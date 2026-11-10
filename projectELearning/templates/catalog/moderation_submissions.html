@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Moderacja: zgłoszenia kursów — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><span aria-current="page">Moderacja</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Moderacja</p>
+            <h1 class="page-head__title">Zgłoszenia kursów</h1>
+            <p class="page-head__lead">Kursy wysłane do akceptacji w Twoich kategoriach. Otwórz zgłoszenie, żeby obejrzeć kurs, porozmawiać z autorem i podjąć decyzję.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% include "catalog/includes/moderation_nav.html" with active="submissions" %}
+
+    {% if courses %}
+    <ul class="row-list">
+        {% for course in courses %}
+        <li class="row-list__item">
+            <div class="row-list__main">
+                <h2 class="row-list__title"><a href="{% url 'catalog:submission_thread' course.slug %}">{{ course.title }}</a></h2>
+                <p class="row-list__meta">
+                    {% if course.author %}{{ course.author.get_full_name|default:course.author.username }}{% else %}autor usunięty{% endif %}
+                    · {{ course.category.name|default:"bez kategorii" }}
+                    · wysłano <time datetime="{{ course.updated_at|date:'c' }}">{{ course.updated_at|date:"j E Y" }}</time>
+                    · {{ course.message_count }} {{ course.message_count|pl_plural:"wiadomość,wiadomości,wiadomości" }}{% if course.last_message_at %}, ostatnia {{ course.last_message_at|date:"j E, H:i" }}{% endif %}
+                </p>
+            </div>
+            <div class="moderation-item__actions">
+                <a href="{% url 'catalog:course_detail' course.slug %}" class="btn btn--ghost btn--sm">Podgląd<span class="sr-only"> kursu „{{ course.title }}”</span></a>
+                <a href="{% url 'catalog:submission_thread' course.slug %}" class="btn btn--outline btn--sm">Rozpatrz<span class="sr-only"> zgłoszenie „{{ course.title }}”</span></a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% include "includes/pagination.html" with pagination_label="Strony kolejki zgłoszeń" %}
+    {% else %}
+    {% include "includes/empty_state.html" with title="Brak zgłoszeń do rozpatrzenia" description="Gdy uczeń albo autor spoza Twoich kategorii wyśle kurs, pojawi się tutaj i dostaniesz powiadomienie." %}
+    {% endif %}
+</div>
+{% endblock %}

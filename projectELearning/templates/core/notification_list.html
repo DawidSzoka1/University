@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Powiadomienia — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><span aria-current="page">Powiadomienia</span></li>
+                </ol>
+            </nav>
+            <h1 class="page-head__title">Powiadomienia</h1>
+            <p class="page-head__lead">
+                {% if unread_notifications_count %}Masz {{ unread_notifications_count }} {{ unread_notifications_count|pl_plural:"nieprzeczytane powiadomienie,nieprzeczytane powiadomienia,nieprzeczytanych powiadomień" }}.{% else %}Wszystko przeczytane.{% endif %}
+                Kliknięcie powiadomienia oznacza je jako przeczytane i otwiera powiązaną stronę.
+            </p>
+        </div>
+        {% if unread_notifications_count %}
+        <div class="page-head__actions">
+            <form method="post" action="{% url 'core:notification_mark_all_read' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn--outline">Oznacz wszystkie jako przeczytane</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</header>
+
+<div class="container page-body">
+    <nav class="segmented" aria-label="Filtr powiadomień">
+        <a href="{% url 'core:notification_list' %}" class="segmented__option"{% if not only_unread %} aria-current="page"{% endif %}>Wszystkie</a>
+        <a href="{% url 'core:notification_list' %}?pokaz=nieprzeczytane" class="segmented__option"{% if only_unread %} aria-current="page"{% endif %}>
+            Nieprzeczytane{% if unread_notifications_count %} <span class="segmented__count">({{ unread_notifications_count }})</span>{% endif %}
+        </a>
+    </nav>
+
+    {% if notifications %}
+    <ul class="notice-list">
+        {% for notification in notifications %}
+        <li>{% include "includes/notification_item.html" with full=True %}</li>
+        {% endfor %}
+    </ul>
+    {% include "includes/pagination.html" %}
+    {% elif only_unread %}
+    {% url 'core:notification_list' as all_url %}
+    {% include "includes/empty_state.html" with title="Wszystko przeczytane" description="Nie masz nieprzeczytanych powiadomień. Starsze znajdziesz na liście wszystkich." action_url=all_url action_label="Pokaż wszystkie" %}
+    {% else %}
+    {% include "includes/empty_state.html" with title="Brak powiadomień" description="Tu pojawią się informacje o akceptacji komentarzy, wiadomościach od nauczycieli, testach i zamówieniach." %}
+    {% endif %}
+</div>
+{% endblock %}

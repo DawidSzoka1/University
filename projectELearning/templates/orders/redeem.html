@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Zrealizuj kod dostępu — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'orders:order_list' %}">Moje zamówienia</a></li>
+                    <li><span aria-current="page">Zrealizuj kod</span></li>
+                </ol>
+            </nav>
+            <h1 class="page-head__title">Zrealizuj kod dostępu</h1>
+            <p class="page-head__lead">Ktoś kupił dla Ciebie kurs? Wpisz otrzymany kod — kurs od razu pojawi się w „Moich kursach”.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    <form method="post" class="form-sheet" novalidate>
+        {% csrf_token %}
+        {% include "includes/form_field.html" with field=form.code show_required=True help=True %}
+        <div class="form-sheet__actions">
+            <button type="submit" class="btn btn--primary">Odblokuj kurs</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,188 @@
+\chapter{Interfejsy systemu}
+
+Platforma udostępnia dwa rodzaje interfejsów: \textbf{adresy stron HTML} (obsługiwane
+sesją i~formularzami z~CSRF) oraz \textbf{REST API} chronione tokenem JWT, używane przez
+skrypty strony (czat, koszyk) i~dostępne dla zewnętrznych klientów.
+
+\section{Mapa adresów stron}
+
+Adresy są pogrupowane w~przestrzenie nazw odpowiadające aplikacjom; w~szablonach odwołuje
+się do nich wyłącznie przez \code{\{\% url 'przestrzeń:nazwa' \%\}}. Tabela przedstawia
+najważniejsze ścieżki (pełna lista: pliki \code{apps/*/urls.py}).
+
+{\small
+\begin{longtable}{@{}p{6.0cm}p{1.75cm}p{6.6cm}@{}}
+\caption{Najważniejsze adresy aplikacji}\label{tab:urls}\\
+\toprule
+\hd{Ścieżka} & \hd{Metoda} & \hd{Opis} \\
+\midrule
+\endfirsthead
+\toprule
+\hd{Ścieżka} & \hd{Metoda} & \hd{Opis} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+\multicolumn{3}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{core}}}}\\
+\code{/} & GET & strona główna \\
+\code{/powiadomienia/} & GET & lista powiadomień, \code{?pokaz=nieprzeczytane} \\
+\code{/statystyki/} & GET & statystyki platformy (administrator) \\
+\code{/powiadomienia/<id>/otworz/} & POST & oznacza jako przeczytane i~przekierowuje \\
+\multicolumn{3}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{accounts}}}}\\
+\code{/accounts/login/}, \code{/accounts/register/} & GET/POST & logowanie, rejestracja \\
+\code{/accounts/logout/} & GET/POST & wylogowanie \\
+\code{/accounts/profile/}, \code{.../profile/edit/} & GET/POST & profil i~jego edycja \\
+\code{/accounts/haslo/} & GET/POST & zmiana (lub ustawienie) hasła \\
+\code{/accounts/select-theme/}, \code{.../set/} & GET/POST & wybór motywu \\
+\code{/accounts/dostepnosc/} & GET & sprawdzenie wolnego loginu/e-maila (JSON) \\
+\code{/accounts/social/...} & GET & przepływ OAuth2 (allauth) \\
+\multicolumn{3}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{catalog}}}}\\
+\code{/catalog/} & GET & katalog z~filtrami; \code{?sort=dopasowane} -- wg dopasowania do profilu stylów \\
+\code{/catalog/create/}, \code{/<slug>/edytuj/} & GET/POST & krok 1 kreatora, edycja danych kursu \\
+\code{/catalog/<slug>/} & GET & szczegóły kursu z~komentarzami \\
+\code{/catalog/<slug>/zapisz/}, \code{/wyslij/} & POST & zapis na darmowy kurs, wysłanie do publikacji \\
+\code{/catalog/<slug>/zgloszenie/}, \code{/decyzja/} & GET/POST & wątek zgłoszenia, decyzja \\
+\code{/catalog/komentarz/<id>/...} & POST & akcje na komentarzu: \code{zatwierdz/}, \code{glos/}, \code{usun/} \\
+\code{/catalog/moderacja/...} & GET & kolejki: zgłoszenia, komentarze, kategorie \\
+\multicolumn{3}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{learning}}}}\\
+\code{/learning/my-courses/} & GET & moje kursy (uczę się / tworzę) \\
+\code{/learning/kurs/<slug>/program/} & GET/POST & krok 2 kreatora: sekcje, lekcje, testy \\
+\code{/learning/kurs/<slug>/lekcja/<id>/} & GET & lekcja \\
+\code{/learning/kurs/<slug>/test/<id>/} & GET/POST & rozwiązywanie testu \\
+\code{/learning/podejscie/<id>/}, \code{/ocen/} & GET/POST & wynik, ocena ręczna \\
+\code{/learning/do-oceny/} & GET & kolejka testów do oceny \\
+\code{/learning/styl-uczenia/} & GET/POST & wybór stylu uczenia się, wynik ankiety, analiza, rekomendacja, polecane kursy \\
+\code{/learning/styl-uczenia/ankieta/} & GET/POST & ankieta diagnostyczna stylu \\
+\code{/learning/kurs/<slug>/uczniowie/} & GET & panel postępów uczniów kursu, \code{?pokaz=w-trakcie|ukonczyli} \\
+\code{/learning/kurs/<slug>/lekcja/<id>/style/} & GET & wersje lekcji dla stylów (autor) \\
+\code{.../style/<styl>/}, \code{.../usun/}, \code{.../style/przelacz/} & GET/POST & edycja i~usuwanie wersji, ,,ta sama treść dla każdego stylu'' \\
+\code{/learning/kurs/<slug>/lekcja/<id>/?wersja=<styl>} & GET & podgląd wybranej wersji lekcji \\
+\code{/learning/dyplom/<kod>/}, \code{/pdf/} & GET & weryfikacja i~pobranie dyplomu \\
+\multicolumn{3}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{orders}}}}\\
+\code{/orders/koszyk/}, \code{/koszyk/dodaj/<slug>/} & GET/POST & koszyk \\
+\code{/orders/zamowienie/} & GET/POST & formularz zamówienia \\
+\code{/orders/<numer>/}, \code{/zaplac/}, \code{/anuluj/} & GET/POST & szczegóły, płatność, anulowanie \\
+\code{/orders/<numer>/platnosc/powrot/} & GET & powrót ze Stripe (weryfikacja sesji) \\
+\code{/orders/webhook/stripe/} & POST & webhook (bez CSRF, podpis HMAC) \\
+\code{/orders/obsluga/}, \code{/<numer>/status/} & GET/POST & obsługa zamówień \\
+\code{/orders/kod/} & GET/POST & wykorzystanie kodu dostępu \\
+\multicolumn{3}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{gallery, chatbot}}}}\\
+\code{/gallery/} & GET & publiczny slajder \\
+\code{/gallery/upload/}, \code{/configurator/...} & GET/POST & zdjęcia, układy, kolejność (JSON) \\
+\code{/chatbot/rozmowy/}, \code{/rozmowy/<id>/} & GET/POST & historia rozmów \\
+\end{longtable}
+}
+
+\section{REST API -- zasady wspólne}
+
+\begin{itemize}
+  \item Format: JSON (UTF-8); wyjątkiem jest strumień odpowiedzi asystenta
+        (\code{application/x-ndjson} -- jeden obiekt JSON na wiersz).
+  \item Uwierzytelnianie: nagłówek \code{Authorization: Bearer <access>}. Widoki API
+        czatu i~koszyka akceptują \emph{wyłącznie} \code{JWTAuthentication} -- sesja
+        przeglądarki nie wystarcza, co wyklucza ataki CSRF na API.
+  \item Token dla skryptów strony wydaje widok sesyjny (POST + CSRF), zwracając krótkotrwały
+        token dostępu; klienci zewnętrzni używają pary access/refresh.
+  \item Czas życia: access 60 minut, refresh 7 dni; refresh jest rotowany, a~stary trafia na
+        czarną listę (\code{token\_blacklist}).
+  \item Błędy: obiekt \code{\{"detail": "komunikat po polsku"\}} i~odpowiedni kod HTTP.
+\end{itemize}
+
+\section{Lista endpointów API}
+
+{\small
+\begin{longtable}{@{}p{1.2cm}p{5.6cm}p{7.6cm}@{}}
+\caption{Endpointy REST API}\label{tab:api}\\
+\toprule
+\hd{Metoda} & \hd{Ścieżka} & \hd{Opis} \\
+\midrule
+\endfirsthead
+\toprule
+\hd{Metoda} & \hd{Ścieżka} & \hd{Opis} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+POST & \code{/accounts/api/token/} & para tokenów dla loginu i~hasła \\
+POST & \code{/accounts/api/token/refresh/} & nowy token dostępu (rotacja refresh) \\
+POST & \code{/accounts/api/token/sesja/} & token dostępu dla zalogowanej sesji (CSRF) \\
+GET & \code{/accounts/api/me/} & profil: id, login, e-mail, imię, nazwisko, rola, awatar, reputacja, ranga \\
+POST & \code{/chatbot/token/} & token dostępu dla widżetu czatu (sesja + CSRF) \\
+GET & \code{/chatbot/api/history/} & parametry \code{course}, \code{lesson}, \code{attempt}; zwraca kontekst rozmowy, stan blokady testu, do 30 ostatnich wiadomości \\
+POST & \code{/chatbot/api/message/} & pytanie (\code{message} $\leq$ 2000 znaków + kontekst); odpowiedź strumieniowa NDJSON \\
+POST & \code{/chatbot/api/clear/} & wyczyszczenie rozmowy dla kontekstu \\
+GET & \code{/orders/api/koszyk/} & zawartość koszyka konta z~tokenu \\
+POST & \code{/orders/api/koszyk/pozycje/} & dodanie kursu \code{\{course, quantity\}} (kumulacja) -- 201 nowa pozycja, 200 zwiększona ilość \\
+PATCH & \code{/orders/api/koszyk/pozycje/<id>/} & ustawienie ilości (0 usuwa pozycję) \\
+DELETE & \code{/orders/api/koszyk/pozycje/<id>/} & usunięcie pozycji \\
+\end{longtable}
+}
+
+\section{Kody odpowiedzi}
+
+\begin{table}[H]
+\centering\small
+\caption{Kody HTTP zwracane przez API}
+\begin{tabularx}{\linewidth}{@{}lL@{}}
+\toprule
+\hd{Kod} & \hd{Znaczenie w~systemie} \\
+\midrule
+200 / 201 & sukces; 201 przy utworzeniu nowej pozycji koszyka \\
+400 & błąd walidacji (puste lub za długie pytanie, ilość spoza 1--10, kurs bezpłatny lub nieopublikowany) \\
+401 & brak lub nieważny token JWT \\
+404 & brak zasobu albo brak dostępu do kontekstu (cudza lekcja, cudza pozycja koszyka) \\
+429 & asystent odpowiada jeszcze na poprzednie pytanie tego ucznia \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Błędy modelu językowego (brak modelu, przekroczony czas, niedostępna Ollama) nie zmieniają
+kodu HTTP strumienia, który już się rozpoczął -- są przekazywane jako zdarzenie
+\code{error} wewnątrz strumienia.
+
+\section{Przykładowe komunikaty}
+
+\paragraph{Strumień odpowiedzi asystenta.} Kolejne wiersze odpowiedzi na
+\code{POST /chatbot/api/message/} z~treścią
+\code{\{"message": "Czym różni się lista od krotki?", "course": 1, "lesson": 172\}}:
+
+\begin{lstlisting}
+{"type": "start", "question": {"id": 81, "sender": "user", "text": "Czym różni się lista od krotki?", ...}, "session_url": "/chatbot/rozmowy/13/"}
+{"type": "delta", "text": "Lista jest **modyfikowalna**"}
+{"type": "delta", "text": " – możesz dodawać i usuwać elementy, ..."}
+{"type": "done", "message": {"id": 82, "sender": "bot", "text": "...", "html": "<p>...</p>", "time": "14:05", "lesson": "Zmienne i typy danych", "is_refusal": false}}
+\end{lstlisting}
+
+W~trakcie testu strumień zawiera jedno zdarzenie \code{\{"type": "refusal", ...\}}, a~przy
+awarii modelu -- \code{\{"type": "error", "detail": "Asystent jest chwilowo niedostępny
+– serwer modelu (Ollama) nie odpowiada."\}}.
+
+\paragraph{Koszyk.} Odpowiedź \code{GET /orders/api/koszyk/}:
+
+\begin{lstlisting}
+{"items": [{"id": 5, "course": {...}, "quantity": 2,
+            "unit_price": "199.99", "unit_price_display": "199,99 zł",
+            "line_total": "399.98", "line_total_display": "399,98 zł",
+            "owned": false, "code_count": 1,
+            "note": "1 sztuka dla Ciebie + 1 kod dostępu dla innych osób."}],
+ "count": 2, "count_display": "2 sztuki",
+ "total": "399.98", "total_display": "399,98 zł", "max_quantity": 10}
+\end{lstlisting}
+
+\section{Interfejsy zewnętrzne}
+
+\begin{description}[style=nextline,leftmargin=0.6cm,font=\sffamily\bfseries]
+  \item[Stripe] Biblioteka \code{stripe}: \code{checkout.Session.create} (pozycje
+        w~groszach, waluta PLN, \code{locale=pl}, \code{metadata.order\_number}),
+        \code{checkout.Session.retrieve} przy powrocie i~synchronizacji,
+        \code{Webhook.construct\_event} do weryfikacji podpisu. Obsługiwane zdarzenia:
+        \code{checkout.session.completed}, \code{checkout.session.async\_payment\_succeeded}.
+  \item[Ollama] Endpoint \code{/api/chat} przez klienta \code{ollama.Client}
+        (\code{stream=True}, \code{temperature=0.4}, \code{num\_ctx=8192},
+        \code{keep\_alive=30m}); adres, model i~limit czasu z~\code{.env}
+        (\code{OLLAMA\_BASE\_URL}, \code{OLLAMA\_MODEL}, \code{OLLAMA\_TIMEOUT}).
+  \item[OAuth2] Dostawcy \code{discord}, \code{gitlab}, \code{bitbucket\_oauth2}
+        biblioteki allauth; zakresy obejmują profil i~adres e-mail.
+  \item[SMTP] Backend e-mail Django konfigurowany zmienną \code{EMAIL\_BACKEND};
+        w~środowisku deweloperskim wiadomości są wypisywane w~konsoli.
+\end{description}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Katalog kursów — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    {% if selected_category %}
+                    <li><a href="{% url 'catalog:course_list' %}">Kursy</a></li>
+                    {% for ancestor in selected_category.get_ancestors %}
+                    <li><a href="?category={{ ancestor.slug }}">{{ ancestor.name }}</a></li>
+                    {% endfor %}
+                    <li><span aria-current="page">{{ selected_category.name }}</span></li>
+                    {% else %}
+                    <li><span aria-current="page">Kursy</span></li>
+                    {% endif %}
+                </ol>
+            </nav>
+            <h1 class="page-head__title">{% if selected_category %}{{ selected_category.name }}{% else %}Katalog kursów{% endif %}</h1>
+            <p class="page-head__lead">{% if selected_category.description %}{{ selected_category.description }}{% else %}Programowanie, AI, DevOps i bezpieczeństwo. Kursy bezpłatne i specjalistyczne szkolenia w jednym miejscu.{% endif %}</p>
+            {% if subcategories %}
+            <nav class="subcategories" aria-label="Podkategorie: {{ selected_category.name }}">
+                <p class="subcategories__label" aria-hidden="true">Podkategorie</p>
+                <ul class="subcategories__list">
+                    {% for sub in subcategories %}
+                    <li><a href="?category={{ sub.slug }}" class="subcategories__link">{{ sub.name }} <span class="subcategories__count">{{ sub.course_total }}</span></a></li>
+                    {% endfor %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+        {% if user.is_authenticated %}
+        <div class="page-head__actions">
+            <a href="{% url 'catalog:course_create' %}" class="btn btn--primary">{% if user.is_staff or user.role == 'moderator' or user.role == 'admin' %}Utwórz kurs{% else %}Zaproponuj kurs{% endif %}</a>
+        </div>
+        {% endif %}
+    </div>
+</header>
+
+{% include "includes/filter_toolbar.html" %}
+
+<div class="container page-body">
+    {% if recommended %}
+    <section class="recommended" aria-labelledby="recommended-heading">
+        <div class="recommended__head">
+            <h2 id="recommended-heading" class="section-title">Polecane dla Ciebie</h2>
+            <p class="section-lead">Na podstawie: {{ profile.sources|join:", " }}. <a href="{% url 'learning:learning_style' %}">Twój styl uczenia się</a> · <a href="?sort=dopasowane">wszystkie kursy wg dopasowania</a></p>
+        </div>
+        <ul class="course-grid" aria-label="Kursy polecane dla Twojego stylu uczenia się">
+            {% for course in recommended %}{% include "catalog/includes/course_card.html" with heading_level=3 %}{% endfor %}
+        </ul>
+    </section>
+    <h2 class="section-title">Wszystkie kursy</h2>
+    {% endif %}
+    {% if courses %}
+    <ul class="course-grid" aria-label="Lista kursów">
+        {% for course in courses %}
+        {% if recommended %}{% include "catalog/includes/course_card.html" with heading_level=3 %}{% else %}{% include "catalog/includes/course_card.html" %}{% endif %}
+        {% endfor %}
+    </ul>
+
+    {% include "includes/pagination.html" %}
+    {% else %}
+    {% include "includes/empty_state.html" with title="Nie znaleziono kursów" description="Żaden kurs nie spełnia wybranych kryteriów. Zmień zapytanie albo wyczyść filtry." action_url=request.path action_label="Pokaż wszystkie kursy" %}
+    {% endif %}
+</div>
+{% endblock %}

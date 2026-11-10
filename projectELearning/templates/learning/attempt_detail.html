@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Wynik: {{ quiz.title }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block chat_context %}{% if is_owner %}data-attempt="{{ attempt.pk }}"{% else %}data-course="{{ course.pk }}"{% endif %}{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'catalog:course_detail' course.slug %}">{{ course.title }}</a></li>
+                    <li><a href="{% url 'learning:quiz_detail' course.slug quiz.pk %}">{{ quiz.title }}</a></li>
+                    <li><span aria-current="page">Wynik</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">{% if not is_owner %}{{ attempt.user.get_full_name|default:attempt.user.username }} · {% endif %}{{ attempt.submitted_at|date:"j E Y, H:i" }}</p>
+            <h1 class="page-head__title">{% if attempt.status == 'pending_review' %}Czeka na ocenę{% elif attempt.passed %}Zaliczone{% else %}Niezaliczone{% endif %}</h1>
+            <p class="page-head__lead">
+                {% if attempt.status == 'pending_review' %}Pytania zamknięte: {{ attempt.score }} pkt. Pytania otwarte sprawdzi nauczyciel — dostaniesz powiadomienie z wynikiem.
+                {% else %}{{ attempt.score }} z {{ attempt.max_score }} pkt ({{ attempt.percent }}%). Próg zaliczenia: {{ quiz.pass_percent }}%.{% endif %}
+            </p>
+        </div>
+        <div class="page-head__actions">
+            {% if following %}<a href="{{ following.url }}" class="btn btn--primary">Dalej: {% if following.is_quiz %}test{% else %}{{ following.number }} {{ following.title }}{% endif %} <span aria-hidden="true">→</span></a>{% endif %}
+            {% if can_retry %}<a href="{% url 'learning:quiz_detail' course.slug quiz.pk %}" class="btn btn--outline">Spróbuj ponownie</a>{% endif %}
+            {% if is_owner %}<button type="button" class="btn btn--outline" data-chat-open aria-controls="chat-panel">Poproś asystenta o wyjaśnienie</button>{% endif %}
+            {% if grader and attempt.status == 'pending_review' %}<a href="{% url 'learning:attempt_grade' attempt.pk %}" class="btn btn--primary">Oceń</a>{% endif %}
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% if attempt.feedback %}
+    <div class="notice" role="status"><p><strong>Komentarz nauczyciela:</strong> {{ attempt.feedback }}</p></div>
+    {% endif %}
+    {% if not reveal and attempt.status == 'graded' %}
+    <p class="text-muted">Poprawne odpowiedzi zobaczysz po zaliczeniu testu albo po wykorzystaniu wszystkich podejść.</p>
+    {% endif %}
+    <ol class="answers">
+        {% for a in answers %}
+        <li class="answer">
+            <h2 class="answer__title">Pytanie {{ forloop.counter }}</h2>
+            {% include "learning/includes/answer_review.html" %}
+        </li>
+        {% endfor %}
+    </ol>
+</div>
+{% endblock %}

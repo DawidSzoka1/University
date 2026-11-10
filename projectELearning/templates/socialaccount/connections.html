@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Zarządzaj powiązanymi kontami — E-Learning{% endblock %}
+
+{% block content %}
+<script>
+    // Automatyczne przekierowanie do głównego profilu z połączonymi kontami
+    window.location.replace("{% url 'accounts:profile' %}");
+</script>
+<div class="auth-card-wrapper">
+    <div class="auth-card">
+        <h1 class="auth-card__title">Zarządzanie kontami</h1>
+        <p class="auth-card__desc">Połączone serwisy znajdziesz w swoim profilu. Trwa przekierowanie…</p>
+        <a href="{% url 'accounts:profile' %}" class="btn btn--primary btn--block">Przejdź do profilu</a>
+    </div>
+</div>
+{% endblock %}

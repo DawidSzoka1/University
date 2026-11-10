@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Program: {{ course.title }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'learning:my_courses' %}">Moje kursy</a></li>
+                    <li><a href="{% url 'catalog:course_detail' course.slug %}">{{ course.title }}</a></li>
+                    <li><span aria-current="page">Program</span></li>
+                </ol>
+            </nav>
+            <h1 class="page-head__title">Program kursu</h1>
+            <p class="page-head__lead">
+                {{ outline.sections|length }} {{ outline.sections|length|pl_plural:"sekcja,sekcje,sekcji" }} ·
+                {{ outline.lesson_count }} {{ outline.lesson_count|pl_plural:"lekcja,lekcje,lekcji" }} ·
+                ok. {{ outline.minutes }} min{% if outline.quiz_count %} · {{ outline.quiz_count }} {{ outline.quiz_count|pl_plural:'test,testy,testów' }}{% endif %}. Kolejność to podpowiedź dla ucznia; test obowiązkowy blokuje dalsze lekcje, dopóki uczeń go nie zaliczy.
+            </p>
+        </div>
+        <div class="page-head__actions">
+            <a href="{% url 'catalog:course_detail' course.slug %}" class="btn btn--outline">Podgląd kursu</a>
+            <a href="{% url 'catalog:course_edit' course.slug %}" class="btn btn--ghost">Dane kursu</a>
+            <a href="{% url 'learning:course_students' course.slug %}" class="btn btn--ghost">Uczniowie</a>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body curriculum">
+    {% if course.status == 'draft' or course.status == 'rejected' %}
+    {% include "includes/course_stepper.html" with step=2 %}
+    {% endif %}
+    {% for item in outline.sections %}
+    {% with section=item.section %}
+    <section class="curriculum-section" id="section-{{ section.pk }}" aria-labelledby="section-title-{{ section.pk }}">
+        <div class="curriculum-section__head">
+            <span class="curriculum-section__num" aria-hidden="true">{{ item.number }}</span>
+            <h2 class="curriculum-section__title" id="section-title-{{ section.pk }}">{{ section.title }}</h2>
+            <div class="curriculum-actions">
+                <form method="post" action="{% url 'learning:section_move' course.slug section.pk 'up' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="icon-btn" aria-label="Przesuń sekcję „{{ section.title }}” wyżej"{% if forloop.first %} disabled{% endif %}>↑</button>
+                </form>
+                <form method="post" action="{% url 'learning:section_move' course.slug section.pk 'down' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="icon-btn" aria-label="Przesuń sekcję „{{ section.title }}” niżej"{% if forloop.last %} disabled{% endif %}>↓</button>
+                </form>
+                <details class="inline-edit" data-esc-close>
+                    <summary class="btn btn--outline btn--sm">Zmień nazwę<span class="sr-only"> sekcji „{{ section.title }}”</span></summary>
+                    <form method="post" action="{% url 'learning:section_rename' course.slug section.pk %}" class="inline-edit__form">
+                        {% csrf_token %}
+                        <label for="rename-{{ section.pk }}" class="form-label">Nowa nazwa sekcji</label>
+                        <input type="text" name="title" id="rename-{{ section.pk }}" value="{{ section.title }}" class="form-control" required maxlength="200">
+                        <button type="submit" class="btn btn--primary btn--sm">Zapisz</button>
+                    </form>
+                </details>
+                <form method="post" action="{% url 'learning:section_delete' course.slug section.pk %}"
+                      data-confirm="Usunąć sekcję „{{ section.title }}” razem z {{ item.lessons|length }} {{ item.lessons|length|pl_plural:'lekcją,lekcjami,lekcjami' }}? Tej operacji nie da się cofnąć."
+                      data-confirm-title="Usunięcie sekcji" data-confirm-btn="Usuń sekcję" data-confirm-danger="true">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn--ghost btn--sm">Usuń<span class="sr-only"> sekcję „{{ section.title }}”</span></button>
+                </form>
+            </div>
+        </div>
+
+        {% if item.lessons %}
+        <ol class="curriculum-lessons">
+            {% for entry in item.lessons %}
+            {% with lesson=entry.lesson %}
+            <li class="curriculum-lesson" id="lesson-{{ lesson.pk }}">
+                <span class="curriculum-lesson__num" aria-hidden="true">{{ entry.number }}</span>
+                <div class="curriculum-lesson__main">
+                    <a href="{% url 'learning:lesson_detail' course.slug lesson.pk %}" class="curriculum-lesson__title">{{ lesson.title }}</a>
+                    {% if lesson.is_preview %}<span class="tag tag--ok">podgląd</span>{% endif %}
+                    <p class="curriculum-lesson__meta">
+                        {% if lesson.content_html %}tekst · {% endif %}{% if lesson.video_url or lesson.video_file %}film · {% endif %}{% with n=lesson.attachments.all|length %}{% if n %}{{ n }} {{ n|pl_plural:"plik,pliki,plików" }} · {% endif %}{% endwith %}{{ lesson.duration_minutes }} min{% if not lesson.same_for_all_styles %} · {% with n=lesson.variant_count|default:0 %}{{ n }} {{ n|pl_plural:"wersja,wersje,wersji" }} dla stylów{% endwith %}{% endif %}
+                    </p>
+                </div>
+                <div class="curriculum-actions">
+                    <form method="post" action="{% url 'learning:lesson_move' course.slug lesson.pk 'up' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn" aria-label="Przesuń lekcję „{{ lesson.title }}” wyżej"{% if forloop.first %} disabled{% endif %}>↑</button>
+                    </form>
+                    <form method="post" action="{% url 'learning:lesson_move' course.slug lesson.pk 'down' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn" aria-label="Przesuń lekcję „{{ lesson.title }}” niżej"{% if forloop.last %} disabled{% endif %}>↓</button>
+                    </form>
+                    <a href="{% url 'learning:lesson_edit' course.slug lesson.pk %}" class="btn btn--outline btn--sm">Edytuj<span class="sr-only"> lekcję „{{ lesson.title }}”</span></a>
+                    <a href="{% url 'learning:lesson_variants' course.slug lesson.pk %}" class="btn btn--ghost btn--sm">Style<span class="sr-only"> — wersje lekcji „{{ lesson.title }}” dla stylów uczenia się</span></a>
+                    <a href="{% url 'learning:quiz_create' course.slug %}?po_lekcji={{ lesson.pk }}" class="btn btn--ghost btn--sm">+ Test<span class="sr-only"> po lekcji „{{ lesson.title }}”</span></a>
+                    <form method="post" action="{% url 'learning:lesson_delete' course.slug lesson.pk %}"
+                          data-confirm="Usunąć lekcję „{{ lesson.title }}” razem z jej plikami?"
+                          data-confirm-title="Usunięcie lekcji" data-confirm-btn="Usuń lekcję" data-confirm-danger="true">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn--ghost btn--sm">Usuń<span class="sr-only"> lekcję „{{ lesson.title }}”</span></button>
+                    </form>
+                </div>
+            </li>
+            {% for quiz_entry in entry.quizzes %}{% include "learning/includes/curriculum_quiz.html" %}{% endfor %}
+            {% endwith %}
+            {% endfor %}
+        </ol>
+        {% else %}
+        <p class="curriculum-section__empty">Ta sekcja nie ma jeszcze lekcji.</p>
+        {% endif %}
+
+        <div class="curriculum-section__foot">
+            <a href="{% url 'learning:lesson_create' course.slug section.pk %}" class="btn btn--primary btn--sm">+ Dodaj lekcję<span class="sr-only"> do sekcji „{{ section.title }}”</span></a>
+        </div>
+    </section>
+    {% endwith %}
+    {% empty %}
+    {% include "includes/empty_state.html" with title="Program jest pusty" description="Zacznij od sekcji, np. „Instalacja”, a potem dodaj do niej lekcje." %}
+    {% endfor %}
+
+    <section class="curriculum-section curriculum-section--final" aria-labelledby="final-quizzes-heading">
+        <div class="curriculum-section__head">
+            <span class="curriculum-section__num" aria-hidden="true">✓</span>
+            <h2 class="curriculum-section__title" id="final-quizzes-heading">Testy na końcu kursu</h2>
+        </div>
+        {% if outline.final_quizzes %}
+        <ol class="curriculum-lessons">
+            {% for quiz_entry in outline.final_quizzes %}{% include "learning/includes/curriculum_quiz.html" %}{% endfor %}
+        </ol>
+        {% else %}
+        <p class="curriculum-section__empty">Brak testu końcowego. Testy możesz też wstawiać po dowolnej lekcji przyciskiem „+ Test”.</p>
+        {% endif %}
+        <div class="curriculum-section__foot">
+            <a href="{% url 'learning:quiz_create' course.slug %}" class="btn btn--primary btn--sm">+ Dodaj test końcowy</a>
+            <p class="curriculum-section__hint">Dyplom po kursie: <strong>{% if course.has_certificate %}tak{% else %}nie{% endif %}</strong> — zmienisz w <a href="{% url 'catalog:course_edit' course.slug %}">danych kursu</a>.</p>
+        </div>
+    </section>
+
+    <form method="post" class="curriculum-new" novalidate>
+        {% csrf_token %}
+        <div class="form-group curriculum-new__field{% if form.title.errors %} form-group--error{% endif %}">
+            <label for="{{ form.title.id_for_label }}" class="form-label">Nowa sekcja</label>
+            {{ form.title }}
+            {% if form.title.errors %}<p class="form-field-error" id="{{ form.title.auto_id }}-error">{{ form.title.errors.0 }}</p>{% endif %}
+        </div>
+        <button type="submit" class="btn btn--ink">Dodaj sekcję</button>
+    </form>
+
+    {% if course.status == 'draft' or course.status == 'rejected' %}
+    <section class="publish" id="publish" aria-labelledby="publish-heading">
+        <h2 id="publish-heading" class="section-title section-title--sm"><span class="form-sheet__num" aria-hidden="true">3</span> Publikacja</h2>
+        <ul class="publish__checklist">
+            <li class="is-done">Dane kursu: tytuł, kategoria, opis i cena</li>
+            <li class="{% if has_lessons %}is-done{% else %}is-todo{% endif %}">Co najmniej jedna lekcja w programie{% if not has_lessons %} — <strong>jeszcze brak</strong>{% endif %}</li>
+        </ul>
+        {% if not can_submit %}
+        <p class="publish__note">Kurs może wysłać jego autor.</p>
+        {% elif has_lessons %}
+        <form method="post" action="{% url 'catalog:course_submit' course.slug %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn--primary btn--lg">{% if publishes_directly %}Opublikuj kurs{% else %}Wyślij do akceptacji{% endif %}</button>
+        </form>
+        <p class="publish__note">{% if publishes_directly %}Kurs od razu pojawi się w katalogu.{% else %}Nauczyciel kategorii dostanie powiadomienie i sprawdzi kurs.{% endif %}</p>
+        {% else %}
+        <p class="publish__note">Dodaj pierwszą lekcję, a przycisk wysłania pojawi się tutaj.</p>
+        {% endif %}
+    </section>
+    {% elif course.status == 'pending' %}
+    <p class="notice">Kurs czeka na akceptację nauczyciela. Możesz dalej poprawiać program.</p>
+    {% endif %}
+</div>
+{% endblock %}

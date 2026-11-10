@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Moderacja: kategorie — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'catalog:moderation_submissions' %}">Moderacja</a></li>
+                    <li><span aria-current="page">Kategorie</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Moderacja</p>
+            <h1 class="page-head__title">Kategorie i podkategorie</h1>
+            <p class="page-head__lead">{% if is_admin %}Całe drzewo katalogu. Przypisz nauczycieli do kategorii — akceptują kursy i komentarze w nich i w ich podkategoriach.{% else %}Twoje kategorie. Możesz dodawać i porządkować w nich podkategorie; samą przydzieloną kategorię zmienia administrator.{% endif %}</p>
+        </div>
+        <div class="page-head__actions">
+            <a href="{% url 'catalog:category_create' %}" class="btn btn--primary">{% if is_admin %}Nowa kategoria{% else %}Nowa podkategoria{% endif %}</a>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% include "catalog/includes/moderation_nav.html" with active="categories" %}
+
+    {% if nodes %}
+    <ul class="category-tree" aria-label="Drzewo kategorii">
+        {% for node in nodes %}{% include "catalog/includes/category_node.html" %}{% endfor %}
+    </ul>
+    {% include "includes/pagination.html" with pagination_label="Strony drzewa kategorii" %}
+    {% else %}
+    {% url 'catalog:category_create' as create_url %}
+    {% include "includes/empty_state.html" with title="Brak kategorii" description="Nie masz jeszcze przydzielonych kategorii albo drzewo jest puste." action_url=create_url action_label="Dodaj kategorię" %}
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Nowy test — {{ course.title }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'learning:my_courses' %}">Moje kursy</a></li>
+                    <li><a href="{% url 'learning:curriculum_edit' course.slug %}">Program: {{ course.title }}</a></li>
+                    <li><span aria-current="page">Nowy test</span></li>
+                </ol>
+            </nav>
+            <h1 class="page-head__title">Nowy test</h1>
+            <p class="page-head__lead">Najpierw ustawienia — miejsce w programie i zasady zaliczenia. Pytania dodasz w następnym kroku.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% include "learning/includes/quiz_settings_form.html" with submit_label="Utwórz test i dodaj pytania" %}
+</div>
+{% endblock %}

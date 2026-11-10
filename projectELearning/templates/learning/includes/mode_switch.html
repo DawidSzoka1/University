@@ -1,0 +1,13 @@
+{# Autor/moderator zapisany na kurs: przełącznik nauka ↔ podgląd autora (wybór w sesji, osobno dla kursu) #}
+<div class="mode-switch notice{% if preview %} notice--preview{% endif %}" role="status">
+    <p class="mode-switch__text">
+        {% if preview %}<strong>Podgląd autora.</strong> Wszystkie lekcje są otwarte, a odpowiedzi w testach nie są wysyłane.
+        {% else %}<strong>Tryb nauki.</strong> Uczysz się jak uczeń: rozwiązujesz testy, obowiązują blokady i liczy się postęp.{% endif %}
+    </p>
+    <form method="post" action="{% url 'learning:learning_mode' course.slug %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <input type="hidden" name="mode" value="{% if preview %}learn{% else %}preview{% endif %}">
+        <button type="submit" class="btn btn--outline btn--sm">{% if preview %}Wróć do nauki{% else %}Przełącz na podgląd autora{% endif %}</button>
+    </form>
+</div>

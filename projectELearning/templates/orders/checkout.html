@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Zamówienie — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'orders:cart' %}">Koszyk</a></li>
+                    <li><span aria-current="page">Zamówienie</span></li>
+                </ol>
+            </nav>
+            <h1 class="page-head__title">Dane do zamówienia</h1>
+            <p class="page-head__lead">Podstawiliśmy dane z Twojego profilu — możesz je zmienić i zapisać na przyszłość. Po złożeniu zamówienia przejdziesz do płatności testowej Stripe.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    <nav class="stepper" aria-label="Etapy zakupu">
+        <ol class="stepper__list">
+            <li class="stepper__step is-done"><a href="{% url 'orders:cart' %}" class="stepper__link"><span class="stepper__num" aria-hidden="true">1</span> Koszyk<span class="sr-only"> (gotowe)</span></a></li>
+            <li class="stepper__step"><span class="stepper__link" aria-current="step"><span class="stepper__num" aria-hidden="true">2</span> Dane</span></li>
+            <li class="stepper__step"><span class="stepper__link"><span class="stepper__num" aria-hidden="true">3</span> Płatność</span></li>
+        </ol>
+    </nav>
+
+    <div class="checkout-layout">
+        <form method="post" class="form-sheet" novalidate>
+            {% csrf_token %}
+            {% if form.errors %}
+            <div class="auth-alert auth-alert--error" role="alert" tabindex="-1" data-autofocus-error>
+                <span class="auth-alert__icon" aria-hidden="true">!</span>
+                <div class="auth-alert__body"><p class="auth-alert__message">Popraw pola opisane poniżej — wpisane dane zostały zachowane.</p></div>
+            </div>
+            {% endif %}
+            <p class="form-note">Pola oznaczone <span aria-hidden="true">*</span><span class="sr-only">gwiazdką</span> są wymagane.</p>
+
+            <fieldset class="form-sheet__section">
+                <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">01</span> Kupujący</legend>
+                <div class="form-row form-row--2">
+                    {% include "includes/form_field.html" with field=form.first_name show_required=True %}
+                    {% include "includes/form_field.html" with field=form.last_name show_required=True %}
+                </div>
+                {% include "includes/form_field.html" with field=form.email show_required=True help=True %}
+                {% include "includes/form_field.html" with field=form.phone_number %}
+            </fieldset>
+
+            <fieldset class="form-sheet__section">
+                <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">02</span> Adres</legend>
+                {% include "includes/form_field.html" with field=form.street_address show_required=True %}
+                <div class="form-row form-row--2">
+                    {% include "includes/form_field.html" with field=form.postal_code show_required=True help=True %}
+                    {% include "includes/form_field.html" with field=form.city show_required=True %}
+                </div>
+                <div class="form-group form-group--checkbox">
+                    <label class="checkbox-label" for="{{ form.save_address.id_for_label }}">{{ form.save_address }} <span>{{ form.save_address.label }}</span></label>
+                    <p class="form-help" id="{{ form.save_address.auto_id }}_helptext">{{ form.save_address.help_text }}</p>
+                </div>
+            </fieldset>
+
+            <fieldset class="form-sheet__section">
+                <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">03</span> Potwierdzenie</legend>
+                <div class="form-group form-group--checkbox{% if form.accept_terms.errors %} form-group--error{% endif %}">
+                    <label class="checkbox-label" for="{{ form.accept_terms.id_for_label }}">{{ form.accept_terms }} <span>{{ form.accept_terms.label }} <span aria-hidden="true">*</span></span></label>
+                    {% if form.accept_terms.errors %}<p class="form-field-error" id="{{ form.accept_terms.auto_id }}-error">{{ form.accept_terms.errors.0 }}</p>{% endif %}
+                </div>
+                <p class="form-help">Po kliknięciu „Zamawiam i płacę” zapiszemy zamówienie (status „Oczekuje na płatność”), wyślemy potwierdzenie e-mailem i przekierujemy Cię do bezpiecznej strony płatności Stripe.{% if not payments_ready %} <strong>Płatności online nie są skonfigurowane</strong> — zamówienie zostanie przyjęte, a status zmieni obsługa.{% endif %}</p>
+            </fieldset>
+
+            <div class="form-sheet__actions">
+                <button type="submit" class="btn btn--primary btn--lg">Zamawiam i płacę {{ total|pln }}</button>
+                <a href="{% url 'orders:cart' %}" class="btn btn--ghost">Wróć do koszyka</a>
+            </div>
+        </form>
+
+        <aside class="panel summary-box" aria-labelledby="summary-heading">
+            <div class="panel__head"><h2 id="summary-heading" class="panel__title">Twoje zamówienie</h2></div>
+            <ul class="summary-box__items">
+                {% for item in items %}
+                <li><span>{{ item.course.title }} <span class="summary-box__qty">× {{ item.quantity }}</span></span><span>{{ item.line_total|pln }}</span></li>
+                {% endfor %}
+            </ul>
+            <dl class="fact-list">
+                <div class="summary-box__total"><dt>Do zapłaty</dt><dd>{{ total|pln }}</dd></div>
+            </dl>
+        </aside>
+    </div>
+</div>
+{% endblock %}

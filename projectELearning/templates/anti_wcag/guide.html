@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Strona Anty-WCAG — opis naruszeń — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><span aria-current="page">Anty-WCAG: opis</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Wymóg projektu · strona celowo niedostępna</p>
+            <h1 class="page-head__title">Strona Anty-WCAG</h1>
+            <p class="page-head__lead">
+                Pod adresem <code>/wcag-anty-wzorzec/</code> jest jedna podstrona, która <strong>celowo łamie</strong> zasady dostępności.
+                Ma własny arkusz i skrypt — nie korzysta ze stylów platformy, więc reszta serwisu pozostaje zgodna z WCAG.
+                Poniżej lista naruszeń i sposób ich sprawdzenia.
+            </p>
+        </div>
+        <div class="page-head__actions">
+            <a href="{% url 'core:anti_wcag' %}" class="btn btn--primary">Otwórz stronę Anty-WCAG</a>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body anti-guide">
+    <div class="notice" role="note">
+        <p><strong>Uwaga przy sprawdzaniu klawiaturą:</strong> po wejściu do panelu „Czat z konsultantem” nie da się wyjść klawiszem Tab — to zamierzona pułapka. Wyjdź kliknięciem myszą albo przeładuj stronę. Okno „Newsletter” pojawia się samo po 5 s i znika po 8 s (powtarza się co 40 s).</p>
+    </div>
+
+    <section class="anti-guide__part" aria-labelledby="part-basic">
+        <h2 id="part-basic" class="section-title"><span class="form-sheet__num" aria-hidden="true">01</span> Podstawowe naruszenia</h2>
+        <ul class="row-list">
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Brak widocznego fokusu</p><p class="row-list__meta">Wszędzie <code>outline: none !important</code> bez zamiennika. Sprawdź: przechodź Tabem — nie widać, który element jest aktywny.</p></div></li>
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Niewystarczający kontrast</p><p class="row-list__meta">„SUPER KURSY -70%” — jasnożółty na białym (ok. 1,1:1); blok „Nowość!” — ciemnoszary na czarnym (ok. 1,3:1); blade napisy menu i formularza.</p></div></li>
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Informacja tylko kolorem</p><p class="row-list__meta">Sekcja „Dostępność”: legenda z samych kolorowych kropek, a status kursów wyłącznie kolorem nazwy. Błędy formularza — tylko czerwona ramka.</p></div></li>
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Nieprawidłowa struktura nagłówków</p><p class="row-list__meta">Strona zaczyna się od <code>h4</code>, <code>h1</code> („kursy”) jest mały i w środku treści, <code>h3</code> stoi przed <code>h2</code>, <code>h6</code> służy za akapit, <code>h5</code> nad formularzem. Brak landmarków, atrybutu <code>lang</code> i linku „Przejdź do treści”.</p></div></li>
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Problemy po powiększeniu / pomniejszeniu</p><p class="row-list__meta">Karty „Opinie”: szerokość w <code>vw</code>, tekst w px, stała wysokość i <code>overflow: hidden</code>, znaczek „TOP” pozycjonowany w <code>vw</code>. Sprawdź: Ctrl + / Ctrl − (200%) — tekst się ucina, znaczek nachodzi na treść, a <code>overflow-x: hidden</code> na stronie chowa to, co wyjdzie w prawo. Na telefonie <code>user-scalable=no</code> blokuje powiększanie.</p></div></li>
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Dodatkowo</p><p class="row-list__meta">Obrazek bez <code>alt</code>, linki „kliknij tutaj” / „tutaj”, migający tekst bez pauzy (ignoruje <code>prefers-reduced-motion</code>), tytuł karty „Strona”.</p></div></li>
+        </ul>
+    </section>
+
+    <section class="anti-guide__part" aria-labelledby="part-keyboard">
+        <h2 id="part-keyboard" class="section-title"><span class="form-sheet__num" aria-hidden="true">02</span> Nawigacja klawiaturą (+0.5)</h2>
+        <ul class="row-list">
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Pułapka klawiaturowa</p><p class="row-list__meta">Panel „Czat z konsultantem” na dole: Tab i Shift+Tab krążą tylko między jego dwoma polami, Esc nic nie robi.</p></div></li>
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Pomieszana kolejność Tab</p><p class="row-list__meta">Formularz „Zapisz się”: <code>tabindex</code> 1, 2, 3, 6, 9, 12, 15 rozdane chaotycznie — Tab skacze: Kod pocztowy → lista kursów → E-mail → Kod rabatowy → Imię → Telefon → OK, a dopiero potem reszta strony.</p></div></li>
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Przycisk tylko dla myszy</p><p class="row-list__meta">„Zapisz się teraz” to <code>div</code> z obsługą kliknięcia, „Kup kurs” to <code>button</code> z <code>tabindex="-1"</code> — oba działają myszą, Tab je pomija.</p></div></li>
+        </ul>
+    </section>
+
+    <section class="anti-guide__part" aria-labelledby="part-menu">
+        <h2 id="part-menu" class="section-title"><span class="form-sheet__num" aria-hidden="true">03</span> Nieprzewidywalne menu (+0.5)</h2>
+        <ul class="row-list">
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Rozwijanie tylko na hover</p><p class="row-list__meta">„Kursy ▾” i „Konto ▾” rozwijają się wyłącznie po najechaniu myszą; z klawiatury podmenu jest nieosiągalne.</p></div></li>
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Menu skacze w przeciwległy róg</p><p class="row-list__meta">Zmień szerokość okna (np. zwęź je albo otwórz narzędzia deweloperskie) — menu przenosi się z lewego górnego rogu w prawy dolny i z powrotem.</p></div></li>
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Fokus zmienia położenie i treść</p><p class="row-list__meta">Gdy fokus trafi na „Promocje”, link zmienia napis na losowy („Okazje!”, „Kup teraz”…) i przesuwa się w inne miejsce.</p></div></li>
+        </ul>
+    </section>
+
+    <section class="anti-guide__part" aria-labelledby="part-form">
+        <h2 id="part-form" class="section-title"><span class="form-sheet__num" aria-hidden="true">04</span> Problematyczny formularz (+0.5)</h2>
+        <ul class="row-list">
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Błędy tylko kolorem</p><p class="row-list__meta">Kliknij „OK” z pustymi polami — błędne pola dostają jedynie bladoczerwoną ramkę.</p></div></li>
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Brak informacji, co jest źle</p><p class="row-list__meta">Jedyny komunikat to blade „Błąd.”; zasady (telefon 9 cyfr, kod pocztowy NN-NNN, kod rabatowy np. ABCD12) nigdzie nie są opisane, a pola mają tylko placeholder zamiast etykiety.</p></div></li>
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Limit czasu i reset</p><p class="row-list__meta">15 s po wpisaniu pierwszego znaku formularz czyści się bez ostrzeżenia — wpisane dane przepadają.</p></div></li>
+        </ul>
+    </section>
+
+    <section class="anti-guide__part" aria-labelledby="part-popups">
+        <h2 id="part-popups" class="section-title"><span class="form-sheet__num" aria-hidden="true">05</span> Uporczywe popupy (+0.5)</h2>
+        <ul class="row-list">
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Popup po wejściu Tabem w pole</p><p class="row-list__meta">Fokus na polu „Kod rabatowy” (Tabem albo kliknięciem) otwiera pełnoekranowe okno „CZEKAJ!”.</p></div></li>
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Uciekający przycisk ×</p><p class="row-list__meta">Mały, blady „×” odskakuje w losowe miejsce, gdy najedziesz na niego kursorem (po 6 ucieczkach daje się kliknąć). Nie da się go zamknąć klawiaturą ani Esc.</p></div></li>
+            <li class="row-list__item"><div class="row-list__main"><p class="row-list__title">Popup, który pojawia się sam i nie da się go zamknąć</p><p class="row-list__meta">„Newsletter” wyskakuje po 5 s od wejścia na stronę, nie ma przycisku zamknięcia, Esc nie działa — znika sam po 8 s i wraca co 40 s.</p></div></li>
+        </ul>
+    </section>
+</div>
+{% endblock %}

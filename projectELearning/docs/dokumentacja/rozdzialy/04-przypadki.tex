@@ -1,0 +1,326 @@
+\chapter{Model przypadków użycia}
+
+Przypadki użycia podzielono na dwa diagramy: część \emph{kliencką} (gość i~uczeń) oraz
+część \emph{zarządczą} (nauczyciel i~administrator). Na obu diagramach strzałka
+\guillemotleft include\guillemotright{} prowadzi od przypadku bazowego do przypadku zawsze
+w~nim wykonywanego, a~strzałka \guillemotleft extend\guillemotright{} -- od rozszerzenia
+do przypadku, który opcjonalnie rozszerza.
+
+\section{Diagram przypadków użycia -- część kliencka}
+
+\begin{figure}[H]
+\centering
+\begin{adjustbox}{max width=\linewidth,max totalheight=0.78\textheight}
+\begin{tikzpicture}
+  \node[ucsys,minimum width=10.2cm,minimum height=22.9cm,anchor=north west] (sys) at (2.0,14.1) {};
+  \node[font=\sffamily\small\bfseries,anchor=north] at ($(sys.north)+(0,-0.12)$) {Platforma E-Learning};
+  % lewa kolumna
+  \node[uc] (rej) at (4.6,12.9) {Rejestracja konta};
+  \node[uc] (log) at (4.6,11.7) {Logowanie};
+  \node[uc] (kat) at (4.6,10.5) {Przeglądanie katalogu\\i~kursów};
+  \node[uc] (kosz) at (4.6,9.3) {Zarządzanie\\koszykiem};
+  \node[uc] (mot) at (4.6,8.1) {Wybór motywu};
+  \node[uc] (zam) at (4.6,6.6) {Złożenie\\zamówienia};
+  \node[uc] (lek) at (4.6,5.4) {Przerabianie lekcji};
+  \node[uc] (test) at (4.6,4.2) {Rozwiązanie testu};
+  \node[uc] (kom) at (4.6,3.0) {Komentowanie\\i~ocena kursu};
+  \node[uc] (zgl) at (4.6,1.8) {Zgłoszenie\\własnego kursu};
+  \node[uc] (czat) at (4.6,0.6) {Rozmowa\\z~asystentem};
+  \node[uc] (pow) at (4.6,-0.6) {Przeglądanie\\powiadomień};
+  \node[uc] (prof) at (4.6,-1.8) {Edycja profilu};
+  % prawa kolumna
+  \node[uc] (oauth) at (9.7,11.7) {Logowanie przez\\portal (OAuth2)};
+  \node[uc] (plat) at (9.7,6.6) {Płatność online};
+  \node[uc] (auto) at (9.7,4.2) {Ocena automatyczna\\pytań zamkniętych};
+  \node[uc] (glos) at (9.7,3.0) {Głosowanie\\na komentarz};
+  \node[uc] (wat) at (9.7,1.8) {Dyskusja\\w~zgłoszeniu};
+  \node[uc] (gen) at (9.7,0.6) {Generowanie\\odpowiedzi};
+  \node[uc] (kod) at (4.6,-3.0) {Wykorzystanie\\kodu dostępu};
+  \node[uc] (dypl) at (4.6,-6.6) {Pobranie dyplomu};
+  \node[uc] (styl) at (4.6,-4.2) {Wybór stylu\\uczenia się};
+  \node[uc] (rek) at (9.7,-4.2) {Analiza wyników\\i~rekomendacja stylu};
+  \node[uc] (ank) at (4.6,-5.4) {Wypełnienie\\ankiety stylu};
+  \node[uc] (pol) at (4.6,-7.8) {Przeglądanie\\polecanych kursów};
+  \node[uc] (prof2) at (9.7,-7.8) {Wyznaczenie\\profilu stylów};
+  \node[uc] (has) at (4.6,-9.0) {Zmiana hasła};
+  % aktorzy
+  \actor{gosc}{0.4,10.6}{Gość}
+  \actor{ucz}{0.4,2.4}{Uczeń}
+  \actor{idp}{14.2,11.6}{Dostawca\\[-2pt]tożsamości}
+  \actor{str}{14.2,6.5}{Stripe}
+  \actor{llm}{14.2,0.5}{Model Bielik}
+  \draw[-{Triangle[open,length=3mm]},ink] (0.4,3.3) -- (0.4,9.75);
+  % asocjacje
+  \foreach \u in {rej,log,kat,kosz,mot} \draw[assoc] (gosc) -- (\u.west);
+  \foreach \u in {zam,lek,test,kom,zgl,czat,pow,prof,kod,styl,dypl,ank,pol,has} \draw[assoc] (ucz) -- (\u.west);
+  \draw[assoc] (oauth.east) -- (idp);
+  \draw[assoc] (plat.east) -- (str);
+  \draw[assoc] (gen.east) -- (llm);
+  % relacje
+  \draw[incl] (oauth) -- node[above,note]{\guillemotleft extend\guillemotright} (log);
+  \draw[incl] (zam) -- node[above,note]{\guillemotleft include\guillemotright} (plat);
+  \draw[incl] (test) -- node[above,note]{\guillemotleft include\guillemotright} (auto);
+  \draw[incl] (test) -- (lek) node[midway,left,note]{\guillemotleft extend\guillemotright};
+  \draw[incl] (glos) -- node[above,note]{\guillemotleft extend\guillemotright} (kom);
+  \draw[incl] (czat) -- node[above,note]{\guillemotleft include\guillemotright} (gen);
+  \draw[incl] (zgl) -- node[above,note]{\guillemotleft include\guillemotright} (wat);
+  \draw[incl] (styl) -- node[above,note]{\guillemotleft include\guillemotright} (rek);
+  \draw[incl] (pol) -- node[above,note]{\guillemotleft include\guillemotright} (prof2);
+  \draw[incl] (ank) -- node[right,note]{\guillemotleft extend\guillemotright} (styl);
+\end{tikzpicture}\end{adjustbox}
+\caption{Diagram przypadków użycia -- gość i~uczeń}\label{fig:uc-klient}
+\end{figure}
+
+Zgodnie z~generalizacją aktorów uczeń ma dostęp również do przypadków gościa (poza
+rejestracją i~logowaniem). Przypadek \emph{Rozwiązanie testu} rozszerza
+\emph{Przerabianie lekcji}, ponieważ test pojawia się w~programie kursu po wskazanej lekcji
+lub na końcu. \emph{Pobranie dyplomu} (z~profilu lub strony kursu) jest dostępne tylko wtedy, gdy kurs ma włączony
+dyplom i~uczeń zaliczył wszystkie testy oraz ukończył wszystkie lekcje. Strona \emph{Wyboru stylu
+uczenia się} zawsze pokazuje analizę wyników ucznia w~podziale na style i~ewentualną rekomendację;
+od wybranego stylu zależy, którą wersję lekcji uczeń zobaczy w~przypadku \emph{Przerabianie lekcji}.
+\emph{Wypełnienie ankiety} rozszerza wybór stylu: uczeń, który nie ma stylu, dostaje styl dominujący
+w~odpowiedziach. \emph{Przeglądanie polecanych kursów} zawsze wylicza profil stylów ucznia
+(rozdział~\ref{sec:recommend}).
+
+\section{Diagram przypadków użycia -- część zarządcza}
+
+\begin{figure}[H]
+\centering
+\begin{adjustbox}{max width=\linewidth,max totalheight=0.78\textheight}
+\begin{tikzpicture}
+  \node[ucsys,minimum width=10.2cm,minimum height=20.6cm,anchor=north west] (sys) at (2.0,13.2) {};
+  \node[font=\sffamily\small\bfseries,anchor=north] at ($(sys.north)+(0,-0.12)$) {Platforma E-Learning};
+  \node[uc] (kurs) at (4.6,12.0) {Tworzenie kursu};
+  \node[uc] (prog) at (4.6,10.8) {Edycja programu\\i~testów};
+  \node[uc] (rozp) at (4.6,9.6) {Rozpatrzenie\\zgłoszenia kursu};
+  \node[uc] (akk) at (4.6,8.4) {Akceptacja\\komentarzy};
+  \node[uc] (ocen) at (4.6,7.2) {Ocena testów\\otwartych};
+  \node[uc] (zamo) at (4.6,6.0) {Obsługa zamówień};
+  \node[uc] (gal) at (4.6,4.8) {Dodawanie zdjęć\\do galerii};
+  \node[uc] (pod) at (4.6,3.6) {Zarządzanie\\podkategoriami};
+  \node[uc] (wer) at (4.6,2.4) {Wersje lekcji\\dla stylów};
+  \node[uc] (pos) at (4.6,1.2) {Podgląd postępów\\uczniów kursu};
+  \node[uc] (drz) at (4.6,-0.6) {Zarządzanie\\drzewem kategorii};
+  \node[uc] (sld) at (4.6,-1.8) {Konfiguracja\\układów slajdera};
+  \node[uc] (thm) at (4.6,-3.0) {Zarządzanie\\motywami};
+  \node[uc] (kon) at (4.6,-4.2) {Zarządzanie\\kontami i~rolami};
+  \node[uc] (sty) at (4.6,-5.4) {Zarządzanie stylami\\i~ankietą};
+  \node[uc] (sta) at (4.6,-6.6) {Statystyki\\platformy};
+  % prawa kolumna
+  \node[uc] (pub) at (9.7,12.0) {Publikacja kursu};
+  \node[uc] (dysk) at (9.7,10.2) {Dyskusja\\w~zgłoszeniu};
+  \node[uc,fill=paperdark,minimum width=3cm] (notif) at (9.7,7.8) {Wysłanie\\powiadomienia};
+  \node[uc] (dost) at (9.7,5.4) {Wydanie dostępu\\do kursu};
+  \node[uc] (przyd) at (9.7,0.3) {Przydział\\moderatorów};
+  \node[uc] (dnd) at (9.7,-1.8) {Zmiana kolejności\\kart (DnD / $\uparrow\downarrow$)};
+  \node[uc] (def) at (9.7,-3.3) {Ustawienie motywu\\domyślnego};
+  \node[uc] (jedn) at (9.7,3.0) {Ta sama treść\\dla każdego stylu};
+  % aktorzy
+  \actor{nau}{0.4,8.2}{Nauczyciel}
+  \actor{adm}{0.4,-3.0}{Administrator}
+  \draw[-{Triangle[open,length=3mm]},ink] (0.4,-2.1) -- (0.4,7.35);
+  \foreach \u in {kurs,prog,rozp,akk,ocen,zamo,gal,pod,wer,pos} \draw[assoc] (nau) -- (\u.west);
+  \foreach \u in {drz,sld,thm,kon,sty,sta} \draw[assoc] (adm) -- (\u.west);
+  % relacje
+  \draw[incl] (kurs) -- node[above,note]{\guillemotleft include\guillemotright} (pub);
+  \draw[incl] (kurs) -- node[left,note]{\guillemotleft include\guillemotright} (prog);
+  \draw[incl] (rozp.east) -- node[above,note,sloped]{\guillemotleft include\guillemotright} (dysk.west);
+  \draw[incl] (rozp.east) -- (notif.west);
+  \draw[incl] (akk.east) -- (notif.west);
+  \draw[incl] (ocen.east) -- (notif.west);
+  \draw[incl] (zamo.east) -- (notif.west);
+  \node[note,anchor=west] at (6.75,7.15) {\guillemotleft include\guillemotright};
+  \draw[incl] (dost) -- node[above,note,pos=0.45]{\guillemotleft extend\guillemotright} (zamo);
+  \draw[incl] (przyd.west) -- node[above,note,sloped]{\guillemotleft extend\guillemotright} (drz.east);
+  \draw[incl] (sld) -- node[above,note]{\guillemotleft include\guillemotright} (dnd);
+  \draw[incl] (def.west) -- node[below,note,sloped]{\guillemotleft extend\guillemotright} (thm.east);
+  \draw[incl] (jedn.west) -- node[above,note,sloped]{\guillemotleft extend\guillemotright} (wer.east);
+\end{tikzpicture}\end{adjustbox}
+\caption{Diagram przypadków użycia -- nauczyciel i~administrator}\label{fig:uc-zarzad}
+\end{figure}
+
+Przypadek \emph{Wysłanie powiadomienia} jest wspólnym elementem wszystkich decyzji
+moderacyjnych: każda z~nich tworzy rekord \code{Notification} dla osoby, której decyzja
+dotyczy. \emph{Wydanie dostępu do kursu} rozszerza obsługę zamówień tylko w~sytuacji, gdy
+nauczyciel ręcznie ustawia status ,,Opłacone'' -- dzieje się wtedy to samo, co po
+płatności online.
+
+% -------------------------------------------------------------------------
+\section{Specyfikacje wybranych przypadków użycia}
+
+Poniżej opisano przypadki użycia o~największym znaczeniu dla działania systemu. Opis ma
+postać scenariusza: kroki główne numerowane są kolejno, a~scenariusze alternatywne
+odwołują się do numeru kroku, w~którym następuje odgałęzienie (np. 3a).
+
+\newcommand{\ucspec}[7]{%
+\par\medskip\noindent
+\begin{tikzpicture}\node[fill=brand,text=white,font=\sffamily\bfseries\small,inner sep=4pt,anchor=west] {#1};\end{tikzpicture}\enspace{\sffamily\bfseries #2}\par\nopagebreak[4]\smallskip
+{\small
+\noindent\begin{tabularx}{\linewidth}{@{}>{\sffamily\bfseries}p{3.0cm}L@{}}
+Aktorzy & #3 \\
+Warunki wstępne & #4 \\
+Wynik & #5 \\
+Przebieg & \begin{minipage}[t]{\dimexpr\linewidth-12pt\relax}\begin{enumerate}[leftmargin=1.4em,nosep,label=\arabic*.,topsep=0pt]#6\end{enumerate}\end{minipage} \\
+Odstępstwa & #7 \\
+\end{tabularx}}\par\smallskip\noindent{\color{rule}\rule{\linewidth}{0.4pt}}\par}
+
+\ucspec{PU-01}{Rejestracja konta}
+{Gość}
+{Użytkownik nie jest zalogowany.}
+{Powstaje konto z~rolą \code{student}; użytkownik jest zalogowany i~widzi stronę główną.}
+{\item Gość wybiera ,,Zaloguj się'' w~nagłówku, a~następnie ,,Załóż konto''.
+ \item Wpisuje login, e-mail, imię, nazwisko i~dwukrotnie hasło; skrypt sprawdza na bieżąco, czy login i~e-mail są wolne (\code{accounts:check\_availability}).
+ \item Wysyła formularz (POST + CSRF).
+ \item System waliduje dane, tworzy konto, loguje użytkownika i~wyświetla komunikat powitalny.}
+{3a. Dane niepoprawne -- formularz wraca z~opisami błędów przy polach (\code{aria-invalid}, \code{aria-describedby}), wpisane wartości poza hasłami są zachowane, a nad formularzem pojawia się komunikat \code{role="alert"}.\newline
+2a. Gość wybiera portal (Discord, GitLab, Bitbucket) -- przebieg wg PU-02.}
+
+\ucspec{PU-02}{Logowanie przez portal zewnętrzny}
+{Gość, Dostawca tożsamości}
+{Aplikacja OAuth2 skonfigurowana w~portalu i~w~panelu administracyjnym.}
+{Użytkownik zalogowany; w~profilu uzupełnione imię, nazwisko, e-mail i~awatar z~portalu.}
+{\item Gość wybiera przycisk portalu na stronie logowania.
+ \item System przekierowuje do portalu, który pyta o~zgodę na udostępnienie danych.
+ \item Portal przekierowuje z~kodem autoryzacyjnym; \code{django-allauth} wymienia go na token i~pobiera profil.
+ \item Przy pierwszym logowaniu sygnał kopiuje dane i~adres awatara do \code{CustomUser}; konto otrzymuje rolę ucznia.}
+{4a. E-mail z~portalu należy już do konta -- zamiast błędu system przekierowuje na logowanie z~wpisanym e-mailem i~komunikatem; po zalogowaniu hasłem portal zostaje dołączony (do 15 minut, tylko ten sam e-mail). Użytkownik może wybrać ,,Nie łącz''.\newline
+4b. Login z~portalu jest zajęty -- system generuje wolny wariant.}
+
+\ucspec{PU-03}{Złożenie i~opłacenie zamówienia}
+{Uczeń, Stripe}
+{Uczeń zalogowany, koszyk niepusty, klucze Stripe skonfigurowane.}
+{Zamówienie ,,Opłacone''; uczeń zapisany na kursy, za dodatkowe sztuki otrzymał kody; wysłane e-maile i~powiadomienie.}
+{\item Uczeń otwiera koszyk i~wybiera ,,Przejdź do zamówienia''.
+ \item System wyświetla formularz z~adresem z~profilu; uczeń może go zmienić i~zaznaczyć zapis w~profilu, akceptuje regulamin.
+ \item System tworzy zamówienie ze statusem ,,Oczekuje na płatność'', kopiuje ceny, opróżnia koszyk i~wysyła e-mail.
+ \item System tworzy sesję Stripe Checkout i~przekierowuje ucznia (303) na stronę płatności.
+ \item Uczeń płaci (karta testowa, BLIK); Stripe wraca na stronę zamówienia i~równolegle wysyła webhook \code{checkout.session.completed}.
+ \item System weryfikuje podpis, kwotę i~walutę, ustawia ,,Opłacone'' i~realizuje zamówienie (zapisy, kody dostępu, e-mail, powiadomienie).}
+{2a. Błędy w~adresie -- formularz z~opisami błędów, dane zachowane.\newline
+5a. Uczeń przerywa płatność -- zamówienie zostaje ,,Oczekuje na płatność''; może zapłacić później lub je anulować.\newline
+5b. Webhook nie dociera (np.\ brak Stripe CLI lokalnie) -- przy wejściu na stronę zamówienia system sam odpytuje Stripe o~stan sesji.}
+
+\ucspec{PU-04}{Rozwiązanie testu}
+{Uczeń}
+{Uczeń zapisany na kurs; test odblokowany (poprzedzające testy obowiązkowe zaliczone); limit podejść niewyczerpany.}
+{Zapisane podejście z~wynikiem albo statusem ,,Czeka na ocenę''; zaktualizowany postęp kursu.}
+{\item Uczeń otwiera test z~programu kursu; system rejestruje rozpoczęcie (\code{QuizSitting}), co blokuje asystenta AI.
+ \item Uczeń odpowiada: zaznacza odpowiedzi (\code{fieldset}/\code{legend}), wpisuje tekst lub kod, dołącza zdjęcie lub plik.
+ \item Wysyła test; system zapisuje odpowiedzi, a~pytania zamknięte punktuje automatycznie (punkty tylko za dokładny zestaw poprawnych odpowiedzi).
+ \item Jeśli test nie ma pytań otwartych -- system wylicza wynik, zalicza lub nie i~pokazuje stronę wyniku.
+ \item System usuwa blokadę asystenta i~aktualizuje postęp; po ukończeniu kursu wystawia dyplom.}
+{4a. Test zawiera pytania otwarte -- podejście ma status ,,Czeka na ocenę'', autor kursu i~nauczyciele kategorii dostają powiadomienie ,,Nowy test do sprawdzenia'' (dalej PU-08).\newline
+3a. Brak odpowiedzi na wymagane pytanie lub zły typ pliku -- komunikat przy pytaniu, odpowiedzi zachowane.}
+
+\ucspec{PU-05}{Rozmowa z~asystentem AI}
+{Uczeń, Model Bielik}
+{Uczeń zalogowany; Ollama uruchomiona z~pobranym modelem.}
+{Pytanie i~odpowiedź zapisane w~historii rozmowy kursu (lub rozmowy ogólnej).}
+{\item Uczeń otwiera okno czatu przyciskiem ,,Asystent'' lub ,,Zapytaj asystenta o~tę lekcję''.
+ \item Skrypt pobiera token JWT dla sesji i~historię rozmowy (\code{GET api/history}).
+ \item Uczeń wpisuje pytanie i~wysyła je (Enter).
+ \item Serwer zapisuje pytanie, buduje prompt systemowy z~kontekstem strony i~ostatnimi 12 wiadomościami, wywołuje model w~trybie strumieniowym.
+ \item Fragmenty odpowiedzi trafiają do przeglądarki jako NDJSON i~są dopisywane na bieżąco; po zakończeniu cała odpowiedź jest ogłaszana czytnikom ekranu.}
+{4a. Uczeń ma otwarty test -- system zapisuje stałą odmowę i~nie pyta modelu.\newline
+4b. Model niedostępny lub przekroczony czas -- komunikat po polsku, pytanie usunięte z~historii, tekst zostaje w~polu do ponownego wysłania.\newline
+5a. Uczeń wybiera ,,Zatrzymaj'' -- strumień jest przerywany.}
+
+\ucspec{PU-06}{Utworzenie i~zgłoszenie kursu}
+{Uczeń (zgłaszający) lub Nauczyciel}
+{Użytkownik zalogowany.}
+{Kurs opublikowany albo oczekujący na akceptację z~otwartym wątkiem zgłoszenia.}
+{\item Użytkownik wybiera ,,Zaproponuj kurs'' / ,,Utwórz kurs'' i~wypełnia dane kursu (krok 1); system zapisuje szkic.
+ \item W~kroku 2 dodaje sekcje, lekcje i~testy; kolejność zmienia przyciskami $\uparrow\downarrow$.
+ \item W~kroku 3 wybiera ,,Wyślij do publikacji''.
+ \item System sprawdza, czy kurs ma co najmniej jedną lekcję, i~ustala status: nauczyciel kategorii lub administrator -- ,,Zatwierdzony''; pozostali -- ,,Oczekuje''.
+ \item Dla kursu oczekującego system powiadamia nauczycieli kategorii.}
+{4a. Brak lekcji -- komunikat i~powrót do programu.\newline
+5a. Kurs odrzucony -- autor widzi powód w~wątku, poprawia kurs i~wysyła go ponownie.}
+
+\ucspec{PU-07}{Rozpatrzenie zgłoszenia kursu}
+{Nauczyciel (moderator kategorii)}
+{Kurs ze statusem ,,Oczekuje'' w~kategorii nauczyciela.}
+{Kurs zatwierdzony lub odrzucony; autor powiadomiony; historia dyskusji zachowana w~bazie.}
+{\item Nauczyciel otwiera zakładkę ,,Zgłoszenia'' w~Moderacji (lista z~paginacją).
+ \item Przechodzi do wątku zgłoszenia, przegląda kurs i~ewentualnie wymienia wiadomości z~autorem.
+ \item Wybiera ,,Zaakceptuj'' albo ,,Odrzuć'' (przyciski z~dialogiem potwierdzenia).
+ \item System zmienia status, dopisuje wiadomość do wątku i~wysyła powiadomienie autorowi.}
+{3a. Odrzucenie bez powodu -- komunikat ,,Podaj powód'', decyzja nie zostaje zapisana.}
+
+\ucspec{PU-08}{Ocena odpowiedzi otwartych}
+{Nauczyciel}
+{Istnieje podejście ,,Czeka na ocenę'' w~kursie, który nauczyciel może oceniać, i~nie jest to jego własne podejście.}
+{Podejście ,,Ocenione'' z~wynikiem; uczeń otrzymuje powiadomienie ,,Test oceniony''.}
+{\item Nauczyciel otwiera kolejkę ,,Do oceny''.
+ \item Wybiera podejście; widzi odpowiedzi ucznia (tekst, kod, zdjęcie, plik do pobrania).
+ \item Dla każdego pytania otwartego wpisuje punkty (0--max) i~opcjonalny komentarz.
+ \item System sumuje punkty, ustala zaliczenie według progu testu i~aktualizuje postęp ucznia.}
+{3a. Punkty spoza zakresu -- błąd przy polu, wpisane wartości zachowane.}
+
+\ucspec{PU-09}{Konfiguracja układu slajdera}
+{Administrator}
+{Administrator zalogowany; w~bazie są zdjęcia galerii.}
+{Zapisana kolejność kart; publiczny slajder pokazuje karty w~nowej kolejności.}
+{\item Administrator otwiera ,,Układy slajdera'' i~wybiera układ do edycji (lub tworzy nowy).
+ \item Przeciąga kartę na nową pozycję albo przenosi ją przyciskami $\uparrow\downarrow$.
+ \item Skrypt wysyła nową kolejność (\code{fetch}, JSON) do \code{slider\_reorder}; serwer aktualizuje tylko pole \code{order}.
+ \item Komunikat w~regionie \code{aria-live} potwierdza zapis.
+ \item Opcjonalnie: ustawia układ jako wyświetlany w~galerii.}
+{3a. Brak JavaScriptu -- przyciski $\uparrow\downarrow$ działają jako zwykłe formularze POST.}
+
+\ucspec{PU-10}{Zmiana motywu kolorystycznego}
+{Gość, Uczeń; Administrator (definicja motywów)}
+{W~bazie istnieje co najmniej jeden motyw.}
+{Cała witryna w~nowej kolorystyce; dla zalogowanego wybór zapamiętany w~profilu.}
+{\item Użytkownik otwiera przełącznik motywu w~nagłówku (lub stronę ,,Motywy'').
+ \item Wybiera motyw strzałkami i~Enterem.
+ \item System zapisuje wybór w~\code{CustomUser.selected\_theme} albo w~sesji gościa i~odświeża stronę.
+ \item Szablon bazowy wstawia do \code{:root} pięć kolorów motywu oraz wyliczone kolory tekstu i~tryb jasny/ciemny.}
+{Administrator dodaje motyw w~panelu (próbniki kolorów); kolory tekstu wylicza system -- nie wpisuje się ich ręcznie.}
+
+\ucspec{PU-11}{Wybór stylu uczenia się i~rekomendacja}
+{Uczeń}
+{Uczeń zalogowany; w~systemie istnieje co najmniej jeden aktywny styl.}
+{Wybrany styl zapisany na koncie; lekcje z~wersjami pokazują treść dla tego stylu.}
+{\item Uczeń wybiera ,,Styl uczenia się'' w~menu konta lub w~profilu.
+ \item System pokazuje karty aktywnych stylów z~opisami oraz analizę: liczbę lekcji przerobionych w~każdej wersji, ocenione testy, średni wynik, odsetek zaliczeń i~wynik ważony.
+ \item Jeśli dane na to pozwalają, system wyświetla rekomendację (np. ,,Polecamy styl »Praktyk«'') i~oznacza polecany styl.
+ \item Uczeń wybiera styl (lub ,,Nie wybieram'') i~zapisuje formularz.
+ \item System zapisuje styl i~datę zmiany; przy kolejnym otwarciu lekcji z~wersjami pokazuje wersję dla nowego stylu.}
+{2a. Brak ocenionych testów lub mniej niż dwa w~każdym stylu -- komunikat ,,Za mało danych'' i~propozycja stylu do wypróbowania.\newline
+4a. Formularz wysłany z~parametrem \code{next} -- powrót do lekcji, z~której uczeń przyszedł.}
+
+\ucspec{PU-12}{Dodanie wersji lekcji dla stylu}
+{Nauczyciel (autor kursu lub moderator kategorii)}
+{Lekcja istnieje; styl jest aktywny.}
+{Wersja lekcji zapisana; uczniowie z~tym stylem widzą ją zamiast treści podstawowej.}
+{\item Nauczyciel w~programie kursu wybiera przycisk ,,Style'' przy lekcji.
+ \item System pokazuje listę stylów z~informacją, które mają własną wersję, oraz wskazówki dla autora.
+ \item Nauczyciel wybiera ,,Dodaj wersję'' przy stylu; edytor zawiera treść podstawową lekcji do przerobienia.
+ \item Nauczyciel zmienia treść, opcjonalnie podaje film z~YouTube lub Vimeo i~zapisuje.
+ \item System sanityzuje treść, zapisuje wersję i~włącza wersje dla stylów w~tej lekcji.}
+{4a. Pusta treść lub nieobsługiwany adres filmu -- komunikat przy polu, dane zachowane.\newline
+5a. Nauczyciel wybiera ,,Ta sama treść dla każdego stylu'' -- wszyscy widzą treść podstawową, wersje pozostają zapisane.}
+
+\ucspec{PU-13}{Wypełnienie ankiety stylu uczenia się}
+{Uczeń}
+{Uczeń zalogowany; ankieta ma aktywne pytania.}
+{Zapisana ankieta z~odpowiedziami i~stylem dominującym; uczeń bez stylu ma go ustawionego.}
+{\item Uczeń na stronie stylu wybiera ,,Wypełnij ankietę''.
+ \item System pokazuje 10 pytań sytuacyjnych; każde jest grupą pól wyboru z~legendą.
+ \item Uczeń wybiera w~każdym pytaniu jedną odpowiedź i~wysyła formularz.
+ \item System liczy udział odpowiedzi wskazujących każdy styl i~wyznacza styl dominujący (remis rozstrzyga kolejność stylów).
+ \item Jeśli uczeń nie miał stylu, system go ustawia; strona stylu pokazuje wynik procentowy i~przycisk ustawienia stylu z~ankiety.}
+{3a. Brak odpowiedzi na któreś pytanie lub odpowiedź spoza pytania -- komunikat przy pytaniu, pozostałe odpowiedzi zachowane, nic nie jest zapisane.\newline
+5a. Uczeń ma już styl inny niż wynik ankiety -- styl nie jest zmieniany automatycznie, uczeń decyduje przyciskiem.}
+
+\ucspec{PU-14}{Podgląd postępów uczniów kursu}
+{Nauczyciel (autor kursu lub moderator kategorii), Administrator}
+{Kurs istnieje; użytkownik może edytować kurs.}
+{Nauczyciel widzi stan nauki wszystkich zapisanych uczniów.}
+{\item Nauczyciel wybiera ,,Uczniowie'' w~,,Moich kursach'', w~programie kursu albo na stronie kursu.
+ \item System pokazuje podsumowanie: liczbę osób, które kurs zaczęły i~ukończyły (z~procentem), średni postęp, średni wynik testów, testy do oceny i~rozkład stylów uczniów.
+ \item System wyświetla tabelę uczniów: data zapisu, postęp, ukończone lekcje, zaliczone testy, średni wynik, wybrany styl i~wynik ankiety.
+ \item Nauczyciel filtruje listę: wszyscy, w~trakcie, ukończyli.}
+{1a. Użytkownik bez uprawnień do kursu -- odpowiedź 404.}
+

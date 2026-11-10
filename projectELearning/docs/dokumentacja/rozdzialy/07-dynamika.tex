@@ -1,0 +1,256 @@
+\chapter{Model dynamiczny}
+
+Rozdział opisuje zachowanie systemu w~czasie: cykle życia najważniejszych obiektów
+(diagramy stanów), współpracę komponentów w~kluczowych scenariuszach (diagramy sekwencji)
+oraz przebieg nauki (diagram aktywności).
+
+\section{Cykl życia kursu}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm and 2.3cm]
+  \node[startst] (s0) {};
+  \node[state,right=1.2cm of s0] (draft) {Szkic\\\code{draft}};
+  \node[state,right=of draft] (pend) {Oczekuje\\\code{pending}};
+  \node[state,right=of pend] (appr) {Zatwierdzony\\\code{approved}};
+  \node[state,below=1.7cm of pend] (rej) {Odrzucony\\\code{rejected}};
+  \draw[arr] (s0) -- node[above,note]{krok 1 kreatora} (draft);
+  \draw[arr] (draft) -- node[above,note,align=center]{wysłanie\\(nie-moderator)} (pend);
+  \draw[arr] (draft.north) to[bend left=28] node[above,note]{wysłanie przez moderatora kategorii / admina} (appr.north);
+  \draw[arr] (pend) -- node[above,note]{akceptacja} (appr);
+  \draw[arr] (pend) -- node[left,note,align=right]{odrzucenie\\z~powodem} (rej);
+  \draw[arr] (rej.west) -| node[below,note,pos=0.3]{poprawa i~ponowne wysłanie} (draft.south);
+  \draw[arr] (appr.south west) to[bend left=35] node[below,note,align=center,pos=0.5]{edycja przez osobę\\bez uprawnień moderatora} (pend.south east);
+\end{tikzpicture}
+\caption{Diagram stanów kursu}\label{fig:st-course}
+\end{figure}
+
+Szkic widzi wyłącznie autor i~moderatorzy kategorii, nie generuje on powiadomień. Kurs
+oczekujący jest widoczny w~kolejce ,,Zgłoszenia'' i~ma aktywny wątek dyskusji. Do katalogu
+publicznego trafiają tylko kursy zatwierdzone i~opublikowane. Zmiana treści zatwierdzonego
+kursu przez autora, który nie moderuje jego kategorii, cofa kurs do stanu ,,Oczekuje''
+(\code{apply\_edit\_rules}) -- dzięki temu niezweryfikowana treść nie trafia do uczniów.
+
+\section{Cykl życia zamówienia}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+  \node[startst] (s0) at (-2.2,0) {};
+  \node[state] (new) at (0,0) {Nowe};
+  \node[state] (pp) at (4.6,0) {Oczekuje\\na płatność};
+  \node[state] (paid) at (9.2,0) {Opłacone};
+  \node[state] (done) at (9.2,-3.4) {Zrealizowane};
+  \node[state] (canc) at (2.3,-3.4) {Anulowane};
+  \draw[arr] (s0) -- (new);
+  \draw[arr] (new) -- node[above,note]{\code{place\_order}} (pp);
+  \draw[arr] (pp.south west) to[bend left=20] node[below,note]{obsługa} (new.south east);
+  \draw[arr] (pp) -- node[above,note,align=center]{webhook / powrót\\z~Stripe / obsługa} (paid);
+  \draw[arr] (new.north) to[bend left=22] node[above,note]{obsługa (płatność poza systemem)} (paid.north);
+  \draw[arr] (paid.south west) to[bend right=15] node[left,note]{obsługa} (done.north west);
+  \draw[arr] (done.north east) to[bend right=15] node[right,note,align=left]{cofnięcie\\(obsługa)} (paid.south east);
+  \draw[arr] (new.south) -- node[left,note]{obsługa} (canc.north west);
+  \draw[arr] (pp.south) -- node[right,note,align=left,pos=0.4]{uczeń / obsługa} (canc.north east);
+  \draw[arr] (paid.south west) -- node[below,note,sloped,pos=0.55]{obsługa} (canc.east);
+  \draw[arr] (canc.west) to[bend left=45] node[left,note,align=right]{przywrócenie\\(do ,,Nowe'' lub\\,,Oczekuje'')} (new.west);
+\end{tikzpicture}
+\caption{Diagram stanów zamówienia (przejścia ręczne wg \code{ALLOWED\_MANUAL})}\label{fig:st-order}
+\end{figure}
+
+Uczeń może anulować jedynie własne zamówienie oczekujące na płatność. Pozostałe przejścia
+wykonuje obsługa (nauczyciel lub administrator) z~formularza w~szczegółach zamówienia;
+niedozwolone przejście kończy się komunikatem błędu. Przejście do stanu ,,Opłacone'' --
+niezależnie od tego, czy wywołał je webhook, powrót ze strony płatności, czy obsługa --
+uruchamia \code{fulfill()}: zapis kupującego na kurs, wygenerowanie kodów dostępu, e-mail
+i~powiadomienie. Operacja jest idempotentna: zamówienie już zrealizowane nie zostanie
+zrealizowane drugi raz (\code{fulfilled\_at}). Każde przejście jest zapisywane
+w~\code{OrderStatusChange}.
+
+\section{Cykl życia podejścia do testu}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.0cm and 2.9cm]
+  \node[startst] (s0) {};
+  \node[state,right=2.0cm of s0] (sit) {Rozwiązywanie\\{\tiny(\code{QuizSitting})}};
+  \node[state,right=of sit] (pr) {Czeka na ocenę};
+  \node[state,right=of pr,yshift=0.9cm] (pass) {Zaliczony};
+  \node[state,right=of pr,yshift=-0.9cm] (fail) {Niezaliczony};
+  \draw[arr] (s0) -- node[above,note]{otwarcie testu} (sit);
+  \draw[arr] (sit) -- node[above,note]{wysłanie [są pyt. otwarte]} (pr);
+  \draw[arr] (sit.north) to[bend left=25] node[above,note]{wysłanie [tylko zamknięte], wynik $\geq$ próg} (pass.north west);
+  \draw[arr] (sit.south) to[bend right=25] node[below,note]{wysłanie [tylko zamknięte], wynik $<$ próg} (fail.south west);
+  \draw[arr] (pr) -- node[above,note,sloped]{ocena $\geq$ próg} (pass);
+  \draw[arr] (pr) -- node[below,note,sloped]{ocena $<$ próg} (fail);
+  \draw[arr] (fail.east) -- ++(0.5,0) node[right,note,align=left]{kolejne podejście\\(jeśli limit pozwala)};
+\end{tikzpicture}
+\caption{Diagram stanów podejścia do testu}\label{fig:st-attempt}
+\end{figure}
+
+\section{Sekwencja: zakup kursu z~płatnością Stripe}
+
+% makro linii życia
+\newcommand{\lifeline}[4]{% #1 nazwa, #2 x, #3 etykieta, #4 długość
+  \node[lhead] (#1) at (#2,0) {#3};
+  \draw[lifeline] (#1.south) -- ++(0,-#4);}
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+  \lifeline{u}{0}{Uczeń\\(przeglądarka)}{13.2}
+  \lifeline{v}{3.4}{Widoki\\\code{orders}}{13.2}
+  \lifeline{s}{6.8}{Usługi\\\code{services}}{13.2}
+  \lifeline{db}{10.0}{Baza\\PostgreSQL}{13.2}
+  \lifeline{st}{13.4}{Stripe}{13.2}
+  \tikzset{y/.style={}}
+  \def\m#1#2#3#4{\draw[msg] (#1,-#3) -- node[above]{#4} (#2,-#3);}
+  \def\r#1#2#3#4{\draw[ret] (#1,-#3) -- node[above]{#4} (#2,-#3);}
+  \m{0}{3.4}{1.2}{POST \code{/orders/zamowienie/} (adres, regulamin)}
+  \m{3.4}{6.8}{1.8}{\code{place\_order(user, cart, address)}}
+  \m{6.8}{10.0}{2.4}{INSERT Order, OrderItem, StatusChange; DELETE CartItem}
+  \r{10.0}{6.8}{3.0}{OK (transakcja)}
+  \draw[ret] (6.8,-3.5) -- ++(0.8,0) |- node[right,pos=0.25]{\code{on\_commit}: e-mail ,,Oczekuje na płatność''} (6.85,-4.0);
+  \r{6.8}{3.4}{4.5}{zamówienie}
+  \m{3.4}{13.4}{5.1}{\code{checkout.Session.create}(pozycje, PLN, metadata)}
+  \r{13.4}{3.4}{5.7}{URL sesji}
+  \r{3.4}{0}{6.3}{303 See Other $\rightarrow$ checkout.stripe.com}
+  \m{0}{13.4}{7.0}{płatność (karta 4242 / BLIK)}
+  \r{13.4}{0}{7.6}{przekierowanie na \code{payment\_return}}
+  \m{13.4}{3.4}{8.4}{POST webhook \code{checkout.session.completed} + nagłówek podpisu}
+  \draw[msg] (3.4,-9.0) -- ++(0.7,0) |- node[right,pos=0.25]{weryfikacja HMAC, kwoty, waluty} (3.45,-9.5);
+  \m{3.4}{6.8}{10.0}{\code{mark\_paid()} $\rightarrow$ \code{fulfill()}}
+  \m{6.8}{10.0}{10.6}{UPDATE Order; INSERT Enrollment, AccessCode, Notification}
+  \r{10.0}{6.8}{11.2}{OK}
+  \r{6.8}{3.4}{11.8}{zrealizowano}
+  \r{3.4}{13.4}{12.4}{200 OK}
+  \node[note,draw=ink!40,fill=white,anchor=west,align=left] at (0.2,-13.0) {alt: brak webhooka -- \code{order\_detail} wywołuje \code{sync\_order()} i~sprawdza sesję w~API Stripe};
+\end{tikzpicture}}
+\caption{Diagram sekwencji -- złożenie zamówienia i~płatność}\label{fig:seq-pay}
+\end{figure}
+
+Kluczowa decyzja projektowa: o~opłaceniu \emph{nie} decyduje powrót przeglądarki ze strony
+Stripe (użytkownik mógłby go sfałszować, wpisując adres ręcznie), lecz zdarzenie
+podpisane sekretem webhooka albo bezpośrednie zapytanie serwera do API Stripe o~stan sesji.
+
+\section{Sekwencja: pytanie do asystenta AI}
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+  \lifeline{js}{0}{\code{chatbot.js}}{12.2}
+  \lifeline{api}{3.4}{API\\\code{chatbot.api}}{12.2}
+  \lifeline{cv}{6.8}{\code{conversation}\\\code{services}}{12.2}
+  \lifeline{db}{10.0}{Baza}{12.2}
+  \lifeline{ol}{13.4}{Ollama\\(Bielik)}{12.2}
+  \def\m#1#2#3#4{\draw[msg] (#1,-#3) -- node[above]{#4} (#2,-#3);}
+  \def\r#1#2#3#4{\draw[ret] (#1,-#3) -- node[above]{#4} (#2,-#3);}
+  \m{0}{3.4}{1.2}{POST \code{/chatbot/token/} (sesja + CSRF)}
+  \r{3.4}{0}{1.8}{access token JWT}
+  \m{0}{3.4}{2.5}{POST \code{api/message/} \{text, course, lesson\} + Bearer}
+  \m{3.4}{6.8}{3.1}{\code{start\_turn(user, context, text)}}
+  \m{6.8}{10.0}{3.7}{czy istnieje aktywny \code{QuizSitting}?}
+  \r{10.0}{6.8}{4.3}{nie}
+  \m{6.8}{10.0}{4.9}{INSERT ChatMessage (uczeń); historia (12)}
+  \r{6.8}{3.4}{5.5}{prompt: system + kontekst lekcji + historia}
+  \m{3.4}{13.4}{6.1}{\code{chat(stream=True, temperature=0.4)}}
+  \r{13.4}{3.4}{6.7}{fragmenty odpowiedzi}
+  \r{3.4}{0}{7.3}{NDJSON: \code{start}, \code{delta}, \code{delta}, …}
+  \m{3.4}{6.8}{8.1}{\code{finish\_turn(turn, reply)}}
+  \m{6.8}{10.0}{8.7}{INSERT ChatMessage (asystent)}
+  \r{3.4}{0}{9.4}{NDJSON: \code{done} (pełny tekst)}
+  \draw[msg] (0,-10.0) -- ++(0.7,0) |- node[right,pos=0.25]{render Markdown, ogłoszenie \code{role=status}} (0.05,-10.5);
+  \node[note,draw=ink!40,fill=white,anchor=west,align=left] at (0.2,-11.6) {alt [trwa test]: \code{record\_refusal()} -- stała odmowa bez wywołania modelu, zdarzenie \code{refusal}\\alt [błąd Ollamy / timeout]: \code{cancel\_turn()} usuwa pytanie, zdarzenie \code{error} z~polskim komunikatem};
+\end{tikzpicture}}
+\caption{Diagram sekwencji -- wymiana wiadomości z~asystentem}\label{fig:seq-ai}
+\end{figure}
+
+\section{Aktywność: nauka w~kursie}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.55cm]
+  \node[startst] (s) {};
+  \node[act,below=of s] (a1) {Otwarcie elementu programu};
+  \node[dec,below=of a1] (d1) {zapisany\\lub podgląd?};
+  \node[act,right=1.6cm of d1] (x1) {Strona kursu z~przyciskiem\\,,Kup'' / ,,Zapisz się''};
+  \node[dec,below=of d1] (d2) {zablokowany\\testem?};
+  \node[act,right=1.6cm of d2] (x2) {Komunikat: najpierw zalicz\\test obowiązkowy};
+  \node[dec,below=of d2] (d3) {lekcja\\czy test?};
+  \node[act,below left=0.7cm and 0.2cm of d3] (l1) {Lekcja: treść, film,\\załączniki};
+  \node[act,below=of l1] (l2) {Oznacz jako ukończoną};
+  \node[act,below right=0.7cm and 0.2cm of d3] (t1) {Rozwiązanie testu (PU-04)};
+  \node[dec,below=of t1] (d4) {zaliczony?};
+  \node[act,below=1.2cm of d3,yshift=-2.4cm] (p) {Przeliczenie postępu\\(\code{sync\_enrollment\_progress})};
+  \node[dec,below=of p] (d5) {wszystko\\ukończone?};
+  \node[act,below=of d5] (c) {Ukończenie kursu, dyplom,\\powiadomienie};
+  \node[endst,below=of c] (e) {};
+  \draw[arr] (s) -- (a1); \draw[arr] (a1) -- (d1);
+  \draw[arr] (d1) -- node[above,note]{nie} (x1);
+  \draw[arr] (d1) -- node[right,note]{tak} (d2);
+  \draw[arr] (d2) -- node[above,note]{tak} (x2);
+  \draw[arr] (d2) -- node[right,note]{nie} (d3);
+  \draw[arr] (d3) -| node[above,note,pos=0.3]{lekcja} (l1);
+  \draw[arr] (d3) -| node[above,note,pos=0.3]{test} (t1);
+  \draw[arr] (l1) -- (l2);
+  \draw[arr] (t1) -- (d4);
+  \draw[arr] (l2) |- (p);
+  \draw[arr] (d4) |- node[right,note,pos=0.2]{tak} (p);
+  \draw[arr] (d4.east) -- ++(0.5,0) |- node[right,note,pos=0.25]{nie: ponów} (t1.east);
+  \draw[arr] (p) -- (d5);
+  \draw[arr] (d5) -- node[right,note]{tak} (c);
+  \draw[arr] (d5.west) -- ++(-2.6,0) |- node[left,note,pos=0.25]{nie: następny element} (a1.west);
+  \draw[arr] (c) -- (e);
+\end{tikzpicture}
+\caption{Diagram aktywności -- przechodzenie kursu przez ucznia}\label{fig:act}
+\end{figure}
+
+Kolejność lekcji jest \emph{sugerowana}, a~nie wymuszana: uczeń może przeskakiwać między
+lekcjami, dopóki nie natrafi na element za niezaliczonym testem obowiązkowym. Blokady są
+egzekwowane po stronie serwera w~widokach \code{lesson\_detail}, \code{lesson\_complete}
+i~\code{quiz\_detail} na podstawie struktury \code{build\_outline()} -- ukrycie linku
+w~interfejsie nie jest jedynym zabezpieczeniem.
+
+\section{Aktywność: dobór wersji lekcji i~rekomendacja stylu}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=0.5cm]
+  \node[startst] (s) {};
+  \node[act,below=of s] (a1) {Otwarcie lekcji};
+  \node[dec,below=of a1] (d1) {wersje\\włączone?};
+  \node[act,right=1.4cm of d1] (b1) {Treść podstawowa};
+  \node[dec,below=of d1] (d2) {wybrano\\\code{?wersja=}?};
+  \node[act,right=1.4cm of d2] (b2) {Wybrana wersja\\lub podstawowa};
+  \node[dec,below=of d2] (d3) {jest wersja\\dla stylu?};
+  \node[act,right=1.4cm of d3] (b3) {Treść podstawowa};
+  \node[act,below=of d3] (v) {Wersja dla stylu ucznia};
+  \node[act,below=0.9cm of v] (c) {Ukończenie lekcji -- zapis\\wersji w~\code{LessonProgress}};
+  \node[act,below=of c] (t) {Test -- podejście dostaje\\styl (\code{style\_for\_attempt})};
+  \node[act,below=of t] (an) {Analiza: wynik ważony\\$w_s$ dla każdego stylu};
+  \node[dec,below=of an] (d4) {styl z~$\ge$2 testami\\lepszy o~$\ge$5 pp?};
+  \node[act,right=1.4cm of d4] (r1) {Rekomendacja\\zmiany stylu};
+  \node[act,left=1.4cm of d4] (r2) {Potwierdzenie stylu\\lub ,,za mało danych''};
+  \node[endst,below=1.0cm of d4] (e) {};
+  \draw[arr] (s) -- (a1); \draw[arr] (a1) -- (d1);
+  \draw[arr] (d1) -- node[above,note]{nie} (b1);
+  \draw[arr] (d1) -- node[right,note]{tak} (d2);
+  \draw[arr] (d2) -- node[above,note]{tak} (b2);
+  \draw[arr] (d2) -- node[right,note]{nie} (d3);
+  \draw[arr] (d3) -- node[above,note]{nie} (b3);
+  \draw[arr] (d3) -- node[right,note]{tak} (v);
+  \draw[arr] (v) -- (c);
+  \foreach \x in {b1,b2,b3} \draw[arr] (\x.east) -- ++(0.4,0) |- (c.east);
+  \draw[arr] (c) -- (t); \draw[arr] (t) -- (an); \draw[arr] (an) -- (d4);
+  \draw[arr] (d4) -- node[above,note]{tak} (r1);
+  \draw[arr] (d4) -- node[above,note]{nie} (r2);
+  \draw[arr] (r1) |- (e); \draw[arr] (r2) |- (e);
+\end{tikzpicture}
+\caption{Diagram aktywności -- dobór wersji lekcji i~rekomendacja stylu uczenia się}\label{fig:act-style}
+\end{figure}
+
+Rekomendacja jest wyliczana przy każdym wejściu na stronę stylu i~na lekcję (dla zalogowanego
+ucznia), więc zawsze odzwierciedla bieżące wyniki. System nigdy nie zmienia stylu sam -- decyzję
+podejmuje uczeń. Szczegóły wzoru opisano w~rozdziale~\ref{sec:styles-algo}.
+

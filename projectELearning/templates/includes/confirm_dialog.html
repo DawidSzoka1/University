@@ -1,0 +1,27 @@
+{# Reusable accessible custom confirmation dialog for the entire application #}
+<dialog id="app-confirm-dialog" class="confirm-dialog" aria-labelledby="confirm-dialog-title" aria-describedby="confirm-dialog-message">
+    <div class="confirm-dialog__card">
+        <div class="confirm-dialog__lead">
+            <span class="confirm-dialog__icon confirm-dialog__icon--warning" aria-hidden="true" data-confirm-icon>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </span>
+            <div class="confirm-dialog__text">
+                <h2 id="confirm-dialog-title" class="confirm-dialog__title">Potwierdzenie operacji</h2>
+                <p id="confirm-dialog-message" class="confirm-dialog__message">Czy na pewno chcesz wykonać tę akcję?</p>
+            </div>
+        </div>
+
+        <div class="confirm-dialog__actions">
+            <button type="button" class="btn btn--ghost" data-confirm-cancel>
+                Anuluj
+            </button>
+            <button type="button" class="btn btn--primary" data-confirm-accept>
+                Potwierdź
+            </button>
+        </div>
+    </div>
+</dialog>

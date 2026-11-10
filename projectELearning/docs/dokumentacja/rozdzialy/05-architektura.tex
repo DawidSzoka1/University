@@ -1,0 +1,184 @@
+\chapter{Architektura systemu}
+
+\section{Styl architektoniczny}
+
+Platforma jest \textbf{modularnym monolitem} w~architekturze MVT (Model -- View --
+Template) frameworka Django. Jeden proces aplikacji obsługuje zarówno strony HTML
+renderowane po stronie serwera, jak i~niewielkie REST API (Django REST Framework) dla
+komponentów dynamicznych. Kod domenowy jest podzielony na siedem aplikacji Django;
+każda z~nich zawiera modele, widoki (funkcje -- FBV), formularze, adresy URL z~własną
+przestrzenią nazw, szablony i~testy. Logika, która wykracza poza obsługę żądania, jest
+wydzielona do modułów usługowych (np.\ \code{services.py}, \code{permissions.py},
+\code{curriculum.py}, \code{quizzes.py}, \code{payments.py}, \code{llm.py}), dzięki czemu
+widoki pozostają cienkie, a~reguły biznesowe można testować w~izolacji.
+
+\section{Widok wdrożeniowy}
+
+Środowisko uruchomieniowe definiuje plik \code{docker-compose.yml}. Usługi podstawowe
+startują zawsze, a~usługi wymagające dodatkowej konfiguracji (model AI, przekazywanie
+webhooków Stripe) są dołączane profilami.
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[node distance=0.8cm]
+  % host docker
+  \node[draw=ink,fill=white,minimum width=12.4cm,minimum height=7.4cm,anchor=north west] (host) at (0,0) {};
+  \node[font=\sffamily\scriptsize\bfseries,anchor=north west] at (host.north west) {\guillemotleft device\guillemotright{} Serwer / komputer dewelopera -- Docker Compose};
+  \node[boxd,text width=3.6cm,minimum height=2.4cm] (web) at (3.0,-2.0) {\textbf{web}\\[2pt]Python 3.13, Django 5.1\\runserver / gunicorn\\port 8000\\[2pt]{\tiny wolumeny: media, static}};
+  \node[box,text width=2.6cm,minimum height=1.3cm] (db) at (3.0,-5.6) {\textbf{db}\\PostgreSQL 16\\wolumen \code{postgres\_data}};
+  \node[box,text width=2.4cm,minimum height=1.3cm] (redis) at (7.0,-5.6) {\textbf{redis}\\Redis 7\\pamięć podręczna};
+  \node[box,text width=2.6cm,minimum height=1.3cm,dashed] (oll) at (7.4,-2.0) {\textbf{ollama}\\profil \code{ai}\\Bielik 7B (GGUF)};
+  \node[box,text width=2.4cm,minimum height=1.3cm,dashed] (scli) at (10.6,-2.0) {\textbf{stripe-cli}\\profil \code{stripe}\\\code{stripe listen}};
+  \draw[arr] (web) -- node[left,note]{psycopg / 5432} (db);
+  \draw[arr] (web) -- node[above,note,sloped]{6379} (redis);
+  \draw[arr] (web) -- node[above,note]{HTTP 11434} (oll);
+  \draw[arr] (scli.south) |- node[pos=0.25,right,note]{webhook} ($(web.east)+(0,-0.8)$);
+  % zewnętrzne
+  \node[ext,text width=2.6cm] (br) at (-3.2,-2.0) {\textbf{Przeglądarka}\\HTML, CSS, JS\\(bez frameworka)};
+  \node[ext,text width=2.6cm] (oauth) at (-3.2,-4.6) {\textbf{Discord, GitLab,}\\\textbf{Bitbucket}\\OAuth2};
+  \node[ext,text width=2.6cm] (stripe) at (10.6,-4.6) {\textbf{Stripe API}\\Checkout (test)};
+  \node[ext,text width=2.6cm] (smtp) at (-3.2,-6.6) {\textbf{Serwer SMTP}\\(lub konsola w~dev)};
+  \draw[arr,<->] (br) -- node[above,note]{HTTP :8000} (web);
+  \draw[arr] (web.west) ++(0,-0.6) -- node[above,note,sloped]{HTTPS} (oauth.east);
+  \draw[arr] (web.south west) -- node[above,note,sloped]{SMTP} (smtp.east);
+  \draw[arr] (web.east) ++(0,-0.4) -- node[below,note,sloped,pos=0.6]{HTTPS (API)} (stripe.north west);
+  \draw[darr] (stripe) -- node[right,note]{zdarzenia} (scli);
+\end{tikzpicture}}
+\caption{Diagram wdrożenia -- usługi Docker Compose i~systemy zewnętrzne}\label{fig:deploy}
+\end{figure}
+
+\begin{table}[H]
+\centering\small
+\caption{Usługi środowiska uruchomieniowego}
+\begin{tabularx}{\linewidth}{@{}lP{2.6cm}P{2.6cm}L@{}}
+\toprule
+\hd{Usługa} & \hd{Obraz} & \hd{Port na hoście} & \hd{Rola} \\
+\midrule
+\code{web} & \code{Dockerfile} projektu & 8000 & Aplikacja Django; przy starcie wykonuje migracje. \\
+\code{db} & \code{postgres:16-alpine} & 127.0.0.1:5433 & Baza danych; kontrola gotowości \code{pg\_isready}. \\
+\code{redis} & \code{redis:7-alpine} & 127.0.0.1:6380 & Pamięć podręczna Django. \\
+\code{ollama} & \code{ollama/ollama} & 127.0.0.1:11434 & Model Bielik (profil \code{ai}); alternatywnie Ollama na hoście z~GPU. \\
+\code{stripe-cli} & \code{stripe/stripe-cli} & -- & Przekazuje webhooki testowe do \code{web}, zapisuje sekret \code{whsec\_} (profil \code{stripe}). \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Porty bazy i~Redisa są na hoście przesunięte (5433, 6380), aby nie kolidowały z~lokalnie
+zainstalowanymi usługami; wewnątrz sieci Compose aplikacja łączy się po nazwach
+\code{db:5432} i~\code{redis:6379}.
+
+\section{Widok komponentów}
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+  \tikzset{app/.style={draw=ink,fill=paper,font=\sffamily\scriptsize,align=center,minimum width=2.7cm,minimum height=1.25cm,text width=2.6cm}}
+  \node[app,fill=paperdark] (core) at (6,0) {\textbf{core}\\motywy, powiadomienia,\\strona główna};
+  \node[app] (acc) at (0,0) {\textbf{accounts}\\CustomUser, role,\\OAuth2, JWT};
+  \node[app] (cat) at (3,2.6) {\textbf{catalog}\\kategorie, kursy,\\komentarze, moderacja};
+  \node[app] (lea) at (9,2.6) {\textbf{learning}\\program, testy, postęp,\\dyplomy, style uczenia};
+  \node[app] (ord) at (3,-2.6) {\textbf{orders}\\koszyk, zamówienia,\\Stripe, kody};
+  \node[app] (chat) at (9,-2.6) {\textbf{chatbot}\\asystent Bielik,\\API, historia};
+  \node[app] (gal) at (12,0) {\textbf{gallery}\\zdjęcia, układy,\\slajder};
+  \draw[darr] (cat) -- (acc); \draw[darr] (cat) -- (core);
+  \draw[darr] (lea) -- (cat); \draw[darr] (lea) -- (core);
+  \draw[darr] (ord) -- (cat); \draw[darr] (ord) -- (core); \draw[darr] (ord) -- (acc);
+  \draw[darr] (chat) -- (lea); \draw[darr] (chat) -- (core);
+  \draw[darr] (gal) -- (core); \draw[darr] (gal) to[bend right=40] (cat);
+  \draw[darr] (core) -- (acc);
+  \node[note,anchor=north] at (6,-3.7) {strzałka przerywana = zależność (import modeli lub usług)};
+\end{tikzpicture}}
+\caption{Aplikacje Django i~zależności między nimi}\label{fig:komponenty}
+\end{figure}
+
+Centralnym elementem jest aplikacja \code{core}: dostarcza funkcję \code{notify()} do
+tworzenia powiadomień, paginację (\code{paginate\_queryset}), obliczenia kolorów,
+formatowanie kwot (\code{format\_pln}), skalowanie obrazów oraz procesory kontekstu
+wspólne dla wszystkich szablonów. Aplikacja \code{catalog} definiuje kurs -- obiekt, do
+którego odwołuje się większość pozostałych modułów.
+
+\section{Warstwy aplikacji}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+  \tikzset{layer/.style={draw=ink,fill=paper,minimum width=13cm,minimum height=1.05cm,font=\sffamily\scriptsize,align=center,text width=12.6cm}}
+  \node[layer,fill=white] (l1) at (0,0) {\textbf{Prezentacja} -- szablony Django (\code{templates/}, \code{apps/*/templates/}), \code{static/css/main.css}, moduły JS (nawigacja, modale, czat, koszyk, slajder, DnD)};
+  \node[layer] (l2) at (0,-1.3) {\textbf{Widoki i~API} -- funkcje widoków (FBV), widoki DRF z~\code{JWTAuthentication}, formularze z~walidacją, dekoratory \code{login\_required}, \code{require\_POST}};
+  \node[layer,fill=paperdark] (l3) at (0,-2.6) {\textbf{Usługi domenowe} -- \code{permissions}, \code{comments}, \code{curriculum}, \code{quizzes}, \code{styles}, \code{cart}, \code{services}, \code{payments}, \code{conversation}, \code{llm}, \code{colors}, \code{notifications}};
+  \node[layer] (l4) at (0,-3.9) {\textbf{Model danych} -- modele ORM, \code{QuerySet}-y, sygnały (reputacja, scalanie koszyka, dane OAuth), migracje};
+  \node[layer,fill=white] (l5) at (0,-5.2) {\textbf{Infrastruktura} -- PostgreSQL, Redis, system plików (media), Ollama, Stripe, SMTP, dostawcy OAuth2};
+  \foreach \a/\b in {l1/l2,l2/l3,l3/l4,l4/l5} \draw[arr] (\a) -- (\b);
+\end{tikzpicture}
+\caption{Warstwy logiczne aplikacji}
+\end{figure}
+
+\section{Obsługa żądania}
+
+Typowe żądanie przechodzi przez łańcuch middleware Django (sesja, CSRF, uwierzytelnianie,
+komunikaty, CORS, allauth), trafia do funkcji widoku wskazanej przez \code{config/urls.py}
+i~adresy aplikacji, a~ta:
+
+\begin{enumerate}
+  \item sprawdza uprawnienia funkcją z~modułu \code{permissions} (lub \code{curriculum},
+        \code{quizzes}) -- w~razie braku zwraca 403/404,
+  \item dla POST waliduje formularz; przy błędzie renderuje go ponownie z~danymi
+        użytkownika i~opisami błędów,
+  \item wywołuje usługę domenową, która w~transakcji zmienia stan i~ewentualnie tworzy
+        powiadomienia (e-maile wysyłane są po zatwierdzeniu transakcji przez
+        \code{transaction.on\_commit}),
+  \item dodaje komunikat (\code{django.contrib.messages}) i~przekierowuje (wzorzec
+        Post/Redirect/Get), albo dla żądań \code{fetch} zwraca JSON.
+\end{enumerate}
+
+Procesory kontekstu dokładają do każdego szablonu: kolory aktywnego motywu
+(\code{theme\_colors}), liczbę nieprzeczytanych powiadomień, liczbę pozycji w~koszyku
+oraz nazwę modelu asystenta.
+
+\section{Struktura katalogów}
+
+\begin{lstlisting}
+config/              ustawienia, główne adresy URL, WSGI/ASGI
+apps/core/           motywy (colors.py), powiadomienia, paginacja, dane demo
+apps/accounts/       CustomUser, formularze logowania/rejestracji, adapter allauth, JWT
+apps/catalog/        kategorie MPTT, kursy, komentarze, uprawnienia, moderacja
+apps/learning/       sekcje, lekcje, testy, podejścia, dyplomy PDF, style uczenia się
+apps/orders/         koszyk, zamówienia, Stripe, webhook, kody dostępu, e-maile
+apps/chatbot/        asystent: klient Ollamy, rozmowy, API strumieniowe
+apps/gallery/        zdjęcia, układy slajdera, konfigurator
+templates/           base.html, includes/ (navbar, paginacja, dialog, pusty stan)
+static/css/main.css  autorski system stylów (tokeny kolorów, komponenty)
+static/js/           main.js, chatbot.js, cart.js, gallery_*.js, comments.js, ...
+scripts/seed_data.py dane demonstracyjne (wrapper na manage.py seed_demo)
+docs/                instrukcje: Windows, Stripe, asystent Bielik, ta dokumentacja
+\end{lstlisting}
+
+\section{Technologie}
+
+\begin{table}[H]
+\centering\small
+\caption{Stos technologiczny}
+\begin{tabularx}{\linewidth}{@{}P{3.6cm}P{3.3cm}L@{}}
+\toprule
+\hd{Obszar} & \hd{Technologia} & \hd{Zastosowanie} \\
+\midrule
+Framework & Django 5.1 & ORM, widoki, szablony, formularze, migracje, panel admina \\
+Baza danych & PostgreSQL 16, psycopg 3 & dane aplikacji \\
+Pamięć podręczna & Redis 7 & cache Django \\
+Uwierzytelnianie & django-allauth 65 & OAuth2: Discord, GitLab, Bitbucket \\
+API & DRF 3.15, SimpleJWT 5 & API czatu i~koszyka, tokeny z~rotacją i~czarną listą \\
+Kategorie & django-mptt & drzewo kategorii, okruszki \\
+Edytor treści & django-ckeditor-5, bleach & treść kursów i~lekcji, sanityzacja \\
+Obrazy, PDF & Pillow 11, reportlab 4 & skalowanie zdjęć, dyplomy \\
+Płatności & stripe 12 & Checkout, webhook \\
+Model językowy & ollama 0.4, Bielik & asystent AI \\
+Panel admina & django-unfold & panel w~kolorach motywu \\
+Konfiguracja & django-environ & zmienne z~pliku \code{.env} \\
+Front-end & HTML5, CSS (\code{color-mix}, \code{hsl(from …)}), JavaScript ES2020 & bez bibliotek UI \\
+Fonty & Bricolage Grotesque, Atkinson Hyperlegible & lokalnie w~\code{static/fonts} \\
+Testy & unittest Django, factory-boy & testy automatyczne \\
+\bottomrule
+\end{tabularx}
+\end{table}

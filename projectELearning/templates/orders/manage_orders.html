@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Obsługa zamówień — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'catalog:moderation_submissions' %}">Moderacja</a></li>
+                    <li><span aria-current="page">Zamówienia</span></li>
+                </ol>
+            </nav>
+            <h1 class="page-head__title">Obsługa zamówień</h1>
+            <p class="page-head__lead">Podgląd wszystkich zamówień i ręczna zmiana statusu (np. przelew poza bramką). Płatności Stripe zmieniają status automatycznie.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% include "catalog/includes/moderation_nav.html" with active="orders" %}
+
+    <form method="get" class="orders-search" role="search" aria-label="Szukaj zamówień">
+        <label for="orders-q" class="form-label">Szukaj zamówienia</label>
+        <div class="orders-search__row">
+            <input type="search" id="orders-q" name="q" value="{{ query }}" class="form-control" aria-describedby="orders-q-help">
+            <button type="submit" class="btn btn--primary">Szukaj</button>
+        </div>
+        <p id="orders-q-help" class="form-help">Numer, e-mail, login albo nazwisko.</p>
+        {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+    </form>
+
+    <nav class="segmented" aria-label="Filtr statusu">
+        <a href="?{% if query %}q={{ query|urlencode }}{% endif %}" class="segmented__option"{% if not status %} aria-current="page"{% endif %}>Wszystkie <span class="segmented__count">({{ all_count }})</span></a>
+        {% for value, label, count in statuses %}
+        <a href="?status={{ value }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}" class="segmented__option"{% if status == value %} aria-current="page"{% endif %}>{{ label }} <span class="segmented__count">({{ count }})</span></a>
+        {% endfor %}
+    </nav>
+
+    {% if orders %}
+    <div class="table-wrap">
+        <table class="data-table">
+            <caption class="sr-only">Zamówienia, od najnowszego</caption>
+            <thead><tr><th scope="col">Numer</th><th scope="col">Kupujący</th><th scope="col">Data</th><th scope="col">Wartość</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <th scope="row"><a href="{{ order.get_absolute_url }}">{{ order.number }}</a></th>
+                    <td>{{ order.full_name|default:order.user.username }}<br><span class="row-list__meta">{{ order.email }}</span></td>
+                    <td>{{ order.created_at|date:"j E Y, H:i" }}</td>
+                    <td>{{ order.total|pln }}</td>
+                    <td>{% include "orders/includes/status.html" %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include "includes/pagination.html" %}
+    {% else %}
+    {% include "includes/empty_state.html" with title="Brak zamówień" description="Żadne zamówienie nie pasuje do wybranego filtra." %}
+    {% endif %}
+</div>
+{% endblock %}

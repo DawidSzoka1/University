@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}{% if course %}Edycja: {{ course.title }}{% elif user.role == 'moderator' or user.is_staff %}Nowy kurs{% else %}Zaproponuj kurs{% endif %} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block extra_css %}{{ form.media.css }}{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'catalog:course_list' %}">Kursy</a></li>
+                    {% if course %}
+                    <li><a href="{% url 'catalog:course_detail' course.slug %}">{{ course.title }}</a></li>
+                    <li><span aria-current="page">Edycja</span></li>
+                    {% else %}
+                    <li><span aria-current="page">{% if user.role == 'moderator' or user.is_staff %}Nowy kurs{% else %}Propozycja kursu{% endif %}</span></li>
+                    {% endif %}
+                </ol>
+            </nav>
+            <h1 class="page-head__title">{% if course %}Edycja kursu{% elif user.role == 'moderator' or user.is_staff %}Nowy kurs{% else %}Zaproponuj kurs{% endif %}</h1>
+            <p class="page-head__lead">
+                {% if not course or course.status == 'draft' %}
+                    Zacznij od danych kursu. Zapiszemy go jako szkic, który widzisz tylko Ty — w następnym kroku
+                    dodasz sekcje i lekcje, a na końcu {% if user.is_staff or user.role == 'admin' or user.role == 'moderator' %}opublikujesz kurs (w swoich kategoriach od razu, w innych po akceptacji){% else %}wyślesz go do akceptacji nauczyciela{% endif %}.
+                {% elif course.status == 'approved' %}
+                    {% if user.is_staff or user.role == 'admin' or user.role == 'moderator' %}Zmiany w kategoriach, które prowadzisz, są widoczne od razu.{% else %}Zmiany w opublikowanym kursie wymagają ponownej akceptacji — do tego czasu kurs nie będzie widoczny w katalogu.{% endif %}
+                {% else %}
+                    Kurs ma status „{{ course.get_status_display|lower }}”. Zmiany zapiszą się bez zmiany statusu.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% if not course or course.status == 'draft' or course.status == 'rejected' %}
+    {% include "includes/course_stepper.html" with step=1 %}
+    {% endif %}
+    {% if course and course.status == 'rejected' and course.rejection_reason %}
+    <p class="notice notice--danger"><strong>Kurs został odrzucony.</strong> Powód: {{ course.rejection_reason }} Popraw kurs i wyślij go ponownie w kroku „Publikacja”.</p>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="form-sheet form-sheet--wide" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="auth-alert auth-alert--error" role="alert">
+            <span class="auth-alert__icon" aria-hidden="true">!</span>
+            <div class="auth-alert__body">
+                {% for error in form.non_field_errors %}<p class="auth-alert__message">{{ error }}</p>{% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <p class="form-note">Pola oznaczone <span aria-hidden="true">*</span><span class="sr-only">gwiazdką</span> są wymagane.</p>
+
+        <fieldset class="form-sheet__section">
+            <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">01</span> Podstawy</legend>
+            {% include "includes/form_field.html" with field=form.title show_required=True %}
+            {% include "includes/form_field.html" with field=form.category show_required=True %}
+            {% include "includes/form_field.html" with field=form.description show_required=True help=True %}
+        </fieldset>
+
+        <fieldset class="form-sheet__section">
+            <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">02</span> O kursie</legend>
+            <div class="form-group form-group--editor{% if form.description_html.errors %} form-group--error{% endif %}">
+                <label for="{{ form.description_html.id_for_label }}" id="{{ form.description_html.auto_id }}-label" class="form-label">{{ form.description_html.label }}</label>
+                <p class="form-help" id="{{ form.description_html.auto_id }}_helptext">{{ form.description_html.help_text }}</p>
+                {{ form.description_html }}
+                {% if form.description_html.errors %}
+                <p class="form-field-error" id="{{ form.description_html.auto_id }}-error">{{ form.description_html.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </fieldset>
+
+        <fieldset class="form-sheet__section">
+            <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">03</span> Poziom i cena</legend>
+            <div class="form-row form-row--3">
+                {% include "includes/form_field.html" with field=form.difficulty_level %}
+                {% include "includes/form_field.html" with field=form.duration_hours %}
+                {% include "includes/form_field.html" with field=form.price show_required=True help=True %}
+            </div>
+        </fieldset>
+
+        <fieldset class="form-sheet__section">
+            <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">04</span> Miniatura i dyplom</legend>
+            {% include "includes/form_field.html" with field=form.thumbnail help=True %}
+            <div class="form-group form-group--checkbox">
+                <label class="checkbox-label" for="{{ form.has_certificate.id_for_label }}">{{ form.has_certificate }} <span>{{ form.has_certificate.label }}</span></label>
+                <p class="form-help" id="{{ form.has_certificate.auto_id }}_helptext">{{ form.has_certificate.help_text }}</p>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-sheet__section">
+            <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">05</span> Style uczenia się</legend>
+            <fieldset class="checkbox-group" aria-describedby="{{ form.recommended_styles.auto_id }}_helptext">
+                <legend class="form-label">{{ form.recommended_styles.label }}</legend>
+                <p class="form-help" id="{{ form.recommended_styles.auto_id }}_helptext">{{ form.recommended_styles.help_text }}</p>
+                {% for checkbox in form.recommended_styles %}
+                <label class="checkbox-label" for="{{ checkbox.id_for_label }}">{{ checkbox.tag }} <span>{{ checkbox.choice_label }}</span></label>
+                {% endfor %}
+            </fieldset>
+        </fieldset>
+
+        <div class="form-sheet__actions">
+            <button type="submit" class="btn btn--primary btn--lg">
+                {% if course %}Zapisz zmiany{% else %}Zapisz szkic i przejdź do programu <span aria-hidden="true">→</span>{% endif %}
+            </button>
+            <a href="{% if course %}{% url 'catalog:course_detail' course.slug %}{% else %}{% url 'catalog:course_list' %}{% endif %}" class="btn btn--ghost">Anuluj</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ form.media.js }}
+<script>
+    // Edytowalny obszar CKEditora dostaje nazwę z widocznej etykiety i opis pomocy/błędu.
+    (function () {
+        var id = "{{ form.description_html.auto_id }}";
+        window.ckeditorRegisterCallback && window.ckeditorRegisterCallback(id, function (editor) {
+            var editable = editor.ui.view.editable.element;
+            var described = [id + "_helptext"];
+            if (document.getElementById(id + "-error")) {
+                described.push(id + "-error");
+                editable.setAttribute("aria-invalid", "true");
+            }
+            editable.setAttribute("aria-labelledby", id + "-label");
+            editable.setAttribute("aria-describedby", described.join(" "));
+            document.getElementById(id + "-label").addEventListener("click", function () { editor.editing.view.focus(); });
+        });
+    }());
+</script>
+{% endblock %}

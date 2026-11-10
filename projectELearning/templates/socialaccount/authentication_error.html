@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Błąd autoryzacji zewnętrznej — E-Learning{% endblock %}
+
+{% block content %}
+<div class="auth-card-wrapper">
+    <div class="auth-card auth-card--error" role="region" aria-labelledby="auth-error-heading">
+        <div class="auth-card__badge auth-card__badge--error" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+        </div>
+
+        <h1 id="auth-error-heading" class="auth-card__title">
+            Niepowodzenie logowania zewnętrznego
+        </h1>
+
+        <p class="auth-card__desc">
+            Wystąpił błąd podczas próby logowania lub autoryzacji za pośrednictwem zewnętrznego portalu.
+        </p>
+
+        {% if exception %}
+        <div class="auth-card__notice auth-card__notice--warning" role="alert">
+            <p><strong>Komunikat serwera zewnętrznego:</strong> <code>{{ exception }}</code></p>
+        </div>
+        {% endif %}
+
+        <div class="auth-card__notice auth-card__notice--warning" role="note">
+            <p>
+                <strong>Dlaczego to widzę?</strong>
+                Jeśli testujesz aplikację lokalnie z demonstracyjnymi kluczami w <code>.env</code>, zewnętrzny portal (Discord, GitLab lub Bitbucket) odrzuca połączenie z powodu braku zarejestrowanej aplikacji w portalu dla deweloperów.
+            </p>
+        </div>
+
+        <div class="auth-card__footer auth-card__footer--stacked">
+            <a href="{% url 'accounts:login' %}" class="btn btn--primary auth-card__submit-btn">
+                Wróć do logowania standardowego
+            </a>
+            <a href="{% url 'core:home' %}" class="auth-card__back-link">
+                &larr; Przejdź do strony głównej
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

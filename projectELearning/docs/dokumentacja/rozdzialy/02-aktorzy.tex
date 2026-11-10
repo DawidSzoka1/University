@@ -1,0 +1,111 @@
+\chapter{Aktorzy i~role}
+
+\section{Charakterystyka aktorów}
+
+System rozróżnia trzy role użytkowników zapisane w~polu \code{CustomUser.role}
+(\code{student}, \code{moderator}, \code{admin}) oraz osobę niezalogowaną. Uzupełniają je
+trzy aktory systemowe -- zewnętrzne usługi, z~którymi platforma wymienia dane.
+
+\begin{description}[style=nextline,leftmargin=0.6cm,font=\sffamily\bfseries]
+  \item[Gość] Osoba niezalogowana. Przegląda stronę główną, katalog, szczegóły kursów,
+        galerię i~lekcje oznaczone jako ,,podgląd''. Może zbierać kursy w~koszyku (koszyk
+        jest przypięty do sesji i~po zalogowaniu łączy się z~koszykiem konta), wybrać motyw
+        (zapamiętany w~sesji), założyć konto lub zalogować się.
+  \item[Uczeń] (\code{student}) Domyślna rola każdego nowego konta. Kupuje i~zapisuje się
+        na kursy, przerabia lekcje, rozwiązuje testy, pobiera dyplomy, komentuje i~ocenia
+        kursy, głosuje na komentarze innych, rozmawia z~asystentem AI, proponuje własne
+        kursy (trafiają do akceptacji), zarządza profilem i~motywem, wybiera i~zmienia swój styl
+        uczenia się, wypełnia ankietę stylu, przegląda analizę swoich wyników z~rekomendacją stylu
+        oraz kursy polecane dla swojego profilu, zmienia hasło.
+  \item[Nauczyciel] (\code{moderator}) Wszystko, co uczeń, a~ponadto: tworzy kursy, które
+        w~jego kategoriach publikują się od razu, akceptuje lub odrzuca zgłoszenia kursów
+        i~prowadzi w~nich dyskusję, akceptuje komentarze, ocenia testy otwarte, obsługuje
+        zamówienia, przygotowuje wersje lekcji dla stylów uczenia się, zaznacza style,
+        dla których kurs jest szczególnie odpowiedni, przegląda postępy uczniów swoich kursów
+        (i~kursów swoich kategorii), dodaje zdjęcia do galerii i~zarządza podkategoriami swojej gałęzi.
+        Uprawnienia moderacyjne obowiązują tylko w~kategoriach, do których przypisał go
+        administrator (wraz z~ich podkategoriami).
+  \item[Administrator] (\code{admin}) Pełne uprawnienia moderatora we wszystkich
+        kategoriach, a~ponadto zarządzanie całym drzewem kategorii i~przydziałem
+        nauczycieli, układami slajdera, motywami kolorystycznymi (wraz z~motywem
+        domyślnym), słownikiem stylów uczenia się i~pytaniami ankiety, statystykami platformy oraz kontami w~panelu administracyjnym.
+  \item[Model językowy] (aktor systemowy) Bielik uruchomiony w~Ollamie. Otrzymuje prompt
+        z~kontekstem lekcji i~historią rozmowy, zwraca odpowiedź strumieniowo.
+  \item[Bramka płatności] (aktor systemowy) Stripe w~trybie testowym. Obsługuje stronę
+        płatności i~powiadamia platformę o~opłaceniu przez webhook.
+  \item[Dostawca tożsamości] (aktor systemowy) Discord, GitLab lub Bitbucket. Uwierzytelnia
+        użytkownika w~protokole OAuth2 i~przekazuje imię, nazwisko, e-mail oraz awatar.
+\end{description}
+
+Każde konto ma dokładnie jedną rolę. Rejestracja -- zarówno formularzem, jak i~przez
+portal OAuth2 -- zawsze tworzy ucznia; rolę nauczyciela lub administratora nadaje
+administrator. W~interfejsie rola \code{moderator} jest wyświetlana jako ,,Nauczyciel
+(moderator)''.
+
+\section{Hierarchia aktorów}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=1.2cm]
+  \actor{g}{0,0}{Gość}
+  \actor{s}{3.2,0}{Uczeń}
+  \actor{t}{6.4,0}{Nauczyciel}
+  \actor{a}{9.6,0}{Administrator}
+  \draw[-{Triangle[open,length=3mm]},ink] (2.75,0.1) -- (0.45,0.1);
+  \draw[-{Triangle[open,length=3mm]},ink] (5.95,0.1) -- (3.65,0.1);
+  \draw[-{Triangle[open,length=3mm]},ink] (9.15,0.1) -- (6.85,0.1);
+  \actor{m}{1.6,-2.6}{Model językowy\\[-2pt]{\tiny\textlangle\textlangle system\textrangle\textrangle}}
+  \actor{p}{4.8,-2.6}{Bramka płatności\\[-2pt]{\tiny\textlangle\textlangle system\textrangle\textrangle}}
+  \actor{o}{8,-2.6}{Dostawca tożsamości\\[-2pt]{\tiny\textlangle\textlangle system\textrangle\textrangle}}
+\end{tikzpicture}
+\caption{Aktorzy systemu i~relacje generalizacji (strzałka wskazuje aktora ogólniejszego)}
+\end{figure}
+
+Relacja generalizacji oznacza, że aktor bardziej wyspecjalizowany dziedziczy wszystkie
+przypadki użycia aktora ogólniejszego: nauczyciel może robić wszystko, co uczeń, a~ten --
+wszystko, co gość (poza rejestracją i~logowaniem, które tracą sens po zalogowaniu).
+
+\section{Macierz uprawnień}
+
+Tabela~\ref{tab:uprawnienia} zestawia najważniejsze operacje z~rolami. Oznaczenie
+,,kat.'' oznacza, że operacja jest dozwolona tylko w~kategoriach, którymi dany nauczyciel
+moderuje; ,,wł.'' -- tylko dla własnych obiektów.
+
+\begin{table}[H]
+\centering\small
+\caption{Macierz uprawnień ról}\label{tab:uprawnienia}
+\begin{tabularx}{\linewidth}{@{}L>{\centering\arraybackslash}p{1.1cm}>{\centering\arraybackslash}p{1.1cm}>{\centering\arraybackslash}p{1.85cm}>{\centering\arraybackslash}p{1.4cm}@{}}
+\toprule
+\hd{Operacja} & \hd{Gość} & \hd{Uczeń} & \hd{Nauczyciel} & \hd{Admin} \\
+\midrule
+Przeglądanie katalogu, galerii, lekcji-podglądów & tak & tak & tak & tak \\
+Koszyk i~wybór motywu & tak & tak & tak & tak \\
+Zakup, zapis na kurs, nauka, testy, dyplomy & -- & tak & tak & tak \\
+Komentarz pod kursem; ocena 1--5 po zapisie na kurs & -- & tak & tak & tak \\
+Głos na komentarz innej osoby & -- & tak & tak & tak \\
+Rozmowa z~asystentem AI & -- & tak & tak & tak \\
+Wybór i~zmiana stylu uczenia się, ankieta, analiza wyników & -- & tak & tak & tak \\
+Polecane kursy (,,Polecane dla Ciebie'', sortowanie wg dopasowania) & -- & tak & tak & tak \\
+Zmiana hasła & -- & tak & tak & tak \\
+Utworzenie kursu & -- & zgłosz. & kat.: publ. & publ. \\
+Edycja kursu i~programu, wersje lekcji dla stylów & -- & wł. & wł. + kat. & tak \\
+Akceptacja kursów i~komentarzy & -- & -- & kat. & tak \\
+Panel postępów uczniów kursu & -- & wł. kurs & wł. + kat. & tak \\
+Ocena testów otwartych & -- & wł. kurs & wł. + kat. & tak \\
+Obsługa zamówień (zmiana statusu) & -- & -- & tak & tak \\
+Dodawanie zdjęć do galerii & -- & -- & tak & tak \\
+Układy slajdera & -- & -- & -- & tak \\
+Kategorie: podkategorie własnej gałęzi & -- & -- & kat. & tak \\
+Kategorie: całe drzewo, przydział moderatorów & -- & -- & -- & tak \\
+Motywy kolorystyczne (panel admina) & -- & -- & -- & tak \\
+Słownik stylów i~pytania ankiety (panel admina) & -- & -- & -- & tak \\
+Statystyki platformy & -- & -- & -- & tak \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Uprawnienia są egzekwowane w~funkcjach z~modułów \code{apps/catalog/permissions.py},
+\code{apps/learning/curriculum.py}, \code{apps/learning/quizzes.py}, \code{apps/learning/styles.py} i~\code{apps/orders/services.py},
+wywoływanych bezpośrednio w~widokach. Próba wejścia na adres bez uprawnień kończy się
+odpowiedzią 403 lub 404 (dla zasobów, których istnienia nie należy ujawniać, np.\
+szkiców cudzych kursów).

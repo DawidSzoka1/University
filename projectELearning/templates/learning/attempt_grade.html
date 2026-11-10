@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Ocena: {{ quiz.title }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'learning:grading_queue' %}">Do oceny</a></li>
+                    <li><span aria-current="page">{{ quiz.title }}</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">{{ attempt.user.get_full_name|default:attempt.user.username }} · kurs „{{ course.title }}” · {{ attempt.submitted_at|date:"j E Y, H:i" }}</p>
+            <h1 class="page-head__title">Oceń test</h1>
+            <p class="page-head__lead">Przyznaj punkty za odpowiedzi otwarte. Pytania ABC są już policzone. Próg zaliczenia: {{ quiz.pass_percent }}% z {{ quiz.max_score }} pkt.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    <form method="post" class="grade-form" novalidate>
+        {% csrf_token %}
+        <ol class="answers">
+            {% for a in answers %}
+            <li class="answer{% if a.question.is_open %} answer--open{% endif %}">
+                <h2 class="answer__title">Pytanie {{ forloop.counter }} <span class="question__points">{{ a.question.get_question_type_display }}</span></h2>
+                {% include "learning/includes/answer_review.html" with reveal=True %}
+                {% if a.grade_form %}
+                <div class="grade-form__fields">
+                    {% include "includes/form_field.html" with field=a.grade_form.points help=True show_required=True %}
+                    {% include "includes/form_field.html" with field=a.grade_form.feedback %}
+                </div>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+        <div class="form-group">
+            <label for="overall-feedback" class="form-label">Komentarz do całego testu (opcjonalnie)</label>
+            <textarea name="overall_feedback" id="overall-feedback" class="form-control" rows="3" maxlength="3000">{{ attempt.feedback }}</textarea>
+        </div>
+        <div class="comment-form__actions">
+            <button type="submit" class="btn btn--primary">Zapisz ocenę i powiadom ucznia</button>
+            <a href="{% url 'learning:grading_queue' %}" class="btn btn--ghost">Wróć do kolejki</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "orders/emails/_layout.html" %}
+{% load core_tags %}
+{% block title %}Zamówienie {{ order.number }} — oczekuje na płatność{% endblock %}
+{% block body %}
+<p style="margin:0 0 12px;">Dzień dobry {{ order.first_name }},</p>
+<p style="margin:0 0 12px;">dziękujemy za zamówienie <strong>{{ order.number }}</strong>. Zamówienie zostało przyjęte i <strong>oczekuje na płatność</strong> ({{ order.total|pln }}).</p>
+<p style="margin:0 0 20px;">Jeśli płatność nie została jeszcze dokończona, możesz ją opłacić w szczegółach zamówienia. Kursy odblokujemy automatycznie, gdy bramka potwierdzi wpłatę.</p>
+<p style="margin:0;"><a href="{{ order_url }}" style="display:inline-block;padding:12px 20px;background:{{ palette.primary }};color:{{ palette.on_primary }};font-weight:bold;text-decoration:none;">Zobacz zamówienie i zapłać</a></p>
+{% endblock %}

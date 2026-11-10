@@ -1,0 +1,26 @@
+{# Kroki tworzenia kursu: 1 dane, 2 program, 3 publikacja. step = numer bieżącego kroku. #}
+<nav class="stepper" aria-label="Kroki tworzenia kursu">
+    <ol class="stepper__list">
+        <li class="stepper__step{% if step > 1 %} is-done{% endif %}">
+            {% if course and step != 1 %}
+            <a href="{% url 'catalog:course_edit' course.slug %}" class="stepper__link"><span class="stepper__num" aria-hidden="true">1</span> Dane kursu{% if step > 1 %}<span class="sr-only"> (gotowe)</span>{% endif %}</a>
+            {% else %}
+            <span class="stepper__link"{% if step == 1 %} aria-current="step"{% endif %}><span class="stepper__num" aria-hidden="true">1</span> Dane kursu</span>
+            {% endif %}
+        </li>
+        <li class="stepper__step{% if step > 2 %} is-done{% endif %}">
+            {% if course and step != 2 %}
+            <a href="{% url 'learning:curriculum_edit' course.slug %}" class="stepper__link"><span class="stepper__num" aria-hidden="true">2</span> Program</a>
+            {% else %}
+            <span class="stepper__link"{% if step == 2 %} aria-current="step"{% endif %}><span class="stepper__num" aria-hidden="true">2</span> Program</span>
+            {% endif %}
+        </li>
+        <li class="stepper__step">
+            {% if course and step == 2 %}
+            <a href="#publish" class="stepper__link"><span class="stepper__num" aria-hidden="true">3</span> Publikacja</a>
+            {% else %}
+            <span class="stepper__link"{% if step == 3 %} aria-current="step"{% endif %}><span class="stepper__num" aria-hidden="true">3</span> Publikacja</span>
+            {% endif %}
+        </li>
+    </ol>
+</nav>

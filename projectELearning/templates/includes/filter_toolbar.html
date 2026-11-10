@@ -1,0 +1,90 @@
+{% load core_tags %}
+{# Wyszukiwanie, filtry i sortowanie. Zmiana pola niczego nie wysyła — dopiero przycisk „Pokaż” (WCAG 3.2.2). #}
+<section class="filter-bar" aria-label="Filtrowanie i sortowanie">
+    <form method="get" action="" class="container filter-bar__form" role="search">
+        <div class="filter-bar__field filter-bar__field--search">
+            <label for="filter-search-input" class="form-label">Szukaj kursu</label>
+            <input
+                type="search"
+                id="filter-search-input"
+                name="q"
+                value="{{ current_q }}"
+                placeholder="{{ search_placeholder|default:'np. Python, Docker, autor…' }}"
+                class="form-control"
+                autocomplete="off"
+            >
+        </div>
+
+        {% if categories %}
+        <div class="filter-bar__field">
+            <label for="filter-category" class="form-label">Kategoria</label>
+            <select name="category" id="filter-category" class="form-control" data-select-enhance>
+                <option value="">Wszystkie</option>
+                {% for cat in categories %}
+                <option value="{{ cat.slug }}"{% if current_category == cat.slug %} selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <div class="filter-bar__field">
+            <label for="filter-type" class="form-label">Cena</label>
+            <select name="type" id="filter-type" class="form-control" data-select-enhance>
+                <option value=""{% if not current_type %} selected{% endif %}>Wszystkie</option>
+                <option value="free"{% if current_type == 'free' %} selected{% endif %}>Tylko darmowe</option>
+                <option value="paid"{% if current_type == 'paid' %} selected{% endif %}>Tylko płatne</option>
+            </select>
+        </div>
+
+        {% if difficulty_choices %}
+        <div class="filter-bar__field">
+            <label for="filter-difficulty" class="form-label">Poziom</label>
+            <select name="difficulty" id="filter-difficulty" class="form-control" data-select-enhance>
+                <option value=""{% if not current_difficulty %} selected{% endif %}>Każdy</option>
+                {% for key, label in difficulty_choices %}
+                <option value="{{ key }}"{% if current_difficulty == key %} selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        {% if sort_options %}
+        <div class="filter-bar__field">
+            <label for="filter-sort" class="form-label">Sortuj</label>
+            <select name="sort" id="filter-sort" class="form-control" data-select-enhance>
+                {% for opt in sort_options %}
+                <option value="{{ opt.key }}"{% if current_sort == opt.key %} selected{% endif %}>{{ opt.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn--primary filter-bar__submit">Pokaż</button>
+    </form>
+</section>
+
+<div class="container filter-summary">
+    <p class="filter-summary__count" aria-live="polite">
+        <strong>{{ total_count|default:"0" }}</strong> {{ total_count|default:0|pl_plural:"kurs,kursy,kursów" }}
+    </p>
+
+    {% if has_active_filters %}
+    <ul class="filter-summary__chips" aria-label="Aktywne filtry">
+        {% if current_q %}
+        <li class="chip">Szukaj: „{{ current_q }}” <a href="?{% url_replace q='' page=1 %}" class="chip__remove" aria-label="Usuń filtr wyszukiwania „{{ current_q }}”">×</a></li>
+        {% endif %}
+        {% if selected_category %}
+        <li class="chip">Kategoria: {{ selected_category.name }} <a href="?{% url_replace category='' page=1 %}" class="chip__remove" aria-label="Usuń filtr kategorii {{ selected_category.name }}">×</a></li>
+        {% endif %}
+        {% if current_type == 'free' %}
+        <li class="chip">Tylko darmowe <a href="?{% url_replace type='' page=1 %}" class="chip__remove" aria-label="Usuń filtr: tylko darmowe">×</a></li>
+        {% elif current_type == 'paid' %}
+        <li class="chip">Tylko płatne <a href="?{% url_replace type='' page=1 %}" class="chip__remove" aria-label="Usuń filtr: tylko płatne">×</a></li>
+        {% endif %}
+        {% if current_difficulty %}
+        <li class="chip">Poziom: {% for key, label in difficulty_choices %}{% if key == current_difficulty %}{{ label|lower }}{% endif %}{% endfor %} <a href="?{% url_replace difficulty='' page=1 %}" class="chip__remove" aria-label="Usuń filtr poziomu">×</a></li>
+        {% endif %}
+    </ul>
+    <a href="{{ request.path }}" class="filter-summary__clear">Wyczyść filtry</a>
+    {% endif %}
+</div>

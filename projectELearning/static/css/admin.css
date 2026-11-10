@@ -1,0 +1,108 @@
+/* ===========================================================================
+   Panel administracyjny (django-unfold) — dopasowanie do platformy
+   ---------------------------------------------------------------------------
+   Kolory i tryb jasny/ciemny ustawia apps.core.colors (UNFOLD["COLORS"] i
+   UNFOLD["THEME"]) z aktywnego motywu. Ten arkusz dokłada to, czego Unfold
+   nie konfiguruje: fonty platformy, widoczny fokus i kanciasty styl.
+   Reguły są poza @layer, więc wygrywają z klasami Tailwinda Unfolda.
+   =========================================================================== */
+
+:root {
+    --font-sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-display: "Bricolage Grotesque", "Atkinson Hyperlegible", system-ui, sans-serif;
+}
+
+body {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+}
+
+/* Nagłówki stron i sekcji krojem platformy */
+h1,
+h2,
+#site-name,
+.unfold-site-title {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+}
+
+/* Widoczny fokus na każdym elemencie (Unfold często używa outline-none) */
+:focus-visible {
+    outline: 3px solid var(--color-primary-600) !important;
+    outline-offset: 2px !important;
+}
+
+.dark :focus-visible {
+    outline-color: var(--color-primary-500) !important;
+}
+
+/* Przyciski główne: pogrubione, bez zaokrągleń — jak na platformie */
+button[type="submit"],
+input[type="submit"],
+.bg-primary-600 {
+    font-weight: 700;
+}
+
+/* Podgląd 5 kolorów motywu w nagłówku panelu */
+.admin-swatch-strip {
+    display: inline-flex;
+    height: 0.875rem;
+    border: 1px solid var(--color-base-900);
+    flex-shrink: 0;
+}
+
+.dark .admin-swatch-strip {
+    border-color: var(--color-base-100);
+}
+
+.admin-swatch-strip > span {
+    width: 0.3125rem;
+}
+
+/* Menu motywów w nagłówku (klasy spoza skompilowanego Tailwinda Unfolda) */
+.admin-theme-menu {
+    width: 17rem;
+    max-width: calc(100vw - 2rem);
+}
+
+.admin-theme-menu__title {
+    letter-spacing: 0.06em;
+}
+
+.admin-theme-menu__list {
+    max-height: 18rem;
+    overflow-y: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}
+
+/* Cele dotyku ≥ 24×24 px (WCAG 2.5.8): przycisk wyszukiwania i strzałki sortowania kolumn */
+#searchbar-submit,
+#result_list thead a,
+.sortoptions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    min-height: 24px;
+}
+
+/* Tekst tylko dla czytników ekranu (nagłówki kolumn akcji uzupełniane przez admin.js) */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

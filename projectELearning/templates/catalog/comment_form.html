@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}{% if mode == 'edit' %}Edycja komentarza{% elif mode == 'reply' %}Odpowiedź na komentarz{% else %}Nowy komentarz{% endif %} — {{ course.title }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'catalog:course_list' %}">Kursy</a></li>
+                    <li><a href="{% url 'catalog:course_detail' course.slug %}">{{ course.title }}</a></li>
+                    <li><span aria-current="page">{% if mode == 'edit' %}Edycja komentarza{% elif mode == 'reply' %}Odpowiedź{% else %}Nowy komentarz{% endif %}</span></li>
+                </ol>
+            </nav>
+            <h1 class="page-head__title">{% if mode == 'edit' %}Edytuj komentarz{% elif mode == 'reply' %}Odpowiedz na komentarz{% else %}Skomentuj kurs{% endif %}</h1>
+            <p class="page-head__lead">
+                {% if mode == 'edit' and comment.is_approved %}Zmieniony komentarz wróci na stronę po ponownej akceptacji nauczyciela.{% else %}Komentarz pojawi się publicznie po akceptacji nauczyciela kategorii.{% endif %}
+            </p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% if parent %}
+    <figure class="comment-quote">
+        <blockquote class="comment-quote__text">{{ parent.content|linebreaks }}</blockquote>
+        <figcaption class="comment-quote__author">— {% if parent.author %}{{ parent.author.get_full_name|default:parent.author.username }}{% else %}konto usunięte{% endif %}</figcaption>
+    </figure>
+    {% endif %}
+
+    <form method="post" action="{% if mode == 'edit' %}{% url 'catalog:comment_edit' comment.pk %}{% else %}{% url 'catalog:comment_create' course.slug %}{% endif %}" class="comment-form comment-form--page" novalidate>
+        {% csrf_token %}
+        {% if parent and mode != 'edit' %}<input type="hidden" name="parent" value="{{ parent.pk }}">{% endif %}
+        {% include "includes/form_field.html" with field=form.content show_required=True %}
+        {% if form.rating %}{% include "catalog/includes/rating_fieldset.html" with prefix="page" current=form.rating.value %}{% endif %}
+        <div class="comment-form__actions">
+            <button type="submit" class="btn btn--primary">{% if mode == 'edit' %}Zapisz zmiany{% elif mode == 'reply' %}Wyślij odpowiedź{% else %}Opublikuj komentarz{% endif %}</button>
+            <a href="{% url 'catalog:course_detail' course.slug %}{% if comment %}#comment-{{ comment.pk }}{% else %}#comments{% endif %}" class="btn btn--ghost">Anuluj</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

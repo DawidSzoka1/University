@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load socialaccount %}
+
+{% block title %}Logowanie — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<div class="auth-split-wrapper">
+    <div class="auth-split">
+        <section class="auth-split__form-container" aria-labelledby="login-heading">
+            <div class="auth-split__form-box">
+                <header class="auth-split__header">
+                    <h1 id="login-heading" class="auth-split__title">Zaloguj się</h1>
+                    <p class="auth-split__subtitle">
+                        Nie masz konta? <a href="{% url 'accounts:register' %}" class="auth-link">Załóż je bezpłatnie</a>
+                    </p>
+                </header>
+
+                {% if pending_social %}
+                <div class="notice connect-notice" role="status">
+                    <p><strong>Łączenie z {{ pending_social.provider }}.</strong>
+                    Konto z adresem <strong>{{ pending_social.email }}</strong> już istnieje na platformie.
+                    {% if pending_has_password %}Wpisz jego hasło — po zalogowaniu połączymy je z {{ pending_social.provider }}, a następnym razem wystarczy przycisk „{{ pending_social.provider }}”.
+                    {% elif pending_providers %}To konto nie ma hasła — zaloguj się przyciskiem {{ pending_providers|join:" lub " }} poniżej, a {{ pending_social.provider }} dołączymy automatycznie.
+                    {% else %}To konto nie ma hasła ani połączonego portalu — poproś administratora o ustawienie hasła.{% endif %}</p>
+                    <form method="post" action="{% url 'accounts:social_connect_cancel' %}" class="connect-notice__cancel">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn--ghost btn--sm">Nie łącz — wróć do zwykłego logowania</button>
+                    </form>
+                </div>
+                {% endif %}
+
+                <form class="auth-form" method="post" action="{% url 'accounts:login' %}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next_url }}">
+
+                    {% if form.non_field_errors %}
+                    <div class="auth-alert auth-alert--error" role="alert">
+                        <span class="auth-alert__icon" aria-hidden="true">!</span>
+                        <div class="auth-alert__body">
+                            {% for error in form.non_field_errors %}
+                            <p class="auth-alert__message">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% include "includes/form_field.html" with field=form.login %}
+                    {% include "includes/form_field.html" with field=form.password %}
+
+                    <div class="form-group form-group--checkbox">
+                        <label class="checkbox-label" for="{{ form.remember_me.id_for_label }}">
+                            {{ form.remember_me }}
+                            <span>Zapamiętaj mnie na tym urządzeniu</span>
+                        </label>
+                    </div>
+
+                    <button class="btn btn--primary btn--lg btn--block" type="submit">Zaloguj się</button>
+                </form>
+
+                {% include "includes/social_login.html" with process="login" %}
+            </div>
+        </section>
+
+        <section class="auth-split__info" aria-labelledby="login-info-heading">
+            <div class="auth-split__info-content">
+                <p class="auth-split__tag">Wróć do nauki</p>
+                <h2 id="login-info-heading" class="auth-split__info-title">Kursy czekają w miejscu, w którym skończyła się ostatnia lekcja.</h2>
+            </div>
+            <ol class="auth-split__features">
+                <li class="auth-split__feature-item"><span class="auth-split__feature-num" aria-hidden="true">01</span><span>Postęp lekcji i wyniki testów zapisane na koncie.</span></li>
+                <li class="auth-split__feature-item"><span class="auth-split__feature-num" aria-hidden="true">02</span><span>Asystent Bielik pamięta historię rozmów z kursu.</span></li>
+                <li class="auth-split__feature-item"><span class="auth-split__feature-num" aria-hidden="true">03</span><span>Wybrany motyw kolorów działa na każdym urządzeniu.</span></li>
+            </ol>
+        </section>
+    </div>
+</div>
+{% endblock %}

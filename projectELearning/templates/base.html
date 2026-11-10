@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pl" data-theme-mode="{{ theme_mode|default:'light' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}E-Learning Platform{% endblock %}</title>
+
+    <link rel="preload" href="{% static 'fonts/bricolage-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{% static 'fonts/atkinson-400-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+    {# Motyw z bazy danych wstrzykiwany jest tylko wtedy, gdy aktywny jest motyw wybrany przez użytkownika/sesję. Dzięki temu edycja static/css/main.css natychmiast działa w stanie domyślnym. #}
+    {% if theme_is_custom %}
+    <style>
+        :root {
+            color-scheme: {{ theme_mode|default:"light" }};
+            --color-primary: {{ theme_primary|default:"#B45309" }};
+            --color-secondary: {{ theme_secondary|default:"#0F766E" }};
+            --color-accent: {{ theme_accent|default:"#D97706" }};
+            --color-surface: {{ theme_background|default:"#FFFBEB" }};
+            --color-surface-variant: {{ theme_surface_variant|default:"#FEF3C7" }};
+            --color-on-primary: {{ theme_on_primary|default:"#FFFFFF" }};
+            --color-on-secondary: {{ theme_on_secondary|default:"#FFFFFF" }};
+            --color-on-accent: {{ theme_on_accent|default:"#FFFFFF" }};
+            --color-on-surface: {{ theme_on_surface|default:"#111827" }};
+            --color-on-surface-variant: {{ theme_on_surface_variant|default:"#111827" }};
+        }
+    </style>
+    {% endif %}
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {# Skip-navigation link for keyboard / screen-reader users #}
+    <a href="#main-content" class="skip-link">Przejdź do treści</a>
+
+    <header class="site-header" role="banner">
+        {% include "includes/navbar.html" %}
+    </header>
+
+    {# Global Toast / Flash Messages (floating, auto-dismissing, non-shifting) #}
+    <div id="toast-container" class="toast-container" role="region" aria-label="Powiadomienia systemowe" aria-live="polite">
+        {% if messages %}
+            {% for message in messages %}
+            <div
+                class="toast toast--{{ message.tags|default:'info' }}"
+                role="{% if 'error' in message.tags or 'danger' in message.tags %}alert{% else %}status{% endif %}"
+                data-toast
+                data-auto-dismiss="4500"
+            >
+                <span class="toast__icon" aria-hidden="true">
+                    {% if 'success' in message.tags %}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                    {% elif 'error' in message.tags or 'danger' in message.tags %}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    {% elif 'warning' in message.tags %}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    {% else %}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    {% endif %}
+                </span>
+                <div class="toast__content">
+                    <p class="toast__message">{{ message }}</p>
+                </div>
+                <button type="button" class="toast__close" aria-label="Zamknij powiadomienie" data-toast-close>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <main id="main-content" class="site-main{% block main_class %}{% endblock %}" tabindex="-1" role="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer" role="contentinfo">
+        <div class="container site-footer__inner">
+            <p><span class="site-footer__brand">E-Learning</span> · platforma kursów, testów i asystenta AI</p>
+            <p><a href="{% url 'core:anti_wcag_guide' %}" class="site-footer__link">Strona Anty-WCAG (demonstracja)</a> · &copy; {{ year|default:"2026" }} E-Learning Platform</p>
+        </div>
+    </footer>
+
+    {# Global accessible confirmation dialog #}
+    {% include "includes/confirm_dialog.html" %}
+
+    {% if user.is_authenticated %}{% block chat_widget %}
+    {# Kontekst asystenta AI: strony kursu, lekcji i wyniku testu nadpisują blok atrybutami data-course/data-lesson/data-attempt #}
+    <div hidden data-chat-page {% block chat_context %}{% endblock %}></div>
+    {% include "chatbot/widget.html" %}
+    {% endblock %}{% endif %}
+
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/image_preview.js' %}" defer></script>
+    {% if user.is_authenticated %}
+    <script src="{% static 'js/chat_client.js' %}" defer></script>
+    <script src="{% static 'js/chatbot.js' %}" defer></script>
+    {% endif %}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

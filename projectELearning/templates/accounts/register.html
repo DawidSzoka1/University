@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Rejestracja — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<div class="auth-split-wrapper">
+    <div class="auth-split auth-split--register">
+        <section class="auth-split__form-container" aria-labelledby="register-heading">
+            <div class="auth-split__form-box">
+                <header class="auth-split__header">
+                    <h1 id="register-heading" class="auth-split__title">Załóż konto</h1>
+                    <p class="auth-split__subtitle">
+                        Masz już konto? <a href="{% url 'accounts:login' %}" class="auth-link">Zaloguj się</a>
+                    </p>
+                </header>
+
+                <form class="auth-form" method="post" action="{% url 'accounts:register' %}" novalidate data-availability-form data-availability-url="{% url 'accounts:check_availability' %}" data-login-url="{% url 'accounts:login' %}">
+                    {% csrf_token %}
+                    <p class="form-note">Pola oznaczone <span aria-hidden="true">*</span><span class="sr-only">gwiazdką</span> są wymagane.</p>
+
+                    {% if form.non_field_errors %}
+                    <div class="auth-alert auth-alert--error" role="alert">
+                        <span class="auth-alert__icon" aria-hidden="true">!</span>
+                        <div class="auth-alert__body">
+                            {% for error in form.non_field_errors %}
+                            <p class="auth-alert__message">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% include "includes/form_field.html" with field=form.username show_required=True help=True %}
+                    {% include "includes/form_field.html" with field=form.email show_required=True %}
+                    <div class="form-row">
+                        {% include "includes/form_field.html" with field=form.first_name %}
+                        {% include "includes/form_field.html" with field=form.last_name %}
+                    </div>
+                    {% include "includes/form_field.html" with field=form.password1 show_required=True help=True %}
+                    {% include "includes/form_field.html" with field=form.password2 show_required=True %}
+
+                    <button class="btn btn--primary btn--lg btn--block" type="submit">Załóż konto</button>
+                </form>
+
+                {% include "includes/social_login.html" with process="signup" %}
+            </div>
+        </section>
+
+        <section class="auth-split__info" aria-labelledby="register-info-heading">
+            <div class="auth-split__info-content">
+                <p class="auth-split__tag">Nowe konto · rola ucznia</p>
+                <h2 id="register-info-heading" class="auth-split__info-title">Minuta na konto, reszta czasu na naukę.</h2>
+            </div>
+            <ol class="auth-split__features">
+                <li class="auth-split__feature-item"><span class="auth-split__feature-num" aria-hidden="true">01</span><span>Darmowe kursy otwierasz od razu po rejestracji.</span></li>
+                <li class="auth-split__feature-item"><span class="auth-split__feature-num" aria-hidden="true">02</span><span>Komentujesz, oceniasz odpowiedzi innych i budujesz rangę.</span></li>
+                <li class="auth-split__feature-item"><span class="auth-split__feature-num" aria-hidden="true">03</span><span>Możesz zgłosić własną propozycję kursu do moderatora.</span></li>
+            </ol>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/availability.js' %}" defer></script>
+{% endblock %}

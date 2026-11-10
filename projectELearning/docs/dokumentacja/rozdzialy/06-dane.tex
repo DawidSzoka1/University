@@ -1,0 +1,294 @@
+\chapter{Model danych}
+
+\section{Przegląd}
+
+Model danych obejmuje 37 modeli w~siedmiu aplikacjach (tab.~\ref{tab:encje}). Wszystkie
+tabele są tworzone migracjami Django; nazwy tabel mają postać
+\code{<aplikacja>\_<model>} (np.\ \code{catalog\_course}). Każdy model ma klucz główny
+\code{id} typu \code{BigAutoField}, polskie nazwy pól (\code{verbose\_name}) wykorzystywane
+w~formularzach i~panelu administracyjnym, a~każdy klucz obcy ma jawną nazwę relacji
+zwrotnej (\code{related\_name}). Pola wyboru (statusy, role, rodzaje) są typu
+\code{TextChoices}.
+
+\begin{table}[H]
+\centering\small
+\caption{Modele w~podziale na aplikacje}\label{tab:encje}
+\begin{tabularx}{\linewidth}{@{}lL@{}}
+\toprule
+\hd{Aplikacja} & \hd{Modele} \\
+\midrule
+\code{accounts} & \code{CustomUser} \\
+\code{core} & \code{ColorTheme}, \code{Notification} \\
+\code{catalog} & \code{Category}, \code{Course}, \code{Enrollment}, \code{Comment}, \code{CommentVote}, \code{CourseSubmissionMessage} \\
+\code{learning} & \code{CourseSection}, \code{Lesson}, \code{LessonAttachment}, \code{LessonProgress}, \code{Quiz}, \code{Question}, \code{Choice}, \code{Attempt}, \code{Answer}, \code{QuizSitting}, \code{Certificate}, \code{LearningStyle}, \code{LessonVariant}, \code{SurveyQuestion}, \code{SurveyOption}, \code{SurveyResponse}, \code{SurveyAnswer} \\
+\code{orders} & \code{Cart}, \code{CartItem}, \code{Order}, \code{OrderItem}, \code{OrderStatusChange}, \code{AccessCode} \\
+\code{chatbot} & \code{ChatSession}, \code{ChatMessage} \\
+\code{gallery} & \code{GalleryItem}, \code{SliderPreset}, \code{SliderPresetItem} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Oprócz nich baza zawiera tabele pośrednie relacji wiele-do-wielu
+(\code{Category.moderators}, \code{Answer.selected\_choices}, \code{Course.recommended\_styles}) oraz tabele bibliotek
+(allauth, czarna lista JWT, sesje Django), które nie są tu opisywane.
+
+\section{Diagramy związków encji}
+
+Diagramy podzielono na trzy obszary. Oznaczenie \textbf{PK} -- klucz główny,
+\textbf{FK} -- klucz obcy, \textbf{U} -- unikalność. Linie z~oznaczeniem
+\textsf{1}/\textsf{N} pokazują liczność związku. Aby nie zaciemniać rysunków, klucze obce do
+\code{CustomUser} w~obszarach 2 i~3 zaznaczono jedynie w~liście pól (,,FK $\rightarrow$ User'').
+
+% ---------------- ERD 1
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+  \node[ent=3.5cm,anchor=north] (theme) at (0,0) {\textbf{ColorTheme}\nodepart{two}PK id\\name \textit{U}\\primary, secondary, accent\\surface, surface\_variant\\is\_default\\created\_at};
+  \node[ent=3.6cm,anchor=north] (user) at (5,0) {\textbf{CustomUser}\nodepart{two}PK id\\username \textit{U}, email, password\\first\_name, last\_name\\role (student/moderator/admin)\\avatar, avatar\_url\\FK selected\_theme\\FK learning\_style (NULL)\\street\_address, postal\_code,\\city, phone\_number\\reputation\_points, rank\_title\\is\_staff, is\_superuser};
+  \node[ent=3.3cm,anchor=north] (notif) at (10,0) {\textbf{Notification}\nodepart{two}PK id\\FK user\\kind (12 rodzajów)\\title, message, url\\is\_read\\created\_at};
+  \node[ent=3.4cm,anchor=north] (cat) at (0,-6.2) {\textbf{Category} \textit{(MPTT)}\nodepart{two}PK id\\name, slug \textit{U}\\FK parent\\description, order\\is\_active\\lft, rght, tree\_id, level\\M:N moderators};
+  \node[ent=3.6cm,anchor=north] (course) at (5,-6.2) {\textbf{Course}\nodepart{two}PK id\\title, slug \textit{U}\\FK category, FK author\\description, description\_html\\thumbnail\\price, is\_free\\difficulty\_level, duration\_hours\\has\_certificate\\students\_count, completed\_count\\average\_rating, reviews\_count\\status, rejection\_reason\\is\_published\\created\_at, updated\_at};
+  \node[ent=3.3cm,anchor=north] (enr) at (10,-6.2) {\textbf{Enrollment}\nodepart{two}PK id\\FK user, FK course \textit{U}\\is\_completed, completed\_at\\progress\_percent\\created\_at};
+  \node[ent=3.4cm,anchor=north] (msg) at (0,-13.4) {\textbf{CourseSubmissionMessage}\nodepart{two}PK id\\FK course, FK author\\content\\created\_at};
+  \node[ent=3.6cm,anchor=north] (com) at (5,-13.4) {\textbf{Comment}\nodepart{two}PK id\\FK course, FK author\\FK parent (self)\\content, rating (1--5, NULL)\\is\_approved, FK approved\_by\\approved\_at\\is\_removed, edited\_at\\created\_at, updated\_at};
+  \node[ent=3.3cm,anchor=north] (vote) at (10,-13.4) {\textbf{CommentVote}\nodepart{two}PK id\\FK comment, FK voter \textit{U}\\value (+1 / $-$1)\\created\_at};
+  \tikzset{r/.style={draw=ink!80}, lb/.style={font=\sffamily\tiny\bfseries,fill=white,inner sep=1pt}}
+  \draw[r] (user.west) -- node[lb,pos=0.12]{N} node[lb,pos=0.88]{1} (theme.east);
+  \draw[r] (user.east) -- node[lb,pos=0.12]{1} node[lb,pos=0.88]{N} (notif.west);
+  \draw[r] (cat.east) -- node[lb,pos=0.12]{1} node[lb,pos=0.88]{N} (course.west);
+  \draw[r] (course.east) -- node[lb,pos=0.12]{1} node[lb,pos=0.88]{N} (enr.west);
+  \draw[r] (user.south) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} node[right,note,pos=0.5]{author} (course.north);
+  \draw[r] (user.south east) -- node[lb,pos=0.12]{1} node[lb,pos=0.88]{N} (enr.north west);
+  \draw[r] (user.south west) -- node[lb,pos=0.12]{M} node[lb,pos=0.88]{N} node[above,note,sloped,pos=0.5]{moderators} (cat.north east);
+  \draw[r] (course.south) -- node[lb,pos=0.15]{1} node[lb,pos=0.85]{N} (com.north);
+  \draw[r] (course.south west) -- node[lb,pos=0.12]{1} node[lb,pos=0.88]{N} (msg.north east);
+  \draw[r] (com.east) -- node[lb,pos=0.12]{1} node[lb,pos=0.88]{N} (vote.west);
+  \draw[r] (cat.north west) to[out=150,in=210,looseness=4] node[lb,pos=0.1]{1} node[lb,pos=0.9]{N} node[left,note]{parent} (cat.west);
+  \draw[r] ($(com.south)+(-0.9,0)$) to[out=-90,in=-90,looseness=1.6] node[below,note]{parent (wątek) 1:N} ($(com.south)+(0.3,0)$);
+\end{tikzpicture}}
+\caption{ERD -- obszar 1: użytkownicy, motywy, katalog i~społeczność}\label{fig:erd1}
+\end{figure}
+
+% ---------------- ERD 2
+\begin{figure}[p]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+  \tikzset{r/.style={draw=ink!80}, lb/.style={font=\sffamily\tiny\bfseries,fill=white,inner sep=1pt}}
+  \node[ent=3.2cm,anchor=north,rectangle split part fill={brand!25,white}] (course) at (0,0) {\textbf{Course} \textit{(catalog)}\nodepart{two}PK id\\\dots};
+  \node[ent=3.3cm,anchor=north] (sec) at (0,-2.2) {\textbf{CourseSection}\nodepart{two}PK id\\FK course\\title, order\\created\_at, updated\_at};
+  \node[ent=3.4cm,anchor=north] (les) at (0,-5.4) {\textbf{Lesson}\nodepart{two}PK id\\FK section\\title, content\_html\\video\_url, video\_file\\duration\_minutes\\is\_preview, order\\same\_for\_all\_styles\\created\_at, updated\_at};
+  \node[ent=3.3cm,anchor=north] (att) at (-4.4,-5.4) {\textbf{LessonAttachment}\nodepart{two}PK id\\FK lesson\\file, original\_name\\size, uploaded\_at};
+  \node[ent=3.3cm,anchor=north] (prog) at (-4.4,-9.6) {\textbf{LessonProgress}\nodepart{two}PK id\\FK lesson\\FK $\rightarrow$ User \textit{U}\\FK style (NULL)\\completed\_at};
+  \node[ent=3.4cm,anchor=north] (quiz) at (4.6,-2.2) {\textbf{Quiz}\nodepart{two}PK id\\FK course\\FK after\_lesson (NULL = koniec)\\title, description\\is\_required, pass\_percent\\max\_attempts, order\\created\_at, updated\_at};
+  \node[ent=3.5cm,anchor=north] (q) at (4.6,-7.6) {\textbf{Question}\nodepart{two}PK id\\FK quiz\\question\_type (ABC/wiel./otw.)\\answer\_format (tekst/kod/\\zdjęcie/plik)\\text, points, order\\image, image\_alt\\video\_url, video\_file\\code, attachment,\\attachment\_name};
+  \node[ent=3.0cm,anchor=north] (ch) at (9.0,-7.6) {\textbf{Choice}\nodepart{two}PK id\\FK question\\text, is\_correct\\order};
+  \node[ent=3.4cm,anchor=north] (atp) at (9.0,-2.2) {\textbf{Attempt}\nodepart{two}PK id\\FK quiz, FK $\rightarrow$ User\\status (czeka/oceniony)\\score, max\_score, passed\\feedback, FK graded\_by\\FK learning\_style (NULL)\\submitted\_at, graded\_at};
+  \node[ent=3.3cm,anchor=north] (sit) at (13.2,-2.2) {\textbf{QuizSitting}\nodepart{two}PK id\\FK quiz, FK $\rightarrow$ User \textit{U}\\started\_at};
+  \node[ent=3.3cm,anchor=north] (ans) at (9.0,-11.4) {\textbf{Answer}\nodepart{two}PK id\\FK attempt, FK question \textit{U}\\M:N selected\_choices\\text\_answer, file\\original\_name\\points, feedback};
+  \node[ent=3.3cm,anchor=north] (cert) at (13.2,-5.6) {\textbf{Certificate}\nodepart{two}PK id\\FK course, FK $\rightarrow$ User \textit{U}\\code \textit{U}\\full\_name, course\_title\\teacher\_name, issued\_at};
+  \node[ent=3.3cm,anchor=north] (cs) at (0,-11.6) {\textbf{ChatSession}\nodepart{two}PK id\\FK student $\rightarrow$ User\\FK course (NULL = ogólna)\\\textit{U} (student, course)\\created\_at, updated\_at};
+  \node[ent=3.3cm,anchor=north] (cm) at (4.6,-14.4) {\textbf{ChatMessage}\nodepart{two}PK id\\FK session\\sender (uczeń/asystent)\\message\_text\\FK lesson (NULL)\\is\_refusal, timestamp};
+  \node[ent=3.3cm,anchor=north] (lst) at (13.2,-9.6) {\textbf{LearningStyle}\nodepart{two}PK id\\name \textit{U}, slug \textit{U}\\description, author\_hint\\order, is\_active\\created\_at};
+  \node[ent=3.3cm,anchor=north] (var) at (13.2,-13.4) {\textbf{LessonVariant}\nodepart{two}PK id\\FK lesson, FK style \textit{U}\\content\_html\\video\_url\\created\_at, updated\_at};
+  \draw[r] (lst.south) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (var.north);
+  \draw[r] (les.south east) .. controls (5.5,-12.6) and (9.5,-16.6) .. node[lb,pos=0.05]{1} node[lb,pos=0.97]{N} (var.south west);
+  \node[note,align=left,anchor=north west] at (10.9,-16.4) {LearningStyle 1:N także do: CustomUser.learning\_style,\\LessonProgress.style, Attempt.learning\_style};
+  \draw[r] (course.south) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (sec.north);
+  \draw[r] (sec.south) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (les.north);
+  \draw[r] (les.west) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (att.east);
+  \draw[r] (les.south west) -- node[lb,pos=0.15]{1} node[lb,pos=0.85]{N} (prog.east);
+  \draw[r] (course.east) -- node[lb,pos=0.1]{1} node[lb,pos=0.9]{N} (quiz.north west);
+  \draw[r] (les.east) -- node[lb,pos=0.15]{0..1} node[lb,pos=0.85]{N} node[above,note,sloped]{after\_lesson} (quiz.south west);
+  \draw[r] (quiz.south) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (q.north);
+  \draw[r] (q.east) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (ch.west);
+  \draw[r] (quiz.east) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (atp.west);
+  \draw[r] (atp.east) -- node[lb,pos=0.2]{} (sit.west);
+  \node[note,fill=white] at ($(atp.east)!0.5!(sit.west)+(0,0.25)$) {quiz 1:N};
+  \draw[r] (atp.south) -- ++(0,-0.3) -| ($(ans.north)+(0.9,0)$) node[lb,pos=0.95]{N};
+  \node[lb] at ($(atp.south)+(0.15,-0.15)$) {1};
+  \draw[r] (q.south east) -- node[lb,pos=0.15]{1} node[lb,pos=0.85]{N} (ans.west);
+  \draw[r,dashed] (ch.south) -- node[lb,pos=0.2]{M} node[lb,pos=0.8]{N} node[right,note]{selected\_choices} ($(ans.north)+(-0.3,0)$);
+  \draw[r] (course.north east) to[out=20,in=90] node[lb,pos=0.95]{N} (cert.north);
+  \draw[r] (cs.south) |- node[lb,pos=0.1]{1} node[lb,pos=0.9]{N} (cm.west);
+  \draw[r,dashed] (les.south) -- node[lb,pos=0.1]{0..1} node[lb,pos=0.9]{N} ($(cm.north)+(-0.8,0)$);
+  \draw[r] (course.west) to[out=180,in=180,looseness=0.6] node[lb,pos=0.05]{0..1} node[lb,pos=0.95]{N} (cs.west);
+\end{tikzpicture}}
+\caption{ERD -- obszar 2: nauka, testy, dyplomy, style uczenia się i~asystent AI}\label{fig:erd2}
+\end{figure}
+
+% ---------------- ERD 3
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}
+  \tikzset{r/.style={draw=ink!80}, lb/.style={font=\sffamily\tiny\bfseries,fill=white,inner sep=1pt}}
+  \node[ent=3.2cm,anchor=north] (cart) at (0,0) {\textbf{Cart}\nodepart{two}PK id\\FK user (1:1, NULL = gość)\\created\_at, updated\_at};
+  \node[ent=3.2cm,anchor=north] (ci) at (0,-3.0) {\textbf{CartItem}\nodepart{two}PK id\\FK cart, FK course \textit{U}\\quantity (1--10)\\added\_at};
+  \node[ent=3.6cm,anchor=north] (ord) at (4.8,0) {\textbf{Order}\nodepart{two}PK id\\number \textit{U} (ORD-RRRR-NNNNNN)\\FK $\rightarrow$ User\\status, total\\email, first\_name, last\_name\\street\_address, postal\_code,\\city, phone\_number\\save\_address\\payment\_provider\\payment\_reference, payment\_intent\\created\_at, updated\_at,\\paid\_at, fulfilled\_at};
+  \node[ent=3.3cm,anchor=north] (oi) at (9.6,0) {\textbf{OrderItem}\nodepart{two}PK id\\FK order, FK course \textit{U}\\title (kopia)\\quantity, unit\_price\\line\_total};
+  \node[ent=3.3cm,anchor=north] (osc) at (4.8,-6.8) {\textbf{OrderStatusChange}\nodepart{two}PK id\\FK order\\status, note\\FK changed\_by (NULL)\\created\_at};
+  \node[ent=3.3cm,anchor=north] (code) at (9.6,-3.6) {\textbf{AccessCode}\nodepart{two}PK id\\FK order\_item\\code \textit{U}\\FK redeemed\_by (NULL)\\redeemed\_at, created\_at\\CHECK: wykorzystany $\Rightarrow$ data};
+  \node[ent=3.0cm,anchor=north,rectangle split part fill={brand!25,white}] (course) at (0,-6.8) {\textbf{Course} \textit{(catalog)}\nodepart{two}PK id\\\dots};
+  % galeria
+  \node[ent=3.4cm,anchor=north] (gi) at (14.4,0) {\textbf{GalleryItem}\nodepart{two}PK id\\title, description\\image, image\_alt\\FK related\_course (NULL)\\FK uploaded\_by\\original\_width/height\\width, height\\uploaded\_at};
+  \node[ent=3.3cm,anchor=north] (spi) at (14.4,-5.0) {\textbf{SliderPresetItem}\nodepart{two}PK id\\FK preset, FK gallery\_item \textit{U}\\order};
+  \node[ent=3.3cm,anchor=north] (sp) at (14.4,-7.8) {\textbf{SliderPreset}\nodepart{two}PK id\\name \textit{U}\\is\_active (dokładnie jeden)\\autoplay, interval\_seconds\\FK created\_by\\created\_at, updated\_at};
+  \draw[r] (cart.south) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (ci.north);
+  \draw[r] (ci.south) -- node[lb,pos=0.2]{N} node[lb,pos=0.8]{1} (course.north);
+  \draw[r] (ord.east) -- node[lb,pos=0.12]{1} node[lb,pos=0.88]{N} ($(oi.west)+(0,-0.3)$);
+  \draw[r] (ord.south) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (osc.north);
+  \draw[r] (oi.south) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (code.north);
+  \draw[r] (oi.east) -- ++(0.5,0) |- (6,-10.4) -| node[lb,pos=0.95]{1} (course.south);
+  \node[lb] at ($(oi.east)+(0.25,0.15)$) {N};
+  \draw[r] (gi.south) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (spi.north);
+  \draw[r] (sp.north) -- node[lb,pos=0.25]{1} node[lb,pos=0.75]{N} (spi.south);
+  \draw[r,dashed] (gi.south west) -- ++(-0.4,0) |- (6,-10.9) -| node[lb,pos=0.95]{0..1} ($(course.south)+(-0.8,0)$);
+  \node[draw=ink!40,dashed,fit=(cart)(ci)(ord)(oi)(osc)(code)(course),inner sep=6pt,label={[note]above left:sklep}] {};
+  \node[draw=ink!40,dashed,fit=(gi)(spi)(sp),inner sep=6pt,label={[note]above:galeria}] {};
+\end{tikzpicture}}
+\caption{ERD -- obszar 3: sklep i~galeria}\label{fig:erd3}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\resizebox{0.9\linewidth}{!}{%
+\begin{tikzpicture}
+  \tikzset{r/.style={draw=ink!80}, lb/.style={font=\sffamily\tiny\bfseries,fill=white,inner sep=1pt}}
+  \node[ent=3.2cm,anchor=north] (q) at (0,0) {\textbf{SurveyQuestion}\nodepart{two}PK id\\text\\order, is\_active};
+  \node[ent=3.2cm,anchor=north] (o) at (0,-2.6) {\textbf{SurveyOption}\nodepart{two}PK id\\FK question\\FK style\\text, order};
+  \node[ent=3.3cm,anchor=north] (st) at (4.6,-2.6) {\textbf{LearningStyle}\nodepart{two}PK id\\name, slug\\\dots};
+  \node[ent=3.3cm,anchor=north] (r) at (0,-5.6) {\textbf{SurveyResponse}\nodepart{two}PK id\\FK $\rightarrow$ User\\FK top\_style (NULL)\\created\_at};
+  \node[ent=3.3cm,anchor=north] (a) at (4.6,-5.6) {\textbf{SurveyAnswer}\nodepart{two}PK id\\FK response, FK question \textit{U}\\FK option};
+  \node[ent=3.3cm,anchor=north,rectangle split part fill={brand!25,white}] (c) at (9.2,-2.6) {\textbf{Course} \textit{(catalog)}\nodepart{two}PK id\\M:N recommended\_styles};
+  \draw[r] (q.south) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (o.north);
+  \draw[r] (st.west) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (o.east);
+  \draw[r] (r.east) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (a.west);
+  \draw[r] (o.south east) -- node[lb,pos=0.2]{1} node[lb,pos=0.8]{N} (a.north west);
+  \draw[r] (st.south west) -- node[lb,pos=0.2]{0..1} node[lb,pos=0.8]{N} node[above,note,sloped]{top\_style} (r.north east);
+  \draw[r,dashed] (st.east) -- node[lb,pos=0.2]{M} node[lb,pos=0.8]{N} (c.west);
+\end{tikzpicture}}
+\caption{ERD -- obszar 4: ankieta stylu i~style polecane w~kursach}\label{fig:erd4}
+\end{figure}
+
+\section{Opis kluczowych encji}
+
+Poniżej opisano encje, których reguły nie wynikają wprost z~nazw pól. Pełną listę pól
+z~typami można odczytać z~modeli i~migracji w~katalogach \code{apps/*/migrations}.
+
+\subsection{CustomUser}
+Rozszerza \code{AbstractUser}. Pole \code{role} przyjmuje wartości \code{student}
+(domyślna), \code{moderator}, \code{admin}. Dane adresowe służą do podstawiania w~formularzu
+zamówienia. \code{reputation\_points} jest przeliczane sygnałami \code{post\_save} i~\code{post\_delete}
+modelu \code{CommentVote}, a~\code{rank\_title} wynika z~progów: do $-1$ -- Obserwator,
+0--10 -- Nowicjusz, 11--50 -- Pomocnik, 51--200 -- Ekspert, powyżej -- Mistrz.
+\code{selected\_theme} wskazuje motyw wybrany przez użytkownika (\code{SET\_NULL} przy
+usunięciu motywu).
+
+\subsection{Category}
+Model MPTT (\emph{modified preorder tree traversal}): pola \code{lft}, \code{rght},
+\code{tree\_id}, \code{level} pozwalają pobrać całe poddrzewo jednym zapytaniem, co jest
+wykorzystywane przy filtrowaniu katalogu ,,z podkategoriami'' oraz w~okruszkach. Relacja
+wiele-do-wielu \code{moderators} wskazuje nauczycieli kategorii; uprawnienia dziedziczą
+się w~dół drzewa.
+
+\subsection{Course}
+\code{status}: \code{draft} (szkic) $\rightarrow$ \code{pending} $\rightarrow$
+\code{approved} / \code{rejected} (diagram stanów -- rys.~\ref{fig:st-course}). Pola
+\code{students\_count}, \code{completed\_count}, \code{average\_rating},
+\code{reviews\_count} są zdenormalizowanymi statystykami aktualizowanymi przy zapisie,
+ukończeniu i~zatwierdzeniu recenzji, aby lista katalogu nie wymagała agregacji.
+\code{description\_html} jest sanityzowane przez \code{bleach} w~metodzie \code{save()}.
+
+\subsection{Comment i~CommentVote}
+\code{parent} tworzy drzewo odpowiedzi bez limitu głębokości w~bazie (widok wcina do
+czterech poziomów). \code{rating} jest wypełniane tylko w~komentarzu głównym osoby zapisanej
+na kurs (raz na kurs), w~odpowiedziach ma wartość NULL. \code{is\_approved} ma domyślnie
+wartość fałsz -- komentarz wymaga akceptacji. \code{is\_removed} pozwala ,,usunąć''
+komentarz, który ma odpowiedzi, bez rozrywania wątku. \code{CommentVote} ma ograniczenie
+unikalności (\code{comment}, \code{voter}) -- jeden głos na osobę.
+
+\subsection{Quiz, Question, Choice}
+\code{Quiz.after\_lesson} wskazuje lekcję, po której test jest wyświetlany w~programie;
+wartość NULL oznacza test końcowy. \code{is\_required} blokuje dalsze elementy programu
+do zaliczenia, \code{pass\_percent} to próg zaliczenia, \code{max\_attempts} = 0 oznacza
+brak limitu. Pytanie zamknięte ma co najmniej dwie odpowiedzi \code{Choice}, z~czego
+jednokrotne -- dokładnie jedną poprawną. Pytanie otwarte określa format odpowiedzi
+(\code{answer\_format}).
+
+\subsection{Attempt, Answer, QuizSitting}
+\code{Attempt} przechowuje wynik i~status (\code{pending\_review}, \code{graded}).
+\code{Answer} jest unikalne dla pary (podejście, pytanie) i~przechowuje wybrane odpowiedzi,
+tekst/kod lub plik oraz przyznane punkty. \code{QuizSitting} -- unikalny dla pary
+(użytkownik, test) -- oznacza otwarty, niewysłany test; jego istnienie (młodsze niż
+60 minut) blokuje asystenta AI.
+
+\subsection{LearningStyle, LessonVariant}
+\code{LearningStyle} to słownik stylów (\code{name}, \code{slug}, opis dla ucznia, wskazówka dla
+autora, \code{order}, \code{is\_active}); cztery domyślne style tworzy migracja danych
+\code{learning.0006}. \code{LessonVariant} (unikalny dla pary lekcja--styl) przechowuje treść
+HTML (sanityzowaną) i~opcjonalny film dla stylu. Flaga \code{Lesson.same\_for\_all\_styles}
+(domyślnie prawda) wyłącza wersje bez ich usuwania. Styl ucznia to klucz obcy
+\code{CustomUser.learning\_style}; \code{LessonProgress.style} zapisuje wersję, w~której uczeń
+ukończył lekcję, a~\code{Attempt.learning\_style} -- styl przypisany do podejścia (wszystkie
+\code{SET\_NULL}).
+
+\subsection{SurveyQuestion, SurveyOption, SurveyResponse, SurveyAnswer}
+Pytania ankiety (10 domyślnych z~migracji \code{learning.0008}) mają odpowiedzi, z~których każda
+wskazuje jeden styl -- administrator może zmieniać treści i~dodawać odpowiedzi dla nowych stylów.
+Każde wypełnienie to osobny \code{SurveyResponse} (historia jest zachowana, obowiązuje najnowsze)
+ze stylem dominującym; \code{SurveyAnswer} jest unikalne dla pary (wypełnienie, pytanie).
+Relacja \code{Course.recommended\_styles} przechowuje style, dla których autor uznał kurs za
+szczególnie odpowiedni.
+
+\subsection{Order, OrderItem, AccessCode}
+\code{Order} kopiuje dane adresowe w~chwili złożenia (zmiana profilu nie zmienia
+historycznych zamówień), a~\code{OrderItem} -- tytuł i~cenę kursu. \code{total} jest sumą
+\code{line\_total}. \code{OrderStatusChange} tworzy pełną historię zmian statusu
+z~autorem (NULL dla zmian automatycznych, np.\ z~webhooka). \code{AccessCode} ma
+ograniczenie \code{CHECK}: kod oznaczony jako wykorzystany musi mieć datę wykorzystania.
+
+\subsection{ChatSession, ChatMessage}
+Dwa warunkowe ograniczenia unikalności gwarantują dokładnie jedną rozmowę na parę
+(uczeń, kurs) oraz jedną rozmowę ogólną (\code{course} = NULL) na ucznia.
+\code{ChatMessage.is\_refusal} oznacza odmowę wydaną w~trakcie testu -- takie wiadomości nie
+trafiają do kontekstu wysyłanego do modelu.
+
+\subsection{GalleryItem, SliderPreset, SliderPresetItem}
+\code{GalleryItem.save()} skaluje obraz do maks. 1600$\times$1200 px (z~uwzględnieniem
+orientacji EXIF) i~zapisuje wymiary przed i~po. \code{SliderPresetItem} łączy zdjęcie
+z~układem i~przechowuje pozycję \code{order}; zmiana kolejności aktualizuje wyłącznie to
+pole. Zawsze dokładnie jeden \code{SliderPreset} ma \code{is\_active = True}.
+
+\section{Integralność danych}
+
+\begin{table}[H]
+\centering\small
+\caption{Ograniczenia integralności na poziomie bazy}
+\begin{tabularx}{\linewidth}{@{}P{4.6cm}L@{}}
+\toprule
+\hd{Ograniczenie} & \hd{Znaczenie} \\
+\midrule
+\code{unique\_comment\_voter} & jeden głos użytkownika na komentarz \\
+\code{unique\_user\_lesson\_progress} & lekcję oznacza się jako ukończoną raz \\
+\code{unique\_attempt\_question} & jedna odpowiedź na pytanie w~podejściu \\
+\code{unique\_quiz\_sitting} & jedno otwarte rozwiązywanie testu \\
+\code{unique\_certificate\_user\_course} & jeden dyplom za kurs \\
+\code{unique\_cart\_course} & kurs w~koszyku jako jedna pozycja (kumulacja ilości) \\
+\code{unique\_order\_course} & kurs w~zamówieniu jako jedna pozycja \\
+\code{unique\_preset\_item} & zdjęcie raz w~danym układzie \\
+\code{unique\_lesson\_style\_variant} & jedna wersja lekcji na styl \\
+\code{unique\_survey\_answer} & jedna odpowiedź na pytanie w~wypełnieniu ankiety \\
+\code{unique\_chat\_session\_per\_course}, \code{unique\_general\_chat\_session} & jedna rozmowa na kurs i~jedna ogólna (ograniczenia warunkowe) \\
+\code{access\_code\_redeemed\_has\_date} & \code{CHECK}: wykorzystany kod ma datę \\
+unikalność \code{Enrollment} (\code{user}, \code{course}) & jeden zapis na kurs \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Usuwanie: zależności ,,własnościowe'' (np.\ lekcje kursu, odpowiedzi podejścia, pozycje
+zamówienia) mają \code{CASCADE}; odwołania informacyjne (np.\ \code{approved\_by},
+\code{graded\_by}, \code{selected\_theme}, \code{changed\_by}) -- \code{SET\_NULL}; kurs
+wskazywany przez pozycję zamówienia jest chroniony (\code{PROTECT}), aby historia sprzedaży
+pozostała spójna.

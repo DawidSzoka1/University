@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}{% if category %}Edycja: {{ category.name }}{% else %}Nowa kategoria{% endif %} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'catalog:moderation_submissions' %}">Moderacja</a></li>
+                    <li><a href="{% url 'catalog:category_manage' %}">Kategorie</a></li>
+                    {% if category %}{% for crumb in category.get_ancestors %}<li><span>{{ crumb.name }}</span></li>{% endfor %}{% elif parent %}{% for crumb in parent.get_ancestors %}<li><span>{{ crumb.name }}</span></li>{% endfor %}<li><span>{{ parent.name }}</span></li>{% endif %}
+                    <li><span aria-current="page">{% if category %}{{ category.name }}{% else %}Nowa{% endif %}</span></li>
+                </ol>
+            </nav>
+            <h1 class="page-head__title">{% if category %}Edytuj kategorię{% elif parent %}Nowa podkategoria{% else %}Nowa kategoria{% endif %}</h1>
+            <p class="page-head__lead">{% if category %}Adres w katalogu (<code>{{ category.slug }}</code>) się nie zmieni.{% else %}Adres w katalogu powstanie z nazwy.{% endif %}</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    <form method="post" class="form-sheet category-form" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="auth-alert auth-alert--error" role="alert">
+            <span class="auth-alert__icon" aria-hidden="true">!</span>
+            <div class="auth-alert__body">{% for error in form.non_field_errors %}<p class="auth-alert__message">{{ error }}</p>{% endfor %}</div>
+        </div>
+        {% endif %}
+        {% include "includes/form_field.html" with field=form.name show_required=True %}
+        {% include "includes/form_field.html" with field=form.parent show_required=True help=True %}
+        {% include "includes/form_field.html" with field=form.description help=True %}
+        <div class="form-group form-group--checkbox">
+            <label class="checkbox-label" for="{{ form.is_active.id_for_label }}">{{ form.is_active }} <span>{{ form.is_active.label }}</span></label>
+        </div>
+        {% if form.moderators %}
+        <fieldset class="checkbox-fieldset"{% if form.moderators.errors %} aria-invalid="true"{% endif %} aria-describedby="moderators-help">
+            <legend class="form-label">{{ form.moderators.label }}</legend>
+            <p class="form-help" id="moderators-help">{{ form.moderators.help_text }}</p>
+            <div class="checkbox-fieldset__options">
+                {% for choice in form.moderators %}
+                <label class="checkbox-label" for="{{ choice.id_for_label }}">{{ choice.tag }} <span>{{ choice.choice_label }}</span></label>
+                {% empty %}
+                <p class="text-muted">Nie ma kont z rolą nauczyciela.</p>
+                {% endfor %}
+            </div>
+        </fieldset>
+        {% endif %}
+        <div class="comment-form__actions">
+            <button type="submit" class="btn btn--primary">{% if category %}Zapisz zmiany{% else %}Dodaj kategorię{% endif %}</button>
+            <a href="{% url 'catalog:category_manage' %}" class="btn btn--ghost">Anuluj</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

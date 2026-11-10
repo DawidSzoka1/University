@@ -1,0 +1,36 @@
+{# Odpowiedź ucznia na jedno pytanie: wybory / tekst / kod / zdjęcie / plik + punkty. a = Answer #}
+{% load core_tags %}
+{% with q=a.question %}
+<div class="question__text">{{ q.text|linebreaks }}</div>
+{% if q.is_open %}
+    {% if q.answer_format == 'text' %}
+    <div class="answer__text">{{ a.text_answer|linebreaks }}</div>
+    {% elif q.answer_format == 'code' %}
+    <pre class="question__code" tabindex="0" aria-label="Kod z odpowiedzi"><code>{{ a.text_answer }}</code></pre>
+    {% elif a.file %}
+        {% if q.answer_format == 'image' %}
+        <figure class="question__figure">
+            <img src="{% url 'learning:answer_file' a.pk %}" alt="Zdjęcie przesłane jako odpowiedź na pytanie" loading="lazy">
+            <figcaption><a href="{% url 'learning:answer_file' a.pk %}?pobierz=1">Pobierz zdjęcie ({{ a.original_name }})</a></figcaption>
+        </figure>
+        {% else %}
+        <p><a href="{% url 'learning:answer_file' a.pk %}" class="btn btn--outline btn--sm">Pobierz plik: {{ a.original_name }}</a></p>
+        {% endif %}
+    {% endif %}
+{% else %}
+    <ul class="answer__choices">
+        {% for c in q.choices.all %}
+        <li class="answer__choice{% if c.pk in a.selected_ids %} is-picked{% endif %}{% if reveal and c.is_correct %} is-correct{% endif %}">
+            <span class="answer__mark" aria-hidden="true">{% if c.pk in a.selected_ids %}■{% else %}□{% endif %}</span>
+            <span>{{ c.text }}</span>
+            {% if c.pk in a.selected_ids %}<span class="answer__note">— wybrana</span>{% endif %}
+            {% if reveal and c.is_correct %}<span class="answer__note answer__note--ok">— poprawna</span>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+<p class="answer__score">
+    {% if a.points is None %}<span class="tag">czeka na ocenę</span>{% else %}<strong>{{ a.points }} / {{ q.points }} pkt</strong>{% if not q.is_open %} — {% if a.points == q.points %}poprawnie{% else %}niepoprawnie{% endif %}{% endif %}{% endif %}
+</p>
+{% if a.feedback %}<p class="answer__feedback"><strong>Komentarz nauczyciela:</strong> {{ a.feedback }}</p>{% endif %}
+{% endwith %}

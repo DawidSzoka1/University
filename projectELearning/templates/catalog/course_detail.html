@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% load core_tags static %}
+
+{% block title %}{{ course.title }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block chat_context %}data-course="{{ course.pk }}"{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner page-head__inner--wide">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'catalog:course_list' %}">Kursy</a></li>
+                    {% for crumb in breadcrumbs %}
+                    <li><a href="{% url 'catalog:course_list' %}?category={{ crumb.slug }}">{{ crumb.name }}</a></li>
+                    {% endfor %}
+                    <li><span aria-current="page">{{ course.title }}</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">{{ course.get_difficulty_level_display }}{% if course.duration_hours %} · {{ course.duration_hours }} h nauki{% endif %}</p>
+            <h1 class="page-head__title">{{ course.title }}</h1>
+            {% if course.description %}<p class="page-head__lead">{{ course.description }}</p>{% endif %}
+        </div>
+
+        <aside class="buy-box" aria-labelledby="buy-box-price">
+            <p class="buy-box__label">Cena</p>
+            <p id="buy-box-price" class="buy-box__price{% if course.is_course_free %} buy-box__price--free{% endif %}">{{ course.get_price_display }}</p>
+
+            {% if is_enrolled %}
+            {% if enrollment.is_completed %}
+            <p class="buy-box__status"><strong>Kurs ukończony</strong>{% if enrollment.completed_at %} {{ enrollment.completed_at|date:"j E Y" }}{% endif %}.</p>
+            {% if certificate %}
+            <a href="{% url 'learning:certificate_download' certificate.code %}" class="btn btn--primary btn--block">Pobierz dyplom (PDF)</a>
+            <a href="{% url 'learning:certificate_verify' certificate.code %}" class="btn btn--ghost btn--block">Dyplom nr {{ certificate.code }}</a>
+            {% endif %}
+            {% else %}
+            <p class="buy-box__status">Masz dostęp do tego kursu{% if enrollment.progress_percent %} — postęp {{ enrollment.progress_percent }}%{% endif %}.</p>
+            {% endif %}
+            {% if next_lesson and not enrollment.is_completed %}
+            <a href="{{ next_lesson.url }}" class="btn btn--primary btn--block">{% if outline.completed_count or outline.passed_quiz_count %}Kontynuuj: {% if next_lesson.is_quiz %}test{% else %}{{ next_lesson.number }}{% endif %}{% else %}Zacznij naukę{% endif %} <span aria-hidden="true">→</span></a>
+            {% else %}
+            <a href="{% url 'learning:my_courses' %}" class="btn {% if enrollment.is_completed %}btn--outline{% else %}btn--primary{% endif %} btn--block">Moje kursy <span aria-hidden="true">→</span></a>
+            {% endif %}
+            {% elif course.is_course_free and course.status == 'approved' %}
+                {% if user.is_authenticated %}
+                <form method="post" action="{% url 'catalog:course_enroll' course.slug %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn--primary btn--block">Zapisz się bezpłatnie</button>
+                </form>
+                {% else %}
+                <a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}" class="btn btn--primary btn--block">Zaloguj się, aby zacząć</a>
+                {% endif %}
+            {% elif course.status != 'approved' %}
+            <p class="buy-box__note">Zapisy ruszą po akceptacji kursu.</p>
+            {% else %}
+                {% if cart_quantity %}
+                <p class="buy-box__status">W koszyku: <strong>{{ cart_quantity }} {{ cart_quantity|pl_plural:"sztuka,sztuki,sztuk" }}</strong>.</p>
+                <a href="{% url 'orders:cart' %}" class="btn btn--primary btn--block">Przejdź do koszyka <span aria-hidden="true">→</span></a>
+                <form method="post" action="{% url 'orders:cart_add' course.slug %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" class="btn btn--ghost btn--block">Dodaj kolejną sztukę (kod dla innej osoby)</button>
+                </form>
+                {% else %}
+                <form method="post" action="{% url 'orders:cart_add' course.slug %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" class="btn btn--primary btn--block">Dodaj do koszyka</button>
+                </form>
+                <p class="buy-box__note">Po opłaceniu kurs od razu pojawi się w „Moich kursach”.</p>
+                {% endif %}
+            {% endif %}
+            {% if is_enrolled and not course.is_course_free and course.status == 'approved' %}
+            <form method="post" action="{% url 'orders:cart_add' course.slug %}" class="buy-box__gift">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" class="btn btn--ghost btn--block">Kup dostęp dla innej osoby{% if cart_quantity %} (w koszyku: {{ cart_quantity }}){% endif %}</button>
+            </form>
+            {% endif %}
+
+            {% if can_edit %}
+            <a href="{% url 'learning:curriculum_edit' course.slug %}" class="btn btn--outline btn--block buy-box__edit">Program: sekcje i lekcje</a>
+            <a href="{% url 'catalog:course_edit' course.slug %}" class="btn btn--ghost btn--block">Edytuj dane kursu</a>
+            <a href="{% url 'learning:course_students' course.slug %}" class="btn btn--ghost btn--block">Uczniowie i postępy</a>
+            {% if has_thread %}<a href="{% url 'catalog:submission_thread' course.slug %}" class="btn btn--ghost btn--block">Wątek zgłoszenia</a>{% endif %}
+            {% endif %}
+
+            <dl class="buy-box__facts">
+                <div><dt>Kategoria</dt><dd>{{ course.category.name|default:"—" }}</dd></div>
+                <div><dt>Autor</dt><dd>{% if course.author %}{{ course.author.get_full_name|default:course.author.username }}{% else %}—{% endif %}</dd></div>
+                <div><dt>Zaczęło</dt><dd>{{ started_count }} {{ started_count|pl_plural:"osoba,osoby,osób" }}</dd></div>
+                <div><dt>Ukończyło</dt><dd>{{ completed_count }}{% if started_count %} ({{ completion_rate }}%){% endif %}</dd></div>
+                <div><dt>Ocena</dt><dd>{% if course.reviews_count %}{{ course.average_rating|floatformat:1 }} ({{ course.reviews_count }}){% else %}brak ocen{% endif %}</dd></div>
+            </dl>
+            {% if personal_fit %}<p class="buy-box__note"><strong>Dla Ciebie:</strong> {{ personal_fit.reason }}.</p>{% endif %}
+            {% if style_versions %}
+            <div class="buy-box__styles">
+                <p class="buy-box__label">Wersje dla stylów uczenia się</p>
+                <ul class="buy-box__style-list">
+                    {% for row in style_versions %}
+                    <li>{{ row.style.name }}: {% if row.count %}{{ row.count }} z {{ row.total }} {{ row.total|pl_plural:"lekcji,lekcji,lekcji" }}{% endif %}{% if row.declared %}{% if row.count %} · {% endif %}polecany przez autora{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </aside>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% if course.status != 'approved' or not course.is_published %}
+    <div class="notice{% if course.status == 'rejected' %} notice--danger{% endif %}" role="status">
+        <p><strong>Status: {{ course.get_status_display|lower }}.</strong>
+        {% if course.status == 'pending' %}Kurs widzisz tylko Ty i moderatorzy kategorii — w katalogu pojawi się po akceptacji.{% elif course.status == 'rejected' %}{% if course.rejection_reason %}Powód: {{ course.rejection_reason }}{% endif %} Popraw kurs i wyślij go ponownie.{% elif course.status == 'draft' %}Szkic widzisz tylko Ty. Dokończ program i wyślij kurs, gdy będzie gotowy.{% else %}Kurs nie jest widoczny w katalogu.{% endif %}
+        {% if can_edit and course.status == 'draft' or can_edit and course.status == 'rejected' %} <a href="{% url 'learning:curriculum_edit' course.slug %}#publish">Przejdź do programu i publikacji</a>{% endif %}
+        {% if can_edit and course.status != 'draft' or has_thread and can_edit %} <a href="{% url 'catalog:submission_thread' course.slug %}">{% if is_moderator and course.status == 'pending' %}Rozpatrz zgłoszenie i odpisz autorowi{% else %}Wątek zgłoszenia z moderatorem{% endif %}</a>{% endif %}</p>
+    </div>
+    {% endif %}
+
+    {% if course.description_html %}
+    <section class="prose-section" aria-labelledby="about-heading">
+        <h2 id="about-heading" class="section-title">O kursie</h2>
+        <div class="prose">{{ course.description_html|safe }}</div>
+    </section>
+    {% endif %}
+
+    <section class="prose-section" aria-labelledby="curriculum-heading">
+        <h2 id="curriculum-heading" class="section-title">Program kursu</h2>
+        {% if outline.sections %}
+        <p class="section-lead">
+            {{ outline.sections|length }} {{ outline.sections|length|pl_plural:"sekcja,sekcje,sekcji" }} ·
+            {{ outline.lesson_count }} {{ outline.lesson_count|pl_plural:"lekcja,lekcje,lekcji" }}{% if outline.quiz_count %} · {{ outline.quiz_count }} {{ outline.quiz_count|pl_plural:"test,testy,testów" }}{% endif %} · ok. {{ outline.minutes }} min.
+            {% if outline.blocking_quiz or outline.quizzes %}Lekcje mają sugerowaną kolejność; testy oznaczone jako obowiązkowe trzeba zaliczyć, żeby przejść dalej.{% else %}Lekcje mają sugerowaną kolejność, ale możesz uczyć się w dowolnej.{% endif %}
+            {% if course.has_certificate %}Po ukończeniu wszystkich lekcji i zaliczeniu testów dostaniesz dyplom w PDF.{% endif %}
+        </p>
+        <div class="outline">
+            {% for section in outline.sections %}
+            <details class="outline__section"{% if forloop.first %} open{% endif %}>
+                <summary class="outline__summary">
+                    <span class="outline__num" aria-hidden="true">{{ section.number }}</span>
+                    <span class="outline__title">{{ section.section.title }}</span>
+                    <span class="outline__meta">{{ section.lessons|length }} {{ section.lessons|length|pl_plural:"lekcja,lekcje,lekcji" }} · {{ section.minutes }} min</span>
+                </summary>
+                <ol class="outline__lessons">
+                    {% for entry in section.lessons %}
+                    <li class="outline__lesson">
+                        <span class="outline__lesson-num" aria-hidden="true">{{ entry.number }}</span>
+                        {% if entry.accessible %}
+                        <a href="{% url 'learning:lesson_detail' course.slug entry.lesson.pk %}">{{ entry.lesson.title }}</a>
+                        {% else %}
+                        <span>{{ entry.lesson.title }}</span>
+                        {% endif %}
+                        <span class="outline__lesson-meta">
+                            {% if entry.completed %}ukończona · {% endif %}{% if entry.lesson.video_url or entry.lesson.video_file %}film · {% endif %}{% if entry.lesson.attachments.all %}pliki · {% endif %}{{ entry.lesson.duration_minutes }} min{% if entry.lesson.is_preview and not is_enrolled %} · <strong>podgląd</strong>{% elif entry.locked and not entry.accessible %} · po zaliczeniu testu{% elif not entry.accessible %} · po zapisie{% endif %}
+                        </span>
+                    </li>
+                    {% for quiz_entry in entry.quizzes %}{% include "learning/includes/outline_quiz.html" %}{% endfor %}
+                    {% endfor %}
+                </ol>
+            </details>
+            {% endfor %}
+            {% if outline.final_quizzes %}
+            <details class="outline__section" open>
+                <summary class="outline__summary">
+                    <span class="outline__num" aria-hidden="true">✓</span>
+                    <span class="outline__title">Na zakończenie</span>
+                    <span class="outline__meta">{{ outline.final_quizzes|length }} {{ outline.final_quizzes|length|pl_plural:"test,testy,testów" }}</span>
+                </summary>
+                <ol class="outline__lessons">
+                    {% for quiz_entry in outline.final_quizzes %}{% include "learning/includes/outline_quiz.html" %}{% endfor %}
+                </ol>
+            </details>
+            {% endif %}
+        </div>
+        {% else %}
+        <p class="text-muted">Autor nie dodał jeszcze lekcji.</p>
+        {% endif %}
+    </section>
+
+    <section class="prose-section comments" id="comments" aria-labelledby="comments-heading">
+        <h2 id="comments-heading" class="section-title">Opinie i komentarze{% if comment_count %} <span class="section-title__count">({{ comment_count }})</span>{% endif %}</h2>
+
+        {% if is_moderator and pending_here %}
+        <div class="notice" role="status">
+            <p>Pod tym kursem {{ pending_here|pl_plural:"czeka,czekają,czeka" }} <strong>{{ pending_here }} {{ pending_here|pl_plural:"komentarz,komentarze,komentarzy" }}</strong> na akceptację — zatwierdzisz je przyciskiem przy komentarzu albo w <a href="{% url 'catalog:moderation_comments' %}">kolejce moderacji</a>.</p>
+        </div>
+        {% endif %}
+
+        {% if comment_form %}
+        <form method="post" action="{% url 'catalog:comment_create' course.slug %}" class="comment-form comment-form--new">
+            {% csrf_token %}
+            <label for="new-comment" class="form-label">{% if can_rate %}Twoja opinia lub pytanie{% else %}Twój komentarz{% endif %}</label>
+            <textarea id="new-comment" name="content" class="form-control" rows="4" maxlength="3000" required aria-describedby="new-comment-help"></textarea>
+            <p class="form-help" id="new-comment-help">{% if is_moderator %}Jako nauczyciel tej kategorii publikujesz od razu.{% else %}Komentarz pojawi się publicznie po akceptacji nauczyciela.{% endif %}{% if not can_rate and not is_enrolled and course.author_id != user.pk %} Ocenę kursu mogą wystawić osoby zapisane na kurs.{% endif %}</p>
+            {% if can_rate %}{% include "catalog/includes/rating_fieldset.html" with prefix="new" current=None %}{% endif %}
+            <div class="comment-form__actions">
+                <button type="submit" class="btn btn--primary">Opublikuj komentarz</button>
+            </div>
+        </form>
+        {% elif not user.is_authenticated and course.status == 'approved' %}
+        <p class="comments__login"><a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}%23comments" class="btn btn--outline">Zaloguj się, aby skomentować</a></p>
+        {% endif %}
+
+        {% if threads %}
+        {% if threads|length > 1 or page_obj.has_other_pages %}
+        <nav class="segmented comments__order" aria-label="Kolejność komentarzy">
+            {% for key, label in comment_orders.items %}
+            <a href="?komentarze={{ key }}#comments" class="segmented__option"{% if key == comment_order %} aria-current="page"{% endif %}>{{ label }}</a>
+            {% endfor %}
+        </nav>
+        {% endif %}
+        <ol class="comment-list" aria-label="Komentarze">
+            {% for node in threads %}
+            {% include "catalog/includes/comment.html" %}
+            {% endfor %}
+        </ol>
+        {% include "includes/pagination.html" with pagination_label="Strony komentarzy" %}
+        {% else %}
+        <p class="text-muted">Nikt jeszcze nie skomentował tego kursu.{% if comment_form %} Bądź pierwszy!{% endif %}</p>
+        {% endif %}
+        <p class="sr-only" aria-live="polite" data-vote-live></p>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/comments.js' %}" defer></script>
+{% endblock %}

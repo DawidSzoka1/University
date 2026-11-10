@@ -1,0 +1,23 @@
+{# Media pytania: zdjęcie z opisem, film (YouTube/Vimeo albo plik), kod, plik do pobrania. q = Question, embed = adres odtwarzacza #}
+{% if q.image %}
+<figure class="question__figure">
+    <img src="{{ q.image.url }}" alt="{{ q.image_alt }}" loading="lazy">
+</figure>
+{% endif %}
+{% if embed %}
+<div class="lesson__video question__video">
+    <iframe src="{{ embed }}" title="Film do pytania" loading="lazy"
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+{% elif q.video_file %}
+<div class="lesson__video question__video">
+    <video controls preload="metadata" aria-label="Film do pytania"><source src="{{ q.video_file.url }}">Twoja przeglądarka nie odtwarza tego filmu.</video>
+</div>
+{% endif %}
+{% if q.code %}
+<pre class="question__code" tabindex="0" aria-label="Fragment kodu do pytania"><code>{{ q.code }}</code></pre>
+{% endif %}
+{% if q.attachment %}
+<p class="question__file"><a href="{% url 'learning:question_file' q.pk %}" class="btn btn--outline btn--sm">Pobierz plik: {{ q.attachment_name|default:"załącznik" }}</a></p>
+{% endif %}

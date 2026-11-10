@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load core_tags static %}
+
+{% block title %}{% if course %}{{ course.title }}{% else %}Rozmowa ogólna{% endif %} — Asystent AI — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{# Na stronie rozmowy pływające okno czatu byłoby drugą kopią tej samej rozmowy #}
+{% block chat_widget %}{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner chat-page__head">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'chatbot:session_list' %}">Asystent AI</a></li>
+                    <li><span aria-current="page">{% if course %}{{ course.title }}{% else %}Rozmowa ogólna{% endif %}</span></li>
+                </ol>
+            </nav>
+            <h1 class="page-head__title chat-page__title">{% if course %}{{ course.title }}{% else %}Rozmowa ogólna{% endif %}</h1>
+        </div>
+        {% if course %}
+        <div class="page-head__actions">
+            <a href="{% url 'catalog:course_detail' course.slug %}" class="btn btn--outline">Wróć do kursu</a>
+        </div>
+        {% endif %}
+    </div>
+</header>
+
+<div class="container page-body chat-page">
+    <section class="chat-sheet" aria-labelledby="chat-sheet-title">
+        <header class="chat-sheet__head">
+            <div class="chat-sheet__heading">
+                <h2 id="chat-sheet-title" class="chat-sheet__title">AI · Bielik</h2>
+                <p class="chat-sheet__context">
+                    {% if course %}Asystent zna opis i program kursu. O konkretną lekcję zapytaj z jej strony — dostanie wtedy jej treść.
+                    {% else %}Pytania niezwiązane z żadnym kursem.{% endif %}
+                </p>
+            </div>
+            {% if session %}
+            <form method="post" action="{% url 'chatbot:session_clear' session.pk %}"
+                  data-confirm="Wszystkie wiadomości z tej rozmowy zostaną trwale usunięte." data-confirm-title="Usunąć rozmowę?" data-confirm-btn="Usuń" data-confirm-danger="true">
+                {% csrf_token %}
+                <button type="submit" class="chat-panel__tool">Usuń rozmowę</button>
+            </form>
+            {% endif %}
+        </header>
+
+        {% if paginator.num_pages > 1 %}
+        <div class="chat-sheet__pages">
+            <p class="chat-sheet__pages-label">Strona {{ chat_messages.number }} z {{ paginator.num_pages }}{% if chat_messages.has_next %} — nowsze wiadomości na kolejnych stronach{% endif %}</p>
+            {% include "includes/pagination.html" with pagination_label="Strony rozmowy" %}
+        </div>
+        {% endif %}
+
+        <div class="chat-sheet__log" data-chat-page-log tabindex="0" role="region" aria-label="Wiadomości — przewijaj strzałkami">
+            {% if chat_messages %}
+            <ol class="chat-transcript" aria-label="Wiadomości">
+                {% for message in chat_messages %}
+                {% ifchanged %}<li class="chat-transcript__day" aria-hidden="true"><span>{{ message.timestamp|date:"j E Y" }}</span></li>{% endifchanged %}
+                <li class="chat-msg chat-msg--{{ message.sender }}{% if message.is_refusal %} chat-msg--refusal{% endif %}"{% if forloop.last %} id="najnowsza"{% endif %}>
+                    <p class="chat-msg__meta">
+                        <span class="chat-msg__who">{% if message.is_bot %}Asystent{% else %}Ty{% endif %}</span> ·
+                        <time datetime="{{ message.timestamp|date:'c' }}"><span class="sr-only">{{ message.timestamp|date:"j E Y" }}, </span>{{ message.timestamp|date:"H:i" }}</time>{% if message.lesson and not message.is_bot %} · <span class="chat-msg__lesson">lekcja „{{ message.lesson.title }}”</span>{% endif %}
+                    </p>
+                    <div class="chat-msg__body">{% if message.is_bot %}{{ message.html }}{% else %}{{ message.message_text }}{% endif %}</div>
+                </li>
+                {% endfor %}
+            </ol>
+            {% else %}
+            <div class="chat-log__empty chat-sheet__empty" data-chat-page-empty>
+                <p><strong>Brak wiadomości.</strong></p>
+                <p>Zadaj pierwsze pytanie poniżej.{% if course %} Odpowiedź będzie opierać się na opisie i programie kursu.{% endif %}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if lock %}
+        <div class="chat-lock chat-sheet__lock" role="status">
+            <p class="chat-lock__title">Trwa test</p>
+            <p class="chat-lock__text">{{ lock.notice }}</p>
+            <a href="{{ lock.quiz_url }}" class="btn btn--outline btn--sm">Wróć do testu</a>
+        </div>
+        {% endif %}
+
+        {% if can_ask %}
+        <form method="post" class="chat-sheet__form" data-chat-page-form novalidate
+              data-token-url="{% url 'chatbot:api_token' %}" data-message-url="{% url 'chatbot:api_send_message' %}"
+              data-course="{{ course.pk|default:'' }}" data-stream="{% if chat_messages.has_next %}false{% else %}true{% endif %}">
+            {% csrf_token %}
+            <label for="{{ form.message_text.id_for_label }}" class="sr-only">{{ form.message_text.label }}</label>
+            <div class="chat-form chat-sheet__composer">
+                {{ form.message_text }}
+                <button type="submit" class="btn btn--primary chat-form__send" data-chat-page-send>Wyślij</button>
+                <button type="button" class="btn btn--outline chat-form__send" data-chat-page-stop hidden>Zatrzymaj</button>
+            </div>
+            <p class="sr-only" id="{{ form.message_text.auto_id }}_helptext">{{ form.message_text.help_text }} Enter wysyła, Shift+Enter — nowa linia.</p>
+            <p class="chat-sheet__model">Model: <strong>{{ assistant_model }}</strong> · lokalnie przez Ollamę · może się mylić</p>
+            <p class="form-field-error chat-sheet__error" id="{{ form.message_text.auto_id }}-error" role="alert" data-chat-page-error{% if not form.message_text.errors %} hidden{% endif %}>{{ form.message_text.errors.0 }}</p>
+            <p class="sr-only" role="status" aria-live="polite" data-chat-page-status></p>
+        </form>
+        {% else %}
+        <p class="notice chat-sheet__closed">Ten kurs nie jest już dostępny — możesz tylko przejrzeć historię.</p>
+        {% endif %}
+    </section>
+
+    <aside class="chat-page__aside" aria-labelledby="conversations-heading">
+        <section class="panel">
+            <div class="panel__head">
+                <h2 id="conversations-heading" class="panel__title">Twoje rozmowy</h2>
+            </div>
+            <ul class="chat-conversations">
+                {% if not session and not course %}
+                <li><a href="{% url 'chatbot:session_general' %}" class="chat-conversations__link" aria-current="page">
+                    <span class="chat-conversations__title">Rozmowa ogólna</span>
+                    <span class="chat-conversations__meta">nowa</span>
+                </a></li>
+                {% endif %}
+                {% for other in conversations %}
+                <li><a href="{% url 'chatbot:session_detail' other.pk %}" class="chat-conversations__link"{% if session and other.pk == session.pk %} aria-current="page"{% endif %}>
+                    <span class="chat-conversations__title">{{ other.title }}</span>
+                    <span class="chat-conversations__meta">{{ other.message_count }} {{ other.message_count|pl_plural:"wiadomość,wiadomości,wiadomości" }} · {{ other.updated_at|date:"j E, H:i" }}</span>
+                </a></li>
+                {% endfor %}
+            </ul>
+            <p class="chat-conversations__all">
+                <a href="{% url 'chatbot:session_list' %}">Wszystkie rozmowy{% if conversation_total %} ({{ conversation_total }}){% endif %}</a>
+            </p>
+        </section>
+        <section class="panel chat-page__tips" aria-labelledby="tips-heading">
+            <div class="panel__head">
+                <h2 id="tips-heading" class="panel__title">Jak pytać</h2>
+            </div>
+            <ul class="chat-page__tips-list">
+                <li>Pytaj o jedno zagadnienie naraz i podawaj przykład, którego nie rozumiesz.</li>
+                <li>W trakcie testu asystent nie pomaga. Po wysłaniu otwórz wynik i zapytaj o pytania, z którymi był problem.</li>
+                <li>Na stronie lekcji kliknij „Zapytaj asystenta o tę lekcję” — dostanie jej treść. W tej rozmowie zna opis i program kursu.</li>
+            </ul>
+        </section>
+    </aside>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/chat_page.js' %}" defer></script>
+{% endblock %}

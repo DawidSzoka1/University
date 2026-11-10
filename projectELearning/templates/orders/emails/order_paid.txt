@@ -1,0 +1,10 @@
+{% load core_tags %}{% autoescape off %}Dzień dobry {{ order.first_name }},
+
+płatność za zamówienie {{ order.number }} ({{ order.total|pln }}) została przyjęta. Kursy są już dostępne w „Moich kursach”: {{ courses_url }}
+{% if codes %}
+Kody dostępu dla innych osób (do wpisania na stronie {{ redeem_url }}):
+{% for code in codes %}- {{ code.code }} — {{ code.order_item.title }}
+{% endfor %}{% endif %}
+Szczegóły zamówienia: {{ order_url }}
+
+— Platforma E-Learning (płatności: Stripe, tryb testowy){% endautoescape %}

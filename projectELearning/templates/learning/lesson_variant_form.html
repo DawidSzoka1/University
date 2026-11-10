@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Wersja „{{ style.name }}”: {{ lesson.title }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block extra_css %}{{ form.media.css }}{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'catalog:course_detail' course.slug %}">{{ course.title }}</a></li>
+                    <li><a href="{% url 'learning:curriculum_edit' course.slug %}">Program</a></li>
+                    <li><a href="{% url 'learning:lesson_variants' course.slug lesson.pk %}">{{ lesson.title }}: style</a></li>
+                    <li><span aria-current="page">{{ style.name }}</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Wersja lekcji dla stylu</p>
+            <h1 class="page-head__title">{% if variant %}Edycja wersji{% else %}Nowa wersja{% endif %} „{{ style.name }}”</h1>
+            <p class="page-head__lead">{{ style.description }}</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% if style.author_hint %}
+    <p class="notice"><strong>Co dodać w tej wersji:</strong> {{ style.author_hint }}</p>
+    {% endif %}
+    {% if not variant %}
+    <p class="form-note">Edytor zawiera treść podstawową lekcji — przerób ją pod ten styl.</p>
+    {% endif %}
+
+    <h2 class="sr-only">Formularz wersji lekcji</h2>
+    <form method="post" class="form-sheet form-sheet--wide" novalidate>
+        {% csrf_token %}
+        <fieldset class="form-sheet__section">
+            <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">01</span> Treść dla stylu „{{ style.name }}”</legend>
+            <div class="form-group form-group--editor{% if form.content_html.errors %} form-group--error{% endif %}">
+                <label for="{{ form.content_html.id_for_label }}" id="{{ form.content_html.auto_id }}-label" class="form-label">{{ form.content_html.label }} <span aria-hidden="true">*</span></label>
+                <p class="form-help" id="{{ form.content_html.auto_id }}_helptext">{{ form.content_html.help_text }}</p>
+                {{ form.content_html }}
+                {% if form.content_html.errors %}<p class="form-field-error" id="{{ form.content_html.auto_id }}-error">{{ form.content_html.errors.0 }}</p>{% endif %}
+            </div>
+        </fieldset>
+        <fieldset class="form-sheet__section">
+            <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">02</span> Film (opcjonalnie)</legend>
+            {% include "includes/form_field.html" with field=form.video_url help=True %}
+        </fieldset>
+        <div class="form-sheet__actions">
+            <button type="submit" class="btn btn--primary btn--lg">Zapisz wersję</button>
+            <a href="{% url 'learning:lesson_variants' course.slug lesson.pk %}" class="btn btn--ghost">Anuluj</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ form.media.js }}
+<script>
+    (function () {
+        var id = "{{ form.content_html.auto_id }}";
+        window.ckeditorRegisterCallback && window.ckeditorRegisterCallback(id, function (editor) {
+            var editable = editor.ui.view.editable.element;
+            var described = [id + "_helptext"];
+            if (document.getElementById(id + "-error")) {
+                described.push(id + "-error");
+                editable.setAttribute("aria-invalid", "true");
+            }
+            editable.setAttribute("aria-labelledby", id + "-label");
+            editable.setAttribute("aria-describedby", described.join(" "));
+            document.getElementById(id + "-label").addEventListener("click", function () { editor.editing.view.focus(); });
+        });
+    }());
+</script>
+{% endblock %}

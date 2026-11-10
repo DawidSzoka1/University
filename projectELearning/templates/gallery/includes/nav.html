@@ -1,0 +1,6 @@
+{# Przełącznik trzech stron galerii (dla osób z uprawnieniami) #}
+<nav class="segmented gallery-nav" aria-label="Strony galerii">
+    <a href="{% url 'gallery:slider_view' %}" class="segmented__option"{% if active == 'view' %} aria-current="page"{% endif %}>Slajder</a>
+    {% if can_upload %}<a href="{% url 'gallery:upload_image' %}" class="segmented__option"{% if active == 'upload' %} aria-current="page"{% endif %}>Zdjęcia w bazie</a>{% endif %}
+    {% if can_configure %}<a href="{% url 'gallery:slider_configurator' %}" class="segmented__option"{% if active == 'config' %} aria-current="page"{% endif %}>Układy slajdera</a>{% endif %}
+</nav>

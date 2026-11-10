@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load core_tags static %}
+
+{% block title %}Galeria — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><span aria-current="page">Galeria</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Galeria{% if preset %} · {{ preset.name }}{% endif %}</p>
+            <h1 class="page-head__title">Galeria</h1>
+            <p class="page-head__lead">Polecane kursy i materiały. Karty przesuwają się o jedną — zatrzymasz je przyciskiem, a strzałkami przejdziesz ręcznie.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% if can_upload or can_configure %}{% include "gallery/includes/nav.html" with active="view" %}{% endif %}
+
+    {% if items %}
+    <section class="slider" data-slider aria-roledescription="karuzela" aria-labelledby="slider-title"
+             data-autoplay="{{ preset.autoplay|yesno:'1,0' }}" data-interval="{{ preset.interval_seconds }}">
+        <div class="slider__bar">
+            <h2 id="slider-title" class="slider__title">{{ preset.name }}</h2>
+            <p class="slider__status" data-slider-status>{{ items|length }} {{ items|length|pl_plural:"karta,karty,kart" }}</p>
+            <div class="slider__controls" data-slider-controls hidden>
+                <button type="button" class="slider__btn" data-slider-prev aria-label="Poprzednia karta"><span aria-hidden="true">←</span></button>
+                <button type="button" class="slider__btn slider__btn--toggle" data-slider-toggle>Zatrzymaj</button>
+                <button type="button" class="slider__btn" data-slider-next aria-label="Następna karta"><span aria-hidden="true">→</span></button>
+            </div>
+        </div>
+        <p class="sr-only" aria-live="polite" data-slider-live></p>
+        <div class="slider__viewport">
+            <div class="slider__track" data-slider-track>
+                {% for entry in items %}
+                {% with item=entry.gallery_item %}
+                <div class="slider__slide" role="group" aria-roledescription="slajd" aria-label="{{ forloop.counter }} z {{ items|length }}: {{ item.title }}" data-index="{{ forloop.counter }}">
+                    <article class="gallery-card">
+                        <img src="{{ item.image.url }}" alt="{{ item.image_alt }}" width="{{ item.width }}" height="{{ item.height }}" class="gallery-card__img" loading="lazy">
+                        <div class="gallery-card__body">
+                            <p class="gallery-card__num" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</p>
+                            <h3 class="gallery-card__title">{{ item.title }}</h3>
+                            <div class="gallery-card__text">{{ item.description|linebreaks }}</div>
+                            {% if item.related_course %}
+                            <a href="{% url 'catalog:course_detail' item.related_course.slug %}" class="gallery-card__link">Zobacz kurs<span class="sr-only"> „{{ item.related_course.title }}”</span> <span aria-hidden="true">→</span></a>
+                            {% endif %}
+                        </div>
+                    </article>
+                </div>
+                {% endwith %}
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% else %}
+    {% if can_configure %}{% url 'gallery:slider_configurator' as action_url %}{% endif %}
+    {% include "includes/empty_state.html" with title="Galeria jest pusta" description="Administrator nie wybrał jeszcze układu do wyświetlenia albo układ nie ma kart." action_url=action_url action_label="Przejdź do układów slajdera" %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/gallery_slider.js' %}" defer></script>
+{% endblock %}

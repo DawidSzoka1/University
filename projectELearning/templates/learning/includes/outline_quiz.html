@@ -1,0 +1,13 @@
+{# Test w programie kursu na stronie kursu. quiz_entry = curriculum.OutlineQuiz #}
+{% load core_tags %}
+<li class="outline__lesson outline__lesson--quiz">
+    <span class="outline__lesson-num" aria-hidden="true">T</span>
+    {% if quiz_entry.accessible %}
+    <a href="{{ quiz_entry.url }}"><span class="sr-only">Test: </span>{{ quiz_entry.title }}</a>
+    {% else %}
+    <span><span class="sr-only">Test: </span>{{ quiz_entry.title }}</span>
+    {% endif %}
+    <span class="outline__lesson-meta">
+        {% with n=quiz_entry.quiz.questions.all|length %}{{ n }} {{ n|pl_plural:"pytanie,pytania,pytań" }}{% endwith %} · test{% if quiz_entry.quiz.is_required %} · <strong>obowiązkowy</strong>{% endif %}{% if quiz_entry.passed %} · zaliczony{% elif quiz_entry.pending %} · czeka na ocenę{% elif quiz_entry.locked %} · po zaliczeniu wcześniejszego testu{% elif not quiz_entry.accessible %} · po zapisie{% endif %}
+    </span>
+</li>

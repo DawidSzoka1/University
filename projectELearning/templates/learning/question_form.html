@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if question %}Edycja pytania{% else %}Nowe pytanie{% endif %} — {{ quiz.title }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'learning:curriculum_edit' course.slug %}">Program: {{ course.title }}</a></li>
+                    <li><a href="{% url 'learning:quiz_edit' course.slug quiz.pk %}">{{ quiz.title }}</a></li>
+                    <li><span aria-current="page">{% if question %}Edycja pytania{% else %}Nowe pytanie{% endif %}</span></li>
+                </ol>
+            </nav>
+            <h1 class="page-head__title">{% if question %}Edytuj pytanie{% else %}Nowe pytanie{% endif %}</h1>
+            <p class="page-head__lead">ABC i wielokrotny wybór sprawdzają się automatycznie — zaznacz poprawne odpowiedzi. Pytanie otwarte ocenisz sam w kolejce „Do oceny”.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    <form method="post" enctype="multipart/form-data" class="form-sheet question-form" novalidate data-question-form>
+        {% csrf_token %}
+        <fieldset class="form-sheet__section">
+            <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">01</span> Pytanie</legend>
+            {% include "learning/includes/radio_fieldset.html" with field=form.question_type %}
+            {% include "includes/form_field.html" with field=form.text show_required=True %}
+            {% include "includes/form_field.html" with field=form.points help=True %}
+        </fieldset>
+
+        <fieldset class="form-sheet__section" data-section="choices">
+            <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">02</span> Odpowiedzi do wyboru</legend>
+            <p class="form-help" id="choices-help">Tylko dla pytań ABC i wielokrotnego wyboru. Puste wiersze są pomijane. Zaznacz „Poprawna” przy właściwych odpowiedziach.</p>
+            {{ formset.management_form }}
+            {% if formset.non_form_errors %}
+            <div class="auth-alert auth-alert--error" role="alert">
+                <span class="auth-alert__icon" aria-hidden="true">!</span>
+                <div class="auth-alert__body">{% for error in formset.non_form_errors %}<p class="auth-alert__message">{{ error }}</p>{% endfor %}</div>
+            </div>
+            {% endif %}
+            <ol class="choice-rows" aria-describedby="choices-help">
+                {% for choice_form in formset %}
+                <li class="choice-row">
+                    {% for hidden in choice_form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <div class="form-group choice-row__text{% if choice_form.text.errors %} form-group--error{% endif %}">
+                        <label for="{{ choice_form.text.id_for_label }}" class="form-label">Odpowiedź {{ forloop.counter }}</label>
+                        {{ choice_form.text }}
+                        {% if choice_form.text.errors %}<p class="form-field-error">{{ choice_form.text.errors.0 }}</p>{% endif %}
+                    </div>
+                    <label class="checkbox-label choice-row__flag" for="{{ choice_form.is_correct.id_for_label }}">{{ choice_form.is_correct }} <span>Poprawna<span class="sr-only"> (odpowiedź {{ forloop.counter }})</span></span></label>
+                    {% if choice_form.instance.pk %}
+                    <label class="checkbox-label choice-row__flag" for="{{ choice_form.DELETE.id_for_label }}">{{ choice_form.DELETE }} <span>Usuń<span class="sr-only"> odpowiedź {{ forloop.counter }}</span></span></label>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ol>
+        </fieldset>
+
+        <fieldset class="form-sheet__section" data-section="open">
+            <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">03</span> Odpowiedź otwarta</legend>
+            {% include "learning/includes/radio_fieldset.html" with field=form.answer_format %}
+        </fieldset>
+
+        <fieldset class="form-sheet__section">
+            <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">04</span> Materiały do pytania (opcjonalnie)</legend>
+            {% include "includes/form_field.html" with field=form.image help=True %}
+            {% include "includes/form_field.html" with field=form.image_alt help=True %}
+            {% include "includes/form_field.html" with field=form.video_url %}
+            {% include "includes/form_field.html" with field=form.video_file %}
+            {% include "includes/form_field.html" with field=form.code help=True %}
+            {% include "includes/form_field.html" with field=form.attachment help=True %}
+        </fieldset>
+
+        <div class="comment-form__actions">
+            <button type="submit" class="btn btn--primary">Zapisz pytanie</button>
+            <a href="{% url 'learning:quiz_edit' course.slug quiz.pk %}" class="btn btn--ghost">Anuluj</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/question_form.js' %}" defer></script>
+{% endblock %}

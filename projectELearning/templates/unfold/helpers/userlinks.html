@@ -1,0 +1,82 @@
+{% load i18n static unfold %}
+
+<div class="flex flex-row gap-3 items-center ml-auto">
+    {# Wybór motywu platformy w nagłówku panelu — Esc zamyka i oddaje fokus #}
+    <div class="relative" x-data="{ openThemeMenu: false }" x-on:keydown.escape.stop="if (openThemeMenu) { openThemeMenu = false; $refs.themeButton.focus() }">
+        <button
+            type="button"
+            x-ref="themeButton"
+            class="cursor-pointer flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-default border border-base-300 bg-white hover:bg-base-100 text-font-important-light dark:bg-base-800 dark:border-base-600 dark:text-font-important-dark dark:hover:bg-base-700"
+            x-on:click="openThemeMenu = !openThemeMenu"
+            x-bind:aria-expanded="openThemeMenu.toString()"
+            aria-expanded="false"
+            aria-haspopup="true"
+            aria-controls="admin-theme-menu"
+        >
+            <span class="admin-swatch-strip" aria-hidden="true"><span style="background: {{ theme_primary }}"></span><span style="background: {{ theme_secondary }}"></span><span style="background: {{ theme_accent }}"></span><span style="background: {{ theme_surface_variant }}"></span><span style="background: {{ theme_background }}"></span></span>
+            <span>Motyw: <strong>{% firstof current_theme.name "Domyślny" %}</strong></span>
+            <span class="material-symbols-outlined text-sm leading-none" aria-hidden="true">expand_more</span>
+        </button>
+
+        <div
+            id="admin-theme-menu"
+            class="admin-theme-menu absolute right-0 mt-2 bg-white border border-base-300 rounded-default shadow-lg py-2 z-50 dark:bg-base-800 dark:border-base-600"
+            x-cloak
+            x-show="openThemeMenu"
+            x-on:click.outside="openThemeMenu = false"
+        >
+            <p class="px-3.5 py-1 admin-theme-menu__title text-xs font-bold uppercase text-font-subtle-light dark:text-font-subtle-dark">
+                Motyw platformy i panelu
+            </p>
+
+            <ul class="admin-theme-menu__list py-1">
+                {% for theme in available_themes %}
+                <li>
+                    <form method="post" action="{% url 'accounts:set-theme' %}" class="m-0 p-0">
+                        {% csrf_token %}
+                        <input type="hidden" name="theme" value="{{ theme.pk }}">
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button
+                            type="submit"
+                            class="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-left cursor-pointer hover:bg-base-100 dark:hover:bg-base-700 {% if theme.pk == current_theme_id %}font-bold text-font-important-light dark:text-font-important-dark{% else %}text-font-default-light dark:text-font-default-dark{% endif %}"
+                            {% if theme.pk == current_theme_id %}aria-current="true"{% endif %}
+                        >
+                            <span class="admin-swatch-strip" aria-hidden="true"><span style="background: {{ theme.primary }}"></span><span style="background: {{ theme.secondary }}"></span><span style="background: {{ theme.accent }}"></span><span style="background: {{ theme.surface_variant }}"></span><span style="background: {{ theme.surface }}"></span></span>
+                            <span class="grow truncate">{{ theme.name }}</span>
+                            <span class="text-xs text-font-subtle-light dark:text-font-subtle-dark">{% if theme.pk == current_theme_id %}aktualny{% elif theme.is_dark %}ciemny{% else %}jasny{% endif %}</span>
+                        </button>
+                    </form>
+                </li>
+                {% empty %}
+                <li class="px-3.5 py-2 text-xs text-font-subtle-light dark:text-font-subtle-dark">Brak zdefiniowanych motywów.</li>
+                {% endfor %}
+            </ul>
+
+            <div class="border-t border-base-300 mt-1 pt-2 px-3.5 dark:border-base-600">
+                <a href="{% url 'admin:core_colortheme_changelist' %}" class="flex items-center gap-2 py-1.5 text-sm font-semibold text-primary-600 underline dark:text-primary-500">
+                    <span class="material-symbols-outlined text-sm" aria-hidden="true">palette</span>
+                    <span>Zarządzaj motywami</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {# Link powrotu do strony głównej platformy #}
+    <a
+        href="{% url 'core:home' %}"
+        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-default bg-primary-600 text-white hover:bg-primary-700"
+    >
+        <span>Otwórz platformę</span>
+        <span class="material-symbols-outlined text-sm leading-none" aria-hidden="true">open_in_new</span>
+    </a>
+
+    {% if environment %}
+        {% include "unfold/helpers/label.html" with text=environment.0 type=environment.1 %}
+    {% endif %}
+
+    {% action_list %}
+
+    {% if nav_global_side %}
+        {{ nav_global_side }}
+    {% endif %}
+</div>

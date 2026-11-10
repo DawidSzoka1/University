@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% load i18n %}
+
+{% block title %}Twój profil — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <p class="eyebrow">Twoje konto</p>
+            <h1 class="page-head__title">{{ user.get_full_name|default:user.username }}</h1>
+            <p class="page-head__lead">@{{ user.username }} · {{ user.get_role_display }} · ranga {{ user.rank_title }}</p>
+        </div>
+        <div class="page-head__actions">
+            <a href="{% url 'accounts:profile-edit' %}" class="btn btn--outline">Edytuj profil</a>
+            <a href="{% url 'accounts:select-theme' %}" class="btn btn--ghost">Zmień motyw</a>
+            <a href="{% url 'accounts:password_change' %}" class="btn btn--ghost">{% if user.has_usable_password %}Zmień hasło{% else %}Ustaw hasło{% endif %}</a>
+            {% if user.is_staff %}
+            <a href="{% url 'admin:index' %}" class="btn btn--ghost">Panel Administracyjny</a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+<div class="container page-body profile-layout">
+    <section class="panel" aria-labelledby="account-facts-heading">
+        <div class="panel__head">
+            {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" alt="" class="profile-avatar">
+            {% elif user.avatar_url %}
+            <img src="{{ user.avatar_url }}" alt="" class="profile-avatar">
+            {% else %}
+            <span class="profile-avatar profile-avatar--initial" aria-hidden="true">{{ user.username|first|upper }}</span>
+            {% endif %}
+            <h2 id="account-facts-heading" class="panel__title">Dane konta</h2>
+        </div>
+        <dl class="fact-list">
+            <div><dt>E-mail</dt><dd>{{ user.email|default:"nie podano" }}</dd></div>
+            <div><dt>Punkty wiedzy</dt><dd>{{ user.reputation_points }} pkt</dd></div>
+            <div><dt>Styl uczenia się</dt><dd>{% if user.learning_style and user.learning_style.is_active %}{{ user.learning_style.name }}{% else %}nie wybrano{% endif %} · <a href="{% url 'learning:learning_style' %}">{% if user.learning_style %}zmień{% else %}wybierz{% endif %}<span class="sr-only"> styl uczenia się</span></a></dd></div>
+            <div><dt>Konto od</dt><dd>{{ user.date_joined|date:"d.m.Y" }}</dd></div>
+            <div><dt>Połączone serwisy</dt><dd>{{ connected_count }} z {{ providers_info|length }}</dd></div>
+        </dl>
+    </section>
+
+    <section aria-labelledby="certificates-heading">
+        <h2 id="certificates-heading" class="section-title">Dyplomy</h2>
+        {% if certificates_page.object_list %}
+        <p class="section-lead">Dyplomy ukończonych kursów. Numer dyplomu pozwala każdemu sprawdzić jego autentyczność.</p>
+        <ul class="row-list">
+            {% for cert in certificates_page.object_list %}
+            <li class="row-list__item">
+                <div class="row-list__main">
+                    <p class="row-list__title"><a href="{% url 'catalog:course_detail' cert.course.slug %}">{{ cert.course_title }}</a></p>
+                    <p class="row-list__meta">Nr {{ cert.code }} · wystawiono {{ cert.issued_at|date:"j E Y" }}</p>
+                </div>
+                <a href="{% url 'learning:certificate_download' cert.code %}" class="btn btn--primary btn--sm">Pobierz PDF<span class="sr-only"> — dyplom kursu {{ cert.course_title }}</span></a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% include "includes/pagination.html" with page_obj=certificates_page page_param="dyplomy" pagination_label="Strony listy dyplomów" %}
+        {% else %}
+        <p class="section-lead">Ukończ kurs z dyplomem — wszystkie lekcje i zaliczone testy — a dyplom w PDF pojawi się tutaj.</p>
+        {% endif %}
+    </section>
+
+    <section aria-labelledby="rank-heading">
+        <h2 id="rank-heading" class="section-title">Ranga: {{ user.rank_title }}</h2>
+        <p class="section-lead">
+            Punkty zbierasz, gdy inni oceniają Twoje komentarze: „lubię to” +1, „nie lubię” −1. Własnych komentarzy nie da się oceniać.
+            {% if next_rank %}Do rangi <strong>{{ next_rank }}</strong> brakuje Ci <strong>{{ next_rank_points }} {{ next_rank_points|pl_plural:"punktu,punktów,punktów" }}</strong>.{% else %}Masz najwyższą rangę.{% endif %}
+        </p>
+        <ol class="rank-ladder">
+            {% for rank in rank_ladder %}
+            <li class="rank-ladder__step{% if rank.current %} is-current{% endif %}"{% if rank.current %} aria-current="step"{% endif %}>
+                <span class="rank-ladder__name">{{ rank.name }}</span>
+                <span class="rank-ladder__span">{{ rank.span }}{% if rank.current %} · <strong>Twoja ranga</strong>{% endif %}</span>
+            </li>
+            {% endfor %}
+        </ol>
+    </section>
+
+    <section aria-labelledby="social-connections-heading">
+        <h2 id="social-connections-heading" class="section-title">Połączone konta społecznościowe</h2>
+        <p class="section-lead">Połącz konto, aby logować się jednym kliknięciem. Ostatniego sposobu logowania nie da się odłączyć.</p>
+
+        <ul class="row-list">
+            {% for prov in providers_info %}
+            <li class="row-list__item">
+                <div class="row-list__main">
+                    <p class="row-list__title">
+                        {{ prov.name }}
+                        {% if prov.connected %}<span class="tag tag--ok">połączono</span>{% endif %}
+                    </p>
+                    <p class="row-list__meta">
+                        {% if prov.connected %}
+                            {% if prov.account.extra_data.email %}{{ prov.account.extra_data.email }}{% elif prov.account.extra_data.username %}@{{ prov.account.extra_data.username }}{% elif prov.account.extra_data.name %}{{ prov.account.extra_data.name }}{% else %}Konto aktywne{% endif %}
+                            · od {{ prov.account.date_joined|date:"d.m.Y" }}
+                        {% else %}
+                            Nie połączono
+                        {% endif %}
+                    </p>
+                </div>
+                {% if prov.connected %}
+                <form
+                    method="post"
+                    action="{% url 'accounts:disconnect-social-account' prov.account.pk %}"
+                    data-confirm="Czy na pewno chcesz odłączyć konto {{ prov.name }}? Po odłączeniu nie będzie można logować się do platformy za jego pomocą."
+                    data-confirm-title="Odłączenie konta {{ prov.name }}"
+                    data-confirm-btn="Odłącz konto"
+                    data-confirm-danger="true"
+                >
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn--outline" aria-label="Odłącz konto {{ prov.name }}">Odłącz</button>
+                </form>
+                {% else %}
+                <form method="post" action="{{ prov.connect_url }}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn--primary" aria-label="Połącz konto {{ prov.name }}">Połącz</button>
+                </form>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+</div>
+{% endblock %}

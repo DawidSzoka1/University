@@ -1,0 +1,141 @@
+\chapter{Weryfikacja i~testy}\label{ch:testy}
+
+\section{Strategia}
+
+Weryfikację prowadzono na trzech poziomach:
+\begin{enumerate}
+  \item \textbf{testy automatyczne} (framework testowy Django) -- logika domenowa,
+        uprawnienia, widoki, API, szablony (obecność etykiet i~atrybutów ARIA), dane demo;
+  \item \textbf{kontrole statyczne projektu} -- \code{manage.py check} oraz
+        \code{makemigrations --check}, wykonywane po każdej zmianie modelu;
+  \item \textbf{weryfikacja ręczna w~przeglądarce} -- przejście ścieżek klawiaturą,
+        pomiary układu na różnych szerokościach, scenariusze z~prawdziwymi usługami
+        zewnętrznymi (Stripe w~trybie testowym, Bielik w~Ollamie).
+\end{enumerate}
+
+Usługi zewnętrzne są w~testach automatycznych zastępowane atrapami: klient Stripe jest
+mockowany (a~webhook testowany z~\emph{prawdziwym} podpisem HMAC wyliczonym w~teście),
+a~strumień Ollamy -- generatorem fragmentów. E-maile trafiają do \code{mail.outbox}.
+
+\section{Testy automatyczne}
+
+Ostatnie uruchomienie (5 listopada 2026, po dodaniu stylów uczenia się, ankiety, polecania kursów, panelu postępów, statystyk i~blokady logowania; PostgreSQL 16 w~Dockerze):
+
+\begin{lstlisting}
+$ python manage.py test
+Ran 393 tests in 135.548s
+OK
+\end{lstlisting}
+
+\begin{table}[H]
+\centering\small
+\caption{Zakres testów automatycznych}\label{tab:testy}
+\begin{tabularx}{\linewidth}{@{}P{4.2cm}rL@{}}
+\toprule
+\hd{Plik} & \hd{Testy} & \hd{Zakres} \\
+\midrule
+\code{accounts/tests.py} & 36 & sesja i~logowanie, JWT (token, odświeżenie, \code{/api/me/}), wybór motywu (gość i~konto), OAuth2 i~łączenie z~istniejącym kontem, progi rang, sprawdzanie dostępności loginu \\
+\code{catalog/tests.py} & 59 & modele kategorii i~kursów, wyszukiwarka i~sortowanie, zapisy, tworzenie i~edycja kursu, uprawnienia, XSS w~opisie, walidacja miniatur, powiadomienia o~zgłoszeniach \\
+\code{catalog/test\_community.py} & 52 & drzewo komentarzy, dodawanie, edycja, usuwanie, akceptacja, głosy, kolejki moderacji, wątek zgłoszenia, zarządzanie kategoriami \\
+\code{core/tests.py} i~pozostałe testy \code{core} & 52 & kontrast i~palety, motywy (także panel admina), strona główna, użyteczność szablonów (etykiety, \code{aria-current}, skip-link), odmiana liczebników, powiadomienia, menu konta \\
+\code{core/test\_demo\_seed.py} & 4 & dane demo spełniają walidacje formularzy, \code{seed\_demo --reset} jest powtarzalny \\
+\code{core/test\_image\_preview.py} & 6 & widżet podglądu zdjęcia, walidacja i~skalowanie awatara \\
+\code{learning/tests.py} & 16 & kreator programu, dostęp do lekcji i~plików, upload zdjęć edytora, adresy filmów \\
+\code{learning/test\_quizzes.py} & 28 & budowanie testów, blokady testem obowiązkowym, ocenianie automatyczne i~ręczne, ukończenie i~dyplom, tryb podglądu autora \\
+\code{orders/tests.py} & 36 & koszyk i~kumulacja, scalanie koszyka gościa, zamówienie i~e-mail, Stripe i~webhook (podpis, kwota, idempotencja), obsługa statusów, kody, API koszyka JWT, formatowanie kwot \\
+\code{chatbot/tests.py} & 23 & ochrona JWT, przebieg rozmowy i~strumień, blokada w~trakcie testu, strony historii, bezpieczne formatowanie odpowiedzi \\
+\code{learning/test\_styles.py} & 34 & słownik stylów i~panel admina, wybór i~zmiana stylu, wersje lekcji (wybór, przełączanie, film, sanityzacja), uprawnienia autora, zapis stylu w~postępie i~podejściu, rekomendacja (brak danych, zmiana, utrzymanie, wybór), prompt asystenta \\
+\code{learning/test\_survey\_recommend.py} & 17 & ankieta (10 pytań, walidacja, zachowanie odpowiedzi, ustawienie stylu), profil stylów, ranking i~uzasadnienie poleceń, katalog i~sortowanie, panel uczniów (uprawnienia, liczby, filtr), liczby ukończeń na stronie kursu \\
+\code{accounts/test\_security.py} & 9 & blokada po 5 nieudanych logowaniach (login i~e-mail), zerowanie licznika, zmiana i~ustawienie hasła \\
+\code{core/test\_stats.py} & 5 & statystyki tylko dla administratora, liczby zapisów, ukończeń i~procentów; walidacja kontrastu motywów \\
+\code{gallery/tests.py} & 16 & upload ze skalowaniem, układy, zmiana kolejności (JSON i~$\uparrow\downarrow$), slajder publiczny, uprawnienia \\
+\midrule
+\textbf{Razem} & \textbf{393} & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Każdy widok zmieniający stan ma test odrzucenia metody GET (\emph{POST-only}) oraz test
+uprawnień (np.\ uczeń nie zatwierdzi komentarza, nauczyciel nie oceni testu w~cudzej
+kategorii, nikt nie oceni własnego podejścia, klient API bez tokenu dostaje 401).
+
+\section{Weryfikacja ręczna}
+
+\begin{table}[H]
+\centering\small
+\caption{Weryfikacja ręczna w~przeglądarce}
+\begin{tabularx}{\linewidth}{@{}P{4.2cm}L@{}}
+\toprule
+\hd{Obszar} & \hd{Co sprawdzono} \\
+\midrule
+Klawiatura & przejście ścieżek gościa, ucznia, nauczyciela i~administratora wyłącznie klawiszami Tab, Shift+Tab, Enter, Spacja, strzałki i~Esc; powrót fokusu po zamknięciu paneli i~dialogów \\
+Responsywność & nagłówek, slajder i~okno asystenta przy 320, 768, 1024, 1280, 1366, 1920 px -- bez poziomego przewijania \\
+Slajder & pętla dla 4, 6 i~7 kart, 1/2/3 karty na widok, pauza, $\leftarrow\rightarrow$, brak automatu przy \code{prefers-reduced-motion} \\
+Płatności & koszyk z~2 sztukami $\rightarrow$ Stripe Checkout (karta 4242, BLIK) $\rightarrow$ webhook 200 $\rightarrow$ ,,Opłacone'', wygenerowany kod, dwa e-maile \\
+Asystent & Bielik-Minitron 7B (Q4\_K\_M) na GPU: odpowiedź ok. 5 s, strumień, Markdown, Esc i~fokus, blokada w~trakcie testu, komunikat przy wyłączonej Ollamie \\
+Motywy & zmiana tokenów w~\code{main.css} oraz zmiana motywu w~panelu -- cała witryna, łącznie z~panelem administratora \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Automatyczny audyt dostępności}
+
+Platformę sprawdzono narzędziami automatycznymi w~przeglądarce Chrome na danych demonstracyjnych,
+z~zalogowanymi kontami wszystkich ról:
+
+\begin{itemize}
+  \item \textbf{axe-core 4.14} (reguły WCAG 2.0/2.1/2.2 A i~AA oraz \emph{best practices}):
+        57 stron platformy przy szerokości 1366 px i~360 px, 16 stron panelu administracyjnego
+        oraz 16 stron w~każdym z~motywów kolorystycznych -- \textbf{0 naruszeń}.
+  \item \textbf{Lighthouse 13.6}: 14 kluczowych stron (strona główna, logowanie, katalog, kurs,
+        lekcja, styl uczenia się, ankieta, zamówienie, panel uczniów, moderacja, statystyki,
+        konfigurator slajdera, galeria, panel administracyjny) -- \textbf{dostępność 100/100,
+        dobre praktyki 100/100}.
+\end{itemize}
+
+Audyt ujawnił i~pozwolił usunąć m.in.: przycisk powiadomień, którego nazwa nie zawierała widocznej
+liczby (WCAG 2.5.3), linki w~tekście wyróżnione tylko kolorem (1.4.1), regiony o~powtarzającej się
+nazwie, niedozwoloną rolę elementów listy w~slajderze, zbyt słaby kontrast czerwieni w~ciemnych
+motywach, brak landmarku \code{main} i~etykiet pól w~tabelach panelu administracyjnego oraz brak
+ikony strony. Dodatkowo panel administratora odrzuca teraz motyw kolorystyczny, który nie zapewnia
+kontrastu 4,5:1 w~parach kolorów używanych przez arkusz (rozdz.~\ref{sec:theme-check}).
+
+\section{Scenariusze testów użyteczności}
+
+Projekt podlega testom użyteczności na platformie wybranej wspólnie przez studentów.
+Przygotowano dla nich zestaw zadań odpowiadających najważniejszym ścieżkom; każde zadanie
+uczestnik wykonuje najpierw myszą, a~następnie wyłącznie klawiaturą.
+
+{\small
+\begin{longtable}{@{}p{0.9cm}p{6.2cm}p{7.3cm}@{}}
+\caption{Scenariusze testów użyteczności}\label{tab:scen}\\
+\toprule
+\hd{Nr} & \hd{Zadanie dla uczestnika} & \hd{Kryterium sukcesu} \\
+\midrule
+\endfirsthead
+\toprule
+\hd{Nr} & \hd{Zadanie dla uczestnika} & \hd{Kryterium sukcesu} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+TU-01 & Załóż konto i~zmień motyw na ciemny. & konto utworzone, motyw zachowany po wylogowaniu i~ponownym zalogowaniu \\
+TU-02 & Znajdź bezpłatny kurs z~kategorii ,,Programowanie'' na poziomie podstawowym i~zapisz się. & użycie filtrów, zapis potwierdzony komunikatem \\
+TU-03 & Dodaj płatny kurs dwa razy do koszyka i~opłać zamówienie kartą testową. & ilość 2 w~jednej pozycji, status ,,Opłacone'', kod dostępu widoczny w~zamówieniu \\
+TU-04 & Przejdź pierwszą lekcję kursu Pythona i~rozwiąż test obowiązkowy. & lekcja oznaczona, wynik testu, odblokowanie kolejnych lekcji \\
+TU-05 & Zapytaj asystenta o~fragment lekcji, a~potem spróbuj zapytać go w~trakcie testu. & odpowiedź z~kontekstem lekcji; w~trakcie testu -- odmowa \\
+TU-06 & Dodaj komentarz z~oceną kursu, a~następnie odpowiedz na komentarz innej osoby. & komentarz oznaczony jako oczekujący, odpowiedź w~wątku \\
+TU-07 & (nauczyciel) Zaakceptuj oczekujący komentarz i~oceń test otwarty. & komentarz opublikowany, uczeń dostaje powiadomienie \\
+TU-08 & (nauczyciel) Utwórz kurs z~jedną sekcją i~lekcją i~wyślij go do publikacji. & przejście 3 kroków kreatora, kurs zatwierdzony w~kategorii nauczyciela \\
+TU-09 & (administrator) Zmień kolejność kart slajdera bez użycia myszy. & przeniesienie przyciskami $\uparrow\downarrow$, nowa kolejność w~galerii \\
+TU-10 & Odczytaj nowe powiadomienia i~oznacz wszystkie jako przeczytane. & licznik przy dzwonku wyzerowany \\
+TU-11 & Wybierz styl uczenia się, otwórz lekcję z~wersjami i~przełącz się na inną wersję. & lekcja pokazuje wersję dla wybranego stylu, przełącznik dostępny z~klawiatury \\
+TU-12 & Wypełnij ankietę stylu i~sprawdź polecane kursy w~katalogu. & wynik ankiety i~sekcja ,,Polecane dla Ciebie'' z~uzasadnieniem \\
+TU-13 & (nauczyciel) Sprawdź, ilu uczniów ukończyło kurs i~kto ma najsłabsze wyniki testów. & odczyt z~panelu uczniów kursu bez pomocy \\
+\end{longtable}
+}
+
+Dla każdego zadania notuje się: wykonanie (tak/nie), czas, liczbę błędów lub cofnięć oraz
+uwagi uczestnika. Narzędzia automatyczne (Lighthouse, axe, WAVE) służą jako uzupełnienie
+-- wykrywają brakujące etykiety, kontrast i~błędy struktury, ale nie zastępują przejścia
+ścieżki klawiaturą.

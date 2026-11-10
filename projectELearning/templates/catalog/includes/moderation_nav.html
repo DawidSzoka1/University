@@ -1,0 +1,15 @@
+{# Przełącznik kolejek moderacji (zgłoszenia kursów / komentarze) z liczbą oczekujących #}
+<nav class="segmented" aria-label="Kolejki moderacji">
+    <a href="{% url 'catalog:moderation_submissions' %}" class="segmented__option"{% if active == 'submissions' %} aria-current="page"{% endif %}>
+        Zgłoszenia kursów <span class="segmented__count">({{ pending_submission_count }})</span>
+    </a>
+    <a href="{% url 'catalog:moderation_comments' %}" class="segmented__option"{% if active == 'comments' %} aria-current="page"{% endif %}>
+        Komentarze <span class="segmented__count">({{ pending_comment_count }})</span>
+    </a>
+    <a href="{% url 'learning:grading_queue' %}" class="segmented__option"{% if active == 'grading' %} aria-current="page"{% endif %}>
+        Do oceny <span class="segmented__count">({{ pending_grading_count }})</span>
+    </a>
+    <a href="{% url 'catalog:category_manage' %}" class="segmented__option"{% if active == 'categories' %} aria-current="page"{% endif %}>Kategorie</a>
+    <a href="{% url 'orders:manage' %}" class="segmented__option"{% if active == 'orders' %} aria-current="page"{% endif %}>Zamówienia{% if paid_order_count %} <span class="segmented__count">({{ paid_order_count }} do realizacji)</span>{% endif %}</a>
+    {% if user.is_superuser or user.is_staff or user.role == 'admin' %}<a href="{% url 'core:stats' %}" class="segmented__option"{% if active == 'stats' %} aria-current="page"{% endif %}>Statystyki</a>{% endif %}
+</nav>

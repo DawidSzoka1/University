@@ -1,0 +1,13 @@
+{% load core_tags %}
+{# Jedno powiadomienie: przycisk (POST) oznacza je jako przeczytane i otwiera powiązaną stronę #}
+<form method="post" action="{% url 'core:notification_open' notification.pk %}" class="notice-item__form">
+    {% csrf_token %}
+    <button type="submit" class="notice-item{% if not notification.is_read %} is-unread{% endif %}">
+        <span class="notice-item__dot" aria-hidden="true"></span>
+        <span class="notice-item__body">
+            <span class="notice-item__title">{% if not notification.is_read %}<span class="sr-only">Nieprzeczytane: </span>{% endif %}{{ notification.title }}</span>
+            {% if notification.message %}<span class="notice-item__text">{% if full %}{{ notification.message }}{% else %}{{ notification.message|truncatechars:90 }}{% endif %}</span>{% endif %}
+            <span class="notice-item__meta"><time datetime="{{ notification.created_at|date:'c' }}">{{ notification.created_at|time_ago }}</time> · {{ notification.get_kind_display|lower }}</span>
+        </span>
+    </button>
+</form>

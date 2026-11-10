@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Anulowano logowanie — E-Learning{% endblock %}
+
+{% block content %}
+<div class="auth-card-wrapper">
+    <div class="auth-card" role="region" aria-labelledby="cancelled-heading">
+        <div class="auth-card__badge" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+        </div>
+
+        <h1 id="cancelled-heading" class="auth-card__title">
+            Logowanie zostało anulowane
+        </h1>
+
+        <p class="auth-card__desc">
+            Przerwano proces logowania za pomocą konta zewnętrznego dostawcy. Twoje dane nie zostały zapisane ani powiązane.
+        </p>
+
+        <div class="auth-card__footer auth-card__footer--stacked">
+            <a href="{% url 'accounts:login' %}" class="btn btn--primary auth-card__submit-btn">
+                Zaloguj się loginem i hasłem
+            </a>
+            <a href="{% url 'core:home' %}" class="auth-card__back-link">
+                &larr; Wróć do strony głównej
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

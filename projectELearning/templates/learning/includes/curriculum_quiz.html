@@ -1,0 +1,18 @@
+{# Test w kreatorze programu (pod lekcją albo na końcu). quiz_entry = curriculum.OutlineQuiz #}
+{% load core_tags %}
+{% with quiz=quiz_entry.quiz %}
+<li class="curriculum-lesson curriculum-lesson--quiz" id="quiz-{{ quiz.pk }}">
+    <span class="curriculum-lesson__num" aria-hidden="true">T</span>
+    <div class="curriculum-lesson__main">
+        <a href="{% url 'learning:quiz_edit' course.slug quiz.pk %}" class="curriculum-lesson__title"><span class="sr-only">Test: </span>{{ quiz.title }}</a>
+        {% if quiz.is_required %}<span class="tag">obowiązkowy</span>{% endif %}
+        <p class="curriculum-lesson__meta">
+            Test · {% with n=quiz.questions.all|length %}{{ n }} {{ n|pl_plural:"pytanie,pytania,pytań" }}{% if not n %} — <strong>dodaj pytania</strong>{% endif %}{% endwith %} · próg {{ quiz.pass_percent }}%{% if quiz.max_attempts %} · {{ quiz.max_attempts }} {{ quiz.max_attempts|pl_plural:"podejście,podejścia,podejść" }}{% endif %}{% if quiz.has_open_questions %} · ocena nauczyciela{% endif %}
+        </p>
+    </div>
+    <div class="curriculum-actions">
+        <a href="{% url 'learning:quiz_edit' course.slug quiz.pk %}" class="btn btn--outline btn--sm">Pytania i ustawienia<span class="sr-only"> testu „{{ quiz.title }}”</span></a>
+        <a href="{% url 'learning:quiz_detail' course.slug quiz.pk %}" class="btn btn--ghost btn--sm">Podgląd<span class="sr-only"> testu „{{ quiz.title }}”</span></a>
+    </div>
+</li>
+{% endwith %}

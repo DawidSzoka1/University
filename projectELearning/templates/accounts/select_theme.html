@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Motyw kolorystyczny — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <p class="eyebrow">Wygląd platformy</p>
+            <h1 class="page-head__title">Motyw kolorystyczny</h1>
+            <p class="page-head__lead">Każdy motyw to pięć kolorów bazowych — resztę odcieni strona wylicza sama. Zmiana działa od razu na wszystkich stronach.</p>
+        </div>
+        {% if user.is_staff %}
+        <div class="page-head__actions">
+            <a class="btn btn--outline" href="{% url 'admin:core_colortheme_changelist' %}">Zarządzaj motywami</a>
+        </div>
+        {% endif %}
+    </div>
+</header>
+
+<div class="container page-body">
+    {% if not user.is_authenticated %}
+    <p class="notice">
+        Wybierasz motyw jako gość — zapamiętamy go w tej sesji przeglądarki.
+        <a href="{% url 'accounts:login' %}">Zaloguj się</a>, aby zapisać wybór na koncie i mieć go na każdym urządzeniu.
+    </p>
+    {% endif %}
+
+    {% if available_themes %}
+    <ul class="theme-sheets">
+        {% for theme in available_themes %}
+        <li class="theme-sheet{% if theme.pk == current_theme_id %} theme-sheet--active{% endif %}">
+            <div class="theme-sheet__preview" aria-hidden="true" style="background: {{ theme.surface }}; color: {{ theme.on_surface }}; border-color: {{ theme.on_surface }};">
+                <span class="theme-sheet__preview-title">Aa</span>
+                <span class="theme-sheet__preview-box" style="background: {{ theme.surface_variant }}; color: {{ theme.on_surface_variant }}; border-color: {{ theme.on_surface }};">Karta</span>
+                <span class="theme-sheet__preview-btn" style="background: {{ theme.primary }}; color: {{ theme.on_primary }};">Przycisk</span>
+            </div>
+            <div class="theme-sheet__body">
+                <h2 class="theme-sheet__name">{{ theme.name }}</h2>
+                <p class="theme-sheet__mode">{% if theme.is_dark %}ciemny{% else %}jasny{% endif %}{% if theme.is_default %} · domyślny{% endif %}{% if theme.pk == current_theme_id %} · aktualny{% endif %}</p>
+                <dl class="theme-sheet__colors">
+                    <div><dt><span class="theme-sheet__dot" style="background: {{ theme.primary }}" aria-hidden="true"></span>Główny</dt><dd>{{ theme.primary }}</dd></div>
+                    <div><dt><span class="theme-sheet__dot" style="background: {{ theme.secondary }}" aria-hidden="true"></span>Dodatkowy</dt><dd>{{ theme.secondary }}</dd></div>
+                    <div><dt><span class="theme-sheet__dot" style="background: {{ theme.accent }}" aria-hidden="true"></span>Akcent</dt><dd>{{ theme.accent }}</dd></div>
+                    <div><dt><span class="theme-sheet__dot" style="background: {{ theme.surface }}" aria-hidden="true"></span>Tło strony</dt><dd>{{ theme.surface }}</dd></div>
+                    <div><dt><span class="theme-sheet__dot" style="background: {{ theme.surface_variant }}" aria-hidden="true"></span>Tło kontenerów</dt><dd>{{ theme.surface_variant }}</dd></div>
+                </dl>
+                {% if theme.pk == current_theme_id %}
+                <p class="theme-sheet__current">Ten motyw jest aktywny.</p>
+                {% else %}
+                <form method="post" action="{% url 'accounts:set-theme' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="theme" value="{{ theme.pk }}">
+                    <input type="hidden" name="next" value="{{ next_url }}">
+                    <button class="btn btn--primary btn--block" type="submit" aria-label="Wybierz motyw {{ theme.name }}">Wybierz motyw</button>
+                </form>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    {% include "includes/empty_state.html" with title="Brak motywów" description="Administrator nie zdefiniował jeszcze motywów. Używana jest paleta z arkusza stylów." %}
+    {% endif %}
+</div>
+{% endblock %}

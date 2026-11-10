@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% load core_tags static %}
+
+{% block title %}Galeria: układy slajdera — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'gallery:slider_view' %}">Galeria</a></li>
+                    <li><span aria-current="page">Układy slajdera</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Galeria · krok 2 z 3 · administrator</p>
+            <h1 class="page-head__title">Układy slajdera</h1>
+            <p class="page-head__lead">Zapisz kilka układów kart, wybierz, który widzą użytkownicy, i ustaw kolejność — przeciągając myszą albo przyciskami ↑ ↓.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% include "gallery/includes/nav.html" with active="config" can_upload=True can_configure=True %}
+
+    <section class="presets" id="uklady" aria-labelledby="presets-heading">
+        <div class="presets__head">
+            <h2 id="presets-heading" class="section-title section-title--sm">Zapisane układy</h2>
+            <details class="inline-edit presets__new" data-esc-close>
+                <summary class="btn btn--primary btn--sm">+ Nowy układ</summary>
+                <form method="post" action="{% url 'gallery:preset_create' %}" class="inline-edit__form presets__form" novalidate>
+                    {% csrf_token %}
+                    {% include "includes/form_field.html" with field=new_form.name show_required=True %}
+                    <div class="form-group form-group--checkbox">
+                        <label class="checkbox-label" for="{{ new_form.autoplay.id_for_label }}">{{ new_form.autoplay }} <span>{{ new_form.autoplay.label }}</span></label>
+                    </div>
+                    {% include "includes/form_field.html" with field=new_form.interval_seconds %}
+                    <button type="submit" class="btn btn--primary btn--sm">Utwórz układ</button>
+                </form>
+            </details>
+        </div>
+        {% if presets %}
+        <ul class="row-list">
+            {% for preset in presets %}
+            <li class="row-list__item{% if preset == current %} is-current{% endif %}">
+                <div class="row-list__main">
+                    <p class="row-list__title">
+                        {% if preset == current %}<span aria-current="true">{{ preset.name }}</span> <span class="tag">edytujesz</span>{% else %}<a href="?uklad={{ preset.pk }}">{{ preset.name }}</a>{% endif %}
+                        {% if preset.is_active %}<span class="tag tag--ok">wyświetlany w galerii</span>{% endif %}
+                    </p>
+                    <p class="row-list__meta">{% with n=preset.preset_items.count %}{{ n }} {{ n|pl_plural:"karta,karty,kart" }}{% endwith %} · {% if preset.autoplay %}przewija co {{ preset.interval_seconds }} s{% else %}bez przewijania automatycznego{% endif %}</p>
+                </div>
+                <div class="curriculum-actions">
+                    {% if preset != current %}<a href="?uklad={{ preset.pk }}" class="btn btn--outline btn--sm">Edytuj<span class="sr-only"> układ „{{ preset.name }}”</span></a>{% endif %}
+                    {% if not preset.is_active %}
+                    <form method="post" action="{% url 'gallery:preset_activate' preset.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn--ghost btn--sm">Wyświetlaj w galerii<span class="sr-only"> układ „{{ preset.name }}”</span></button>
+                    </form>
+                    {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        {% include "includes/empty_state.html" with title="Nie ma jeszcze układów" description="Utwórz pierwszy układ przyciskiem „+ Nowy układ”, a potem dodaj do niego zdjęcia z bazy." %}
+        {% endif %}
+    </section>
+
+    {% if current %}
+    <section class="prose-section" id="karty" aria-labelledby="current-heading">
+        <h2 id="current-heading" class="section-title">Układ „{{ current.name }}”</h2>
+
+        <details class="inline-edit preset-settings" id="ustawienia" data-esc-close>
+            <summary class="btn btn--outline btn--sm">Ustawienia układu</summary>
+            <form method="post" action="{% url 'gallery:preset_update' current.pk %}" class="inline-edit__form presets__form" novalidate>
+                {% csrf_token %}
+                {% include "includes/form_field.html" with field=edit_form.name show_required=True %}
+                <div class="form-group form-group--checkbox">
+                    <label class="checkbox-label" for="{{ edit_form.autoplay.id_for_label }}">{{ edit_form.autoplay }} <span>{{ edit_form.autoplay.label }}</span></label>
+                    <p class="form-help">{{ edit_form.autoplay.help_text }}</p>
+                </div>
+                {% include "includes/form_field.html" with field=edit_form.interval_seconds %}
+                <div class="comment-form__actions">
+                    <button type="submit" class="btn btn--primary btn--sm">Zapisz ustawienia</button>
+                </div>
+            </form>
+            <form method="post" action="{% url 'gallery:preset_delete' current.pk %}"
+                  data-confirm="Układ „{{ current.name }}” zostanie usunięty. Zdjęcia zostaną w bazie." data-confirm-title="Usunąć układ?" data-confirm-btn="Usuń układ" data-confirm-danger="true">
+                {% csrf_token %}
+                <button type="submit" class="comment__action comment__action--danger">Usuń układ</button>
+            </form>
+        </details>
+
+        <p class="section-lead" id="dnd-help">
+            Przeciągnij kartę myszą, żeby zmienić kolejność, albo użyj przycisków ↑ ↓. Zdjęcie z bazy przeciągnij na listę w wybrane miejsce lub kliknij „Dodaj”.
+            Na stronie galerii karty pojawiają się w tej kolejności i przesuwają się o jedną.
+        </p>
+        <p class="sr-only" aria-live="polite" data-dnd-live></p>
+
+        <div class="configurator">
+            <div class="configurator__column">
+                <h3 class="configurator__title">Karty w slajderze <span class="section-title__count">({{ items|length }})</span></h3>
+                <ol class="dnd-list" data-dnd-list
+                    data-reorder-url="{% url 'gallery:slider_reorder' current.pk %}"
+                    data-add-url="{% url 'gallery:preset_add_item' current.pk %}"
+                    aria-describedby="dnd-help">
+                    {% for entry in items %}
+                    {% with item=entry.gallery_item %}
+                    <li class="dnd-card" id="card-{{ item.pk }}" draggable="true" data-item-id="{{ item.pk }}" data-title="{{ item.title }}">
+                        <span class="dnd-card__handle" aria-hidden="true">⠿</span>
+                        <span class="dnd-card__num" data-dnd-num>{{ forloop.counter }}</span>
+                        <img src="{{ item.image.url }}" alt="" class="dnd-card__thumb" loading="lazy">
+                        <span class="dnd-card__title">{{ item.title }}</span>
+                        <span class="dnd-card__actions">
+                            <form method="post" action="{% url 'gallery:preset_move_item' current.pk item.pk 'up' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="icon-btn" aria-label="Przesuń „{{ item.title }}” wyżej"{% if forloop.first %} disabled{% endif %} data-dnd-up>↑</button>
+                            </form>
+                            <form method="post" action="{% url 'gallery:preset_move_item' current.pk item.pk 'down' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="icon-btn" aria-label="Przesuń „{{ item.title }}” niżej"{% if forloop.last %} disabled{% endif %} data-dnd-down>↓</button>
+                            </form>
+                            <form method="post" action="{% url 'gallery:preset_remove_item' current.pk item.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="comment__action comment__action--danger">Usuń<span class="sr-only"> „{{ item.title }}” z układu</span></button>
+                            </form>
+                        </span>
+                    </li>
+                    {% endwith %}
+                    {% empty %}
+                    <li class="dnd-empty" data-dnd-empty>Układ jest pusty — przeciągnij tu zdjęcie z bazy albo kliknij „Dodaj”.</li>
+                    {% endfor %}
+                </ol>
+            </div>
+
+            <div class="configurator__column">
+                <h3 class="configurator__title">Zdjęcia z bazy <span class="section-title__count">({{ paginator.count }})</span></h3>
+                {% if library %}
+                <ul class="dnd-library">
+                    {% for item in library %}
+                    <li class="dnd-card dnd-card--library" draggable="true" data-item-id="{{ item.pk }}" data-title="{{ item.title }}">
+                        <span class="dnd-card__handle" aria-hidden="true">⠿</span>
+                        <img src="{{ item.image.url }}" alt="" class="dnd-card__thumb" loading="lazy">
+                        <span class="dnd-card__title">{{ item.title }}</span>
+                        <form method="post" action="{% url 'gallery:preset_add_item' current.pk %}" class="dnd-card__actions">
+                            {% csrf_token %}
+                            <input type="hidden" name="item" value="{{ item.pk }}">
+                            <button type="submit" class="btn btn--outline btn--sm">Dodaj<span class="sr-only"> „{{ item.title }}” do układu</span></button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% include "includes/pagination.html" with page_param="baza" pagination_label="Strony bazy zdjęć" %}
+                {% else %}
+                <p class="text-muted">Wszystkie zdjęcia z bazy są już w tym układzie. <a href="{% url 'gallery:upload_image' %}">Dodaj nowe zdjęcia</a>.</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/gallery_configurator.js' %}" defer></script>
+{% endblock %}

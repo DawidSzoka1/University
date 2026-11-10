@@ -1,0 +1,61 @@
+\chapter{Podsumowanie}
+
+\section{Stan realizacji}
+
+Zrealizowano wszystkie moduły przewidziane w~specyfikacji wraz z~rozszerzeniami
+punktowanymi oraz szeregiem usprawnień wykraczających poza nią. Zestawienie z~wymaganiami
+prowadzącego przedstawia tabela~\ref{tab:realizacja}.
+
+\begin{table}[H]
+\centering\small
+\caption{Realizacja wymagań specyfikacji}\label{tab:realizacja}
+\begin{tabularx}{\linewidth}{@{}P{3.8cm}L@{}}
+\toprule
+\hd{Moduł} & \hd{Zrealizowane elementy} \\
+\midrule
+UI/UX, WCAG, usability & autorski system stylów bez bibliotek, pełna obsługa klawiaturą, widoczny fokus, etykiety, Esc w~każdym panelu, RWD 320--1920 px, brak \code{alert/confirm/prompt} \\
+Konta i~OAuth2 & sesja + JWT, zmiana hasła, blokada po 5 nieudanych logowaniach, trzy portale spoza Google/GitHub z~pobraniem profilu i~awatara, split-screen logowania, zachowanie danych po błędzie \\
+Galeria i~slajder & trzy widoki, skalowanie Pillow, wiele układów, DnD z~\code{fetch} i~alternatywą klawiaturową, zapętlony slajder 1/2/3 \\
+Katalog i~moderacja & drzewo MPTT z~okruszkami, CKEditor + bleach, zgłoszenia z~trwałym wątkiem, komentarze z~akceptacją, oceny i~rangi, centrum powiadomień, paginacja wszystkich list \\
+E-commerce & kumulacja w~koszyku, adres z~profilu z~zapisem, e-mail, statusy, Stripe sandbox + webhook $\rightarrow$ ,,Opłacone'' $\rightarrow$ dostęp do kursu \\
+E-learning i~AI & lekcje, pytania z~tekstem, zdjęciem i~filmem, ABC liczone automatycznie, pytania otwarte ze zdjęciem i~oceną ręczną z~powiadomieniem, Bielik przez Ollamę z~API JWT \\
+Style uczenia się (rozszerzenie) & 4 style VARK + style dodawane przez admina, ankieta diagnostyczna, wybór i~zmiana stylu przez ucznia, wersje lekcji dla stylów, analiza wyników i~rekomendacja stylu, polecanie kursów dopasowanych do profilu \\
+Postępy i~statystyki & panel uczniów kursu dla nauczyciela, statystyki platformy dla administratora, liczba osób, które kurs zaczęły i~ukończyły, z~procentem ukończenia \\
+Motywy & 5 tokenów, odcienie przez \code{color-mix}/\code{hsl(from)}, edycja w~panelu z~próbnikami, motywy w~profilu na każdym urządzeniu \\
+Dokumentacja, uruchomienie & Docker Compose, \code{requirements.txt}, skrypt danych testowych, instrukcje, niniejszy dokument, 393 testy automatyczne, audyt axe i~Lighthouse bez błędów (dostępność 100/100) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Wnioski}
+
+\begin{itemize}
+  \item \textbf{Renderowanie po stronie serwera ułatwiło dostępność.} Formularze HTML,
+        natywne \code{details} i~\code{dialog} oraz zasada ,,najpierw działa bez JS'' dały
+        obsługę klawiatury i~czytników ekranu niemal za darmo; JavaScript dodaje jedynie
+        wygodę.
+  \item \textbf{Kolory wyliczane zamiast wpisywanych.} Obliczanie koloru tekstu
+        z~kontrastu sprawiło, że administrator nie może utworzyć nieczytelnego motywu,
+        a~pięć tokenów wystarczyło do pokolorowania całej platformy i~panelu administracyjnego.
+  \item \textbf{Usługi zewnętrzne jako elementy opcjonalne.} Platforma działa bez
+        płatności, portali i~modelu językowego, co upraszcza prezentację i~testy, a~awaria
+        jednej usługi nie wyłącza pozostałych funkcji.
+  \item \textbf{Moduły kończone ,,pionowo''.} Każda funkcja powstawała od modelu, przez
+        widok i~szablon, po test i~dane demo -- dzięki temu w~każdym momencie projekt nadawał
+        się do pokazania.
+\end{itemize}
+
+\section{Kierunki rozwoju}
+
+\begin{itemize}
+  \item Kolejka zadań (np.\ Celery na istniejącym Redisie) dla e-maili i~generowania
+        dyplomów, aby nie wydłużały odpowiedzi.
+  \item Serwowanie filmów przez serwer WWW z~obsługą żądań zakresowych i~ewentualna
+        transkodacja.
+  \item Raporty dla nauczyciela: statystyki pytań (najczęstsze błędne odpowiedzi),
+        eksport wyników do CSV.
+  \item Wyszukiwanie pełnotekstowe PostgreSQL w~katalogu i~treści lekcji.
+  \item Indeksowanie treści kursu (RAG) dla asystenta, aby odpowiadał na podstawie całego
+        kursu, a~nie tylko bieżącej lekcji.
+  \item Faktury i~produkcyjne metody płatności po wyjściu z~trybu testowego.
+\end{itemize}

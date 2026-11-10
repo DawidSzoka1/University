@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Testy do oceny — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    {% if is_teacher %}<li><a href="{% url 'catalog:moderation_submissions' %}">Moderacja</a></li>{% else %}<li><a href="{% url 'learning:my_courses' %}">Moje kursy</a></li>{% endif %}
+                    <li><span aria-current="page">Do oceny</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Testy</p>
+            <h1 class="page-head__title">Testy do oceny</h1>
+            <p class="page-head__lead">Podejścia z pytaniami otwartymi w Twoich kursach, najstarsze pierwsze. Pytania ABC są już policzone — oceniasz tylko odpowiedzi otwarte.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% if is_teacher %}{% include "catalog/includes/moderation_nav.html" with active="grading" %}{% endif %}
+    {% if attempts %}
+    <ul class="row-list">
+        {% for a in attempts %}
+        <li class="row-list__item">
+            <div class="row-list__main">
+                <h2 class="row-list__title"><a href="{% url 'learning:attempt_grade' a.pk %}">{{ a.quiz.title }}</a></h2>
+                <p class="row-list__meta">{{ a.user.get_full_name|default:a.user.username }} · kurs „{{ a.quiz.course.title }}” · wysłano <time datetime="{{ a.submitted_at|date:'c' }}">{{ a.submitted_at|date:"j E Y, H:i" }}</time> · za pytania zamknięte {{ a.score }} pkt</p>
+            </div>
+            <a href="{% url 'learning:attempt_grade' a.pk %}" class="btn btn--primary btn--sm">Oceń<span class="sr-only"> test {{ a.quiz.title }}: {{ a.user.get_full_name|default:a.user.username }}</span></a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% include "includes/pagination.html" with pagination_label="Strony kolejki ocen" %}
+    {% else %}
+    {% include "includes/empty_state.html" with title="Nic do oceny" description="Gdy uczeń wyśle test z pytaniem otwartym, pojawi się tutaj, a Ty dostaniesz powiadomienie." %}
+    {% endif %}
+</div>
+{% endblock %}

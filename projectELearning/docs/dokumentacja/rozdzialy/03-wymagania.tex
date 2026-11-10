@@ -1,0 +1,179 @@
+\chapter{Specyfikacja wymagań}
+
+\section{Konwencja zapisu}
+
+Wymagania funkcjonalne mają identyfikatory \code{WF-xxx-nn}, gdzie \code{xxx} to skrót
+modułu (tab.~\ref{tab:moduly}). Kolumna \emph{Aktor} wskazuje najniższą rolę, która
+może skorzystać z~funkcji (z~uwagi na generalizację aktorów funkcja jest dostępna także
+dla ról wyższych). Priorytet podano w~skali MoSCoW: \textbf{M}~-- musi być
+(wymaganie bazowe specyfikacji), \textbf{S}~-- powinno być (rozszerzenie punktowane),
+\textbf{C}~-- może być (usprawnienie wykraczające poza specyfikację). Wszystkie wymagania
+wymienione poniżej zostały zrealizowane.
+
+\begin{table}[H]
+\centering\small
+\caption{Skróty modułów w~identyfikatorach wymagań}\label{tab:moduly}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\hd{Skrót} & \hd{Moduł} & \hd{Skrót} & \hd{Moduł} \\
+\midrule
+KON & konta, role, logowanie & NAU & lekcje, postęp, testy, dyplomy \\
+KAT & katalog i~kategorie & AI & asystent Bielik \\
+TRE & tworzenie i~moderacja treści & GAL & galeria i~slajder \\
+SPO & społeczność i~powiadomienia & WYG & motywy i~wygląd \\
+SKL & sklep i~płatności & STY & style uczenia się \\
+STA & statystyki i~postępy & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Wymagania funkcjonalne}
+
+{\small
+\begin{longtable}{@{}p{1.75cm}p{9.6cm}p{1.9cm}c@{}}
+\caption{Wymagania funkcjonalne}\label{tab:wf}\\
+\toprule
+\hd{ID} & \hd{Wymaganie} & \hd{Aktor} & \hd{Pr.} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{@{}l}{\small\itshape ciąg dalszy tabeli \ref{tab:wf}}\\
+\toprule
+\hd{ID} & \hd{Wymaganie} & \hd{Aktor} & \hd{Pr.} \\
+\midrule
+\endhead
+\midrule\multicolumn{4}{r@{}}{\small\itshape ciąg dalszy na następnej stronie}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\multicolumn{4}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Konta i~role}}}}\\
+\req{WF-KON-01} & Rejestracja konta (login, e-mail, imię, nazwisko, hasło) z~kontrolą dostępności loginu i~e-maila ,,na żywo''. Po błędzie walidacji formularz zachowuje dane poza hasłem. & Gość & M \\
+\req{WF-KON-02} & Logowanie loginem lub e-mailem i~hasłem; po zalogowaniu komunikat o~liczbie nieprzeczytanych powiadomień. & Gość & M \\
+\req{WF-KON-03} & Logowanie przez Discord, GitLab i~Bitbucket (OAuth2); przy pierwszym logowaniu pobranie imienia, nazwiska, e-maila i~awatara do profilu. & Gość & S \\
+\req{WF-KON-04} & Jeżeli e-mail z~portalu należy do istniejącego konta -- przekierowanie na logowanie i~dołączenie portalu do konta po poprawnym zalogowaniu (ważne 15 min). & Gość & C \\
+\req{WF-KON-05} & Podgląd i~edycja profilu: dane osobowe, adres, telefon, awatar (walidacja i~skalowanie do 512$\times$512 px), połączone portale z~możliwością odłączenia. & Uczeń & M \\
+\req{WF-KON-06} & Wydanie pary tokenów JWT (access/refresh) dla klienta API oraz tokenu dla skryptów strony na podstawie sesji. & Uczeń & M \\
+\req{WF-KON-07} & Nadawanie ról i~przydział nauczycieli do kategorii przez administratora. & Admin & M \\
+\req{WF-KON-08} & Zmiana hasła z~podaniem obecnego; konto założone przez portal ustawia hasło po raz pierwszy. Sesja pozostaje aktywna. & Uczeń & S \\
+\req{WF-KON-09} & Po 5 nieudanych logowaniach na to samo konto (login lub e-mail) w~ciągu 15 minut logowanie jest blokowane na 5 minut; komunikat podaje liczbę pozostałych prób. & System & S \\
+\multicolumn{4}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Katalog}}}}\\
+\req{WF-KAT-01} & Lista kursów z~wyszukiwarką, filtrami (kategoria z~podkategoriami, poziom, darmowe/płatne), sortowaniem i~paginacją po 9 pozycji. & Gość & M \\
+\req{WF-KAT-02} & Drzewo kategorii (MPTT) z~okruszkami nawigacyjnymi i~licznikami kursów w~podkategoriach. & Gość & S \\
+\req{WF-KAT-03} & Strona kursu: opis, program, cena, ocena, liczba uczestników, komentarze, przycisk zakupu lub zapisu. & Gość & M \\
+\req{WF-KAT-04} & Zarządzanie kategoriami w~platformie: dodawanie, edycja, zmiana kolejności, ukrywanie, usuwanie pustych; nauczyciel -- w~swojej gałęzi. & Nauczyciel & S \\
+\req{WF-KAT-05} & Na stronie kursu liczba osób, które kurs zaczęły i~ukończyły, oraz procent ukończenia. & Gość & S \\
+\multicolumn{4}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Tworzenie i~moderacja treści}}}}\\
+\req{WF-TRE-01} & Kreator kursu w~3 krokach: dane kursu (opis w~CKEditorze, miniatura) $\rightarrow$ program (sekcje, lekcje, testy) $\rightarrow$ publikacja. Kurs do czasu wysłania jest szkicem widocznym tylko dla autora. & Uczeń & M \\
+\req{WF-TRE-02} & Publikacja: kurs nauczyciela w~jego kategorii (lub admina) jest zatwierdzany od razu, pozostałe trafiają do kolejki ze statusem ,,Oczekuje''. Wymagana co najmniej jedna lekcja. & Uczeń & M \\
+\req{WF-TRE-03} & Trwały wątek dyskusji zgłoszenia (autor $\leftrightarrow$ nauczyciele kategorii) zapisywany w~bazie, z~paginacją i~powiadomieniami. & Uczeń & S \\
+\req{WF-TRE-04} & Decyzja w~zgłoszeniu: akceptacja albo odrzucenie z~wymaganym powodem (trafia do wątku i~powiadomienia). & Nauczyciel & M \\
+\req{WF-TRE-05} & Zmiana opublikowanego kursu przez osobę bez uprawnień moderatora przywraca go do akceptacji. & System & S \\
+\req{WF-TRE-06} & Edytor lekcji: treść sformatowana (nagłówki, kod, tabele, zdjęcia z~opisem alternatywnym), film YouTube/Vimeo lub plik wideo do 200 MB, załączniki do 25 MB. & Uczeń & M \\
+\req{WF-TRE-07} & Sanityzacja całego HTML z~edytora (\code{bleach}) przed zapisem. & System & M \\
+\multicolumn{4}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Społeczność i~powiadomienia}}}}\\
+\req{WF-SPO-01} & Komentarze pod kursem w~wątkach (4 poziomy wcięć, głębsze odpowiedzi z~adnotacją ,,w odpowiedzi do''), paginacja 10 wątków, sortowanie: najnowsze, najlepsze, najstarsze. & Uczeń & M \\
+\req{WF-SPO-02} & Komentarz ucznia czeka na akceptację -- widzą go autor i~nauczyciele kategorii; komentarz nauczyciela kategorii publikuje się od razu. & Uczeń & S \\
+\req{WF-SPO-03} & Edycja własnego komentarza (zmieniony wraca do akceptacji) i~usuwanie (z~odpowiedziami -- jako znacznik ,,Komentarz usunięty''). & Uczeń & S \\
+\req{WF-SPO-04} & Ocena kursu 1--5 raz na kurs, tylko w~komentarzu głównym osoby zapisanej. & Uczeń & M \\
+\req{WF-SPO-05} & Głos ,,lubię / nie lubię'' na cudzy opublikowany komentarz; ponowne kliknięcie cofa głos. & Uczeń & S \\
+\req{WF-SPO-06} & Reputacja = suma głosów; ranga przy nazwisku i~drabina rang w~profilu z~liczbą punktów do następnej. & System & S \\
+\req{WF-SPO-07} & Kolejki moderacji: zgłoszenia kursów i~komentarze oczekujące (paginacja), akceptacja jednym kliknięciem także bezpośrednio pod kursem. & Nauczyciel & M \\
+\req{WF-SPO-08} & Centrum powiadomień: panel pod ikoną dzwonka (5 ostatnich), pełna lista z~filtrem nieprzeczytanych i~paginacją, ,,oznacz wszystkie jako przeczytane''. 12 rodzajów zdarzeń. & Uczeń & M \\
+\multicolumn{4}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Sklep i~płatności}}}}\\
+\req{WF-SKL-01} & Koszyk dla gościa i~zalogowanego; ponowne dodanie kursu zwiększa ilość (limit 10), a~po zalogowaniu koszyk gościa scala się z~koszykiem konta. & Gość & S \\
+\req{WF-SKL-02} & Zmiana ilości i~usuwanie pozycji bez przeładowania strony (API JWT), z~zachowaniem działania bez JavaScriptu. & Gość & C \\
+\req{WF-SKL-03} & Złożenie zamówienia z~adresem podstawionym z~profilu, opcją zapisu adresu w~profilu i~akceptacją regulaminu; numer \code{ORD-RRRR-NNNNNN}. & Uczeń & M \\
+\req{WF-SKL-04} & E-mail HTML z~potwierdzeniem zamówienia (,,Oczekuje na płatność'') oraz po opłaceniu (z~kodami dostępu). & System & S \\
+\req{WF-SKL-05} & Płatność przez Stripe Checkout (tryb testowy, PLN, BLIK/karta); webhook z~weryfikacją podpisu, kwoty i~waluty ustawia status ,,Opłacone''. & Uczeń & S \\
+\req{WF-SKL-06} & Realizacja: pierwsza sztuka kursu zapisuje kupującego, kolejne generują jednorazowe kody dostępu do wykorzystania przez inne konta. & System & C \\
+\req{WF-SKL-07} & Historia zamówień ucznia, anulowanie nieopłaconego zamówienia. & Uczeń & M \\
+\req{WF-SKL-08} & Obsługa zamówień: lista z~filtrem statusu i~wyszukiwarką, ręczna zmiana statusu (Nowe, Oczekuje na płatność, Opłacone, Zrealizowane, Anulowane) z~historią zmian. & Nauczyciel & M \\
+\multicolumn{4}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Nauka}}}}\\
+\req{WF-NAU-01} & Dostęp do lekcji po zapisie; lekcje ,,podgląd'' dostępne dla każdego. Pliki lekcji pobierane przez chroniony widok. & Uczeń & M \\
+\req{WF-NAU-02} & Oznaczanie lekcji jako ukończonej, pasek postępu kursu, przycisk ,,Dalej''. & Uczeń & M \\
+\req{WF-NAU-03} & Testy po wybranej lekcji lub na końcu kursu; test obowiązkowy blokuje dalsze lekcje i~testy do zaliczenia; próg zaliczenia i~limit podejść. & Nauczyciel & M \\
+\req{WF-NAU-04} & Pytania z~treścią, zdjęciem (z~tekstem alternatywnym), filmem, kodem lub plikiem. & Nauczyciel & M \\
+\req{WF-NAU-05} & Pytania zamknięte (ABC, wielokrotne) oceniane automatycznie zaraz po wysłaniu. & Uczeń & M \\
+\req{WF-NAU-06} & Pytania otwarte z~odpowiedzią tekstową, kodem, zdjęciem (walidacja i~skalowanie Pillow) lub plikiem; ocena ręczna z~komentarzem i~powiadomieniem ucznia. & Uczeń & M \\
+\req{WF-NAU-07} & Kolejka testów do oceny dla autora kursu i~nauczycieli kategorii; nikt nie ocenia własnego podejścia. & Nauczyciel & M \\
+\req{WF-NAU-08} & Ukończenie kursu (wszystkie lekcje i~zaliczone testy) wystawia dyplom PDF z~numerem i~publiczną stroną weryfikacji. & System & C \\
+\req{WF-NAU-09} & Tryb ,,podgląd autora'' (wszystko otwarte, test bez wysyłania) i~tryb nauki dla autora zapisanego na własny kurs. & Nauczyciel & C \\
+\multicolumn{4}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Style uczenia się}}}}\\
+\req{WF-STY-01} & Słownik stylów uczenia się: cztery domyślne (wzrokowiec, słuchowiec, czytanie i~pisanie, praktyk), dodawanie, edycja, kolejność i~wyłączanie kolejnych przez administratora. & Admin & C \\
+\req{WF-STY-02} & Wybór własnego stylu (albo brak) i~jego zmiana w~dowolnej chwili; styl zapisany na koncie. & Uczeń & C \\
+\req{WF-STY-03} & Osobna treść lekcji (i~opcjonalnie film) dla wybranych stylów albo jedna treść dla wszystkich; wskazówka dla autora przy każdym stylu. & Nauczyciel & C \\
+\req{WF-STY-04} & Lekcja pokazuje wersję dla stylu ucznia (brak wersji -- treść podstawowa); przełącznik pozwala obejrzeć pozostałe wersje. & Uczeń & C \\
+\req{WF-STY-05} & Zapis wersji, w~której uczeń ukończył lekcję, oraz stylu przy każdym podejściu do testu. & System & C \\
+\req{WF-STY-06} & Analiza wyników testów w~podziale na style i~rekomendacja stylu z~uzasadnieniem (strona stylu, podpowiedź w~lekcji). & System & C \\
+\req{WF-STY-07} & Ankieta diagnostyczna: 10 pytań sytuacyjnych, wynik procentowy dla każdego stylu, styl dominujący; uczeń bez stylu dostaje go automatycznie; pytania i~odpowiedzi edytuje administrator. & Uczeń & S \\
+\req{WF-STY-08} & Polecanie kursów dopasowanych do profilu stylów ucznia (wybrany styl, ankieta, wyniki testów) z~uzasadnieniem: sekcja w~katalogu, w~,,Moich kursach'' i~na stronie stylu oraz sortowanie ,,Dopasowane do mnie''. & Uczeń & S \\
+\req{WF-STY-09} & Autor zaznacza w~danych kursu style, dla których kurs jest szczególnie odpowiedni. & Nauczyciel & C \\
+\multicolumn{4}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Statystyki i~postępy}}}}\\
+\req{WF-STA-01} & Panel uczniów kursu: liczba zapisanych i~ukończeń (procent), średni postęp i~wynik testów, rozkład stylów, tabela uczniów (postęp, lekcje, zaliczone testy, średni wynik, styl, wynik ankiety) z~filtrem i~paginacją. & Nauczyciel & S \\
+\req{WF-STA-02} & Statystyki platformy: użytkownicy wg ról, kursy wg statusu, rozpoczęte i~ukończone kursy z~procentem ukończenia (łącznie i~dla każdego kursu), testy, style i~ankiety, asystent AI, sprzedaż. & Admin & S \\
+\multicolumn{4}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Asystent AI}}}}\\
+\req{WF-AI-01} & Okno czatu na każdej stronie dla zalogowanych; odpowiedź wyświetlana strumieniowo, z~możliwością zatrzymania. & Uczeń & M \\
+\req{WF-AI-02} & Kontekst rozmowy: treść bieżącej lekcji, opis i~program kursu albo wynik testu (poprawne odpowiedzi tylko po zaliczeniu). & Uczeń & M \\
+\req{WF-AI-03} & Blokada asystenta w~trakcie rozwiązywania testu (stała odmowa bez pytania modelu). & System & M \\
+\req{WF-AI-04} & Historia: jedna rozmowa na kurs i~jedna ogólna; lista rozmów, czyszczenie rozmowy. & Uczeń & S \\
+\req{WF-AI-05} & API czatu chronione JWT: historia, wysłanie wiadomości (strumień NDJSON), czyszczenie. & System & M \\
+\multicolumn{4}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Galeria i~slajder}}}}\\
+\req{WF-GAL-01} & Dodawanie zdjęcia z~tytułem, pełnym opisem i~wymaganym tekstem alternatywnym; automatyczne skalowanie do maks. 1600$\times$1200 px z~zapisem wymiarów przed i~po. & Nauczyciel & M \\
+\req{WF-GAL-02} & Wiele nazwanych układów slajdera (przewijanie automatyczne, czas), wybór układu wyświetlanego publicznie. & Admin & S \\
+\req{WF-GAL-03} & Zmiana kolejności kart przeciąganiem (HTML5 DnD + \code{fetch}) aktualizująca pole \code{order} bez usuwania rekordów; alternatywa klawiaturowa ($\uparrow\downarrow$, Dodaj, Usuń). & Admin & S \\
+\req{WF-GAL-04} & Zapętlony slajder dla dowolnej liczby kart: 1/2/3 karty zależnie od szerokości, przesunięcie o~jedną kartę, pełny opis bez ucinania, równe wysokości, pauza. & Gość & M \\
+\multicolumn{4}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Motywy i~wygląd}}}}\\
+\req{WF-WYG-01} & Wybór motywu z~menu w~nagłówku i~na stronie motywów; zalogowany -- zapis w~profilu (każde urządzenie), gość -- w~sesji. & Gość & S \\
+\req{WF-WYG-02} & Tworzenie i~edycja motywów przez administratora z~próbnikami kolorów; wskazanie motywu domyślnego. & Admin & S \\
+\req{WF-WYG-03} & Kolor tekstu na każdym tle i~tryb jasny/ciemny wyliczane automatycznie z~kontrastu WCAG. & System & S \\
+\end{longtable}
+}
+
+\section{Wymagania niefunkcjonalne}
+
+Wymagania niefunkcjonalne pogrupowano według charakterystyk jakości modelu
+ISO/IEC 25010. Dla każdego podano sposób sprawdzenia.
+
+{\small
+\begin{longtable}{@{}p{1.3cm}p{8.4cm}p{4.9cm}@{}}
+\caption{Wymagania niefunkcjonalne}\label{tab:wn}\\
+\toprule
+\hd{ID} & \hd{Wymaganie} & \hd{Weryfikacja} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{@{}l}{\small\itshape ciąg dalszy tabeli \ref{tab:wn}}\\
+\toprule
+\hd{ID} & \hd{Wymaganie} & \hd{Weryfikacja} \\
+\midrule
+\endhead
+\midrule\multicolumn{3}{r@{}}{\small\itshape ciąg dalszy na następnej stronie}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\multicolumn{3}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Użyteczność i~dostępność}}}}\\
+\req{WN-01} & Cały serwis obsługiwalny klawiszami Tab, Shift+Tab, Enter, Spacja i~strzałkami; brak pułapek fokusu. & Przejście ścieżek z~rozdz.~\ref{ch:dostepnosc} wyłącznie klawiaturą. \\
+\req{WN-02} & Widoczny wskaźnik fokusu (\code{:focus-visible}, kontrast $\geq$ 3:1) na każdym elemencie interaktywnym. & Przegląd stron, Lighthouse. \\
+\req{WN-03} & Każde pole formularza ma etykietę \code{<label for>} (grupy: \code{fieldset}/\code{legend}); błędy opisane tekstem przy polu (\code{aria-describedby}, \code{aria-invalid}). & Testy szablonów, axe/WAVE. \\
+\req{WN-04} & Każdy popup i~panel zamyka się klawiszem Esc i~przyciskiem ,,Zamknij''; fokus wraca do elementu wywołującego. Brak \code{alert/confirm/prompt}. & Test ręczny, przegląd kodu JS. \\
+\req{WN-05} & Kontrast tekstu $\geq$ 4,5:1 (duży tekst $\geq$ 3:1) w~każdym motywie. & Kontrast liczony w~\code{colors.py}, testy jednostkowe. \\
+\req{WN-06} & Responsywność: od 320 px do 1920 px oraz zoom 200\% bez poziomego przewijania; cele dotyku $\geq$ 44$\times$44 px. & Pomiar w~Chrome (320, 768, 1024, 1366, 1920 px). \\
+\req{WN-07} & Uszanowanie \code{prefers-reduced-motion} (slajder bez automatu, bez animacji toastów). & Emulacja ustawienia w~DevTools. \\
+\req{WN-08} & Interfejs w~języku polskim z~poprawną odmianą liczebników (,,1 kurs, 2 kursy, 5 kursów''). & Testy filtra \code{pl\_plural}. \\
+\multicolumn{3}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Bezpieczeństwo}}}}\\
+\req{WN-09} & Dostęp do bazy wyłącznie przez ORM (zapytania parametryzowane), brak surowego SQL. & Przegląd kodu. \\
+\req{WN-10} & Każda zmiana stanu przez POST z~CSRF; webhook płatności jako jedyny wyjątek, z~weryfikacją podpisu HMAC. & Testy ,,POST-only'' dla akcji. \\
+\req{WN-11} & HTML użytkownika sanityzowany \code{bleach}; odpowiedzi modelu escapowane przed renderowaniem. & Testy XSS. \\
+\req{WN-12} & Uploady walidowane (typ, rozmiar, poprawność obrazu) i~skalowane lokalnie; pliki lekcji i~odpowiedzi serwowane przez widoki sprawdzające uprawnienia. & Testy uploadu i~dostępu. \\
+\req{WN-13} & API czatu i~koszyka chronione JWT (access 60 min, refresh 7 dni z~rotacją i~czarną listą). & Testy API bez tokenu (401). \\
+\req{WN-14} & Hasła przechowywane jako skrót (PBKDF2), walidatory siły hasła Django; czasowa blokada logowania po 5 nieudanych próbach (licznik w~Redis). & Konfiguracja \code{AUTH\_PASSWORD\_VALIDATORS}, testy blokady. \\
+\multicolumn{3}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Niezawodność i~wydajność}}}}\\
+\req{WN-15} & Brak modelu AI nie blokuje platformy -- asystent pokazuje komunikat, reszta działa. & Test z~wyłączoną Ollamą. \\
+\req{WN-16} & Webhook płatności idempotentny -- powtórzone zdarzenie nie wydaje dostępu drugi raz. & Test z~podwójnym zdarzeniem. \\
+\req{WN-17} & Wszystkie listy paginowane; zapytania listowe z~\code{select\_related}/\code{prefetch\_related}. & Przegląd widoków, Debug Toolbar. \\
+\req{WN-18} & Odpowiedź asystenta zaczyna się wyświetlać po kilku sekundach (strumień); limit czasu 180 s. & Pomiar z~Bielikiem 7B: ok. 5 s. \\
+\multicolumn{3}{@{}l}{\textsf{\textbf{\textcolor{brandteal}{Utrzymywalność i~przenośność}}}}\\
+\req{WN-19} & Uruchomienie jednym poleceniem \code{docker compose up --build}; dane demonstracyjne poleceniem \code{seed\_demo}. & Uruchomienie na czystym systemie (Linux, Windows + WSL 2). \\
+\req{WN-20} & Każda zmiana modelu ma migrację; \code{makemigrations --check} bez zmian. & Polecenie w~procesie weryfikacji. \\
+\req{WN-21} & Logika domenowa w~modułach usługowych (\code{services.py}, \code{permissions.py}, \code{quizzes.py}) pokrytych testami automatycznymi. & Ponad 320 testów (rozdz.~\ref{ch:testy}). \\
+\req{WN-22} & Wygląd sterowany 5 tokenami kolorów w~\code{main.css}; ręczna zmiana tokenu zmienia całą witrynę. Brak kolorów ,,na sztywno''. & Zmiana tokenu w~arkuszu i~przegląd stron. \\
+\end{longtable}
+}

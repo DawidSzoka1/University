@@ -1,0 +1,11 @@
+{# Test w bocznym spisie programu (lekcja / test). quiz_entry = curriculum.OutlineQuiz; current_quiz = aktualnie otwarty test #}
+<li>
+    {% if quiz_entry.accessible %}
+    <a href="{{ quiz_entry.url }}" class="lesson-toc__link lesson-toc__link--quiz{% if quiz_entry.passed %} is-done{% endif %}"{% if current_quiz and current_quiz.pk == quiz_entry.quiz.pk %} aria-current="page"{% endif %}>
+        <span class="lesson-toc__mark" aria-hidden="true"></span>
+        <span><span class="sr-only">Test: </span>{{ quiz_entry.title }}{% if quiz_entry.quiz.is_required %} <span class="lesson-toc__req">(obowiązkowy)</span>{% endif %}{% if quiz_entry.passed %}<span class="sr-only"> (zaliczony)</span>{% elif quiz_entry.pending %} <span class="lesson-toc__req">— czeka na ocenę</span>{% endif %}</span>
+    </a>
+    {% else %}
+    <span class="lesson-toc__link lesson-toc__link--quiz is-locked"><span class="lesson-toc__mark" aria-hidden="true"></span><span><span class="sr-only">Test: </span>{{ quiz_entry.title }}<span class="sr-only"> ({% if quiz_entry.locked %}po zaliczeniu wcześniejszego testu{% else %}dostępny po zapisie{% endif %})</span></span></span>
+    {% endif %}
+</li>

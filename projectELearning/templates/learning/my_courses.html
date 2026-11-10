@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Moje kursy — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><span aria-current="page">Moje kursy</span></li>
+                </ol>
+            </nav>
+            <h1 class="page-head__title">Moje kursy</h1>
+            <p class="page-head__lead">Kursy, których się uczysz, i te, które tworzysz.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    <section aria-labelledby="enrolled-heading">
+        <h2 id="enrolled-heading" class="section-title">Uczę się</h2>
+        <p class="section-lead">Kursy, do których masz dostęp, z postępem nauki.</p>
+        {% if enrollments %}
+        <ul class="row-list">
+            {% for enrollment in enrollments %}
+            <li class="row-list__item">
+                <div class="row-list__main">
+                    <p class="row-list__title"><a href="{% url 'catalog:course_detail' enrollment.course.slug %}">{{ enrollment.course.title }}</a>{% if enrollment.is_completed %} <span class="tag tag--ok">ukończony</span>{% endif %}</p>
+                    <p class="row-list__meta">{{ enrollment.course.category.name|default:"Bez kategorii" }} · zapis {{ enrollment.created_at|date:"d.m.Y" }}</p>
+                </div>
+                <div class="progress" role="img" aria-label="Postęp: {{ enrollment.progress_percent }}%">
+                    <span class="progress__bar"><span class="progress__fill" style="width: {{ enrollment.progress_percent }}%"></span></span>
+                    <span class="progress__value" aria-hidden="true">{{ enrollment.progress_percent }}%</span>
+                </div>
+                {% if enrollment.next_lesson %}
+                <a href="{{ enrollment.next_lesson.url }}" class="btn btn--primary btn--sm">Kontynuuj<span class="sr-only"> kurs {{ enrollment.course.title }}</span>: {% if enrollment.next_lesson.is_quiz %}test{% else %}{{ enrollment.next_lesson.number }}{% endif %}</a>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% include "includes/pagination.html" with pagination_label="Strony listy: uczę się" %}
+        {% else %}
+        {% url 'catalog:course_list' as catalog_url %}
+        {% include "includes/empty_state.html" with title="Nie masz jeszcze kursów" description="Zapisz się na darmowy kurs albo kup płatny — pojawi się tutaj razem z postępem." action_url=catalog_url action_label="Przeglądaj katalog" %}
+        {% endif %}
+    </section>
+
+    <section aria-labelledby="recommended-heading">
+        <h2 id="recommended-heading" class="section-title">Polecane dla Ciebie</h2>
+        {% if recommended %}
+        <p class="section-lead">Kursy dopasowane do Twojego stylu uczenia się. <a href="{% url 'learning:learning_style' %}">Zobacz swój styl i analizę</a></p>
+        <ul class="course-grid" aria-label="Kursy polecane dla Twojego stylu uczenia się">
+            {% for fit in recommended %}{% with course=fit.course %}{% include "catalog/includes/course_card.html" with heading_level=3 %}{% endwith %}{% endfor %}
+        </ul>
+        {% else %}
+        <p class="section-lead">Wybierz styl uczenia się albo wypełnij krótką ankietę, a pokażemy kursy dopasowane do Ciebie. <a href="{% url 'learning:learning_style' %}">Styl uczenia się</a></p>
+        {% endif %}
+    </section>
+
+    <section class="prose-section" aria-labelledby="authored-heading">
+        <h2 id="authored-heading" class="section-title">Tworzę</h2>
+        <p class="section-lead">Kursy, których jesteś autorem — także te czekające na akceptację.</p>
+        {% if grading_count %}
+        <div class="notice" role="status"><p><strong>{{ grading_count }} {{ grading_count|pl_plural:"test czeka,testy czekają,testów czeka" }} na Twoją ocenę.</strong> <a href="{% url 'learning:grading_queue' %}">Przejdź do kolejki „Do oceny”</a>.</p></div>
+        {% endif %}
+        {% if authored_page.object_list %}
+        <ul class="row-list">
+            {% for course in authored_page.object_list %}
+            <li class="row-list__item">
+                <div class="row-list__main">
+                    <p class="row-list__title">
+                        <a href="{% url 'catalog:course_detail' course.slug %}">{{ course.title }}</a>
+                        <span class="tag{% if course.status == 'approved' %} tag--ok{% elif course.status == 'rejected' %} tag--danger{% endif %}">{{ course.get_status_display|lower }}</span>
+                    </p>
+                    <p class="row-list__meta">{{ course.category.name|default:"Bez kategorii" }} · zmiana {{ course.updated_at|date:"d.m.Y" }}{% if course.message_count %} · {{ course.message_count }} {{ course.message_count|pl_plural:"wiadomość,wiadomości,wiadomości" }} w zgłoszeniu{% endif %}</p>
+                    {% if course.status == 'rejected' and course.rejection_reason %}<p class="row-list__meta">Powód odrzucenia: {{ course.rejection_reason }}</p>{% endif %}
+                </div>
+                <div class="curriculum-actions">
+                    {% if course.status != 'draft' or course.message_count %}
+                    <a href="{% url 'catalog:submission_thread' course.slug %}" class="btn btn--ghost btn--sm">Zgłoszenie<span class="sr-only"> kursu {{ course.title }}</span></a>
+                    {% endif %}
+                    <a href="{% url 'learning:curriculum_edit' course.slug %}" class="btn btn--primary btn--sm">Program<span class="sr-only"> kursu {{ course.title }}</span></a>
+                    <a href="{% url 'learning:course_students' course.slug %}" class="btn btn--outline btn--sm">Uczniowie<span class="sr-only"> kursu {{ course.title }}</span></a>
+                    <a href="{% url 'catalog:course_edit' course.slug %}" class="btn btn--outline btn--sm">Dane<span class="sr-only"> kursu {{ course.title }}</span></a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% include "includes/pagination.html" with page_obj=authored_page page_param="authored_page" pagination_label="Strony listy: tworzę" %}
+        {% else %}
+        {% url 'catalog:course_create' as create_url %}
+        {% include "includes/empty_state.html" with title="Nie tworzysz jeszcze kursów" description="Podziel się wiedzą — zaproponuj kurs, a moderator kategorii go sprawdzi." action_url=create_url action_label="Zaproponuj kurs" %}
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

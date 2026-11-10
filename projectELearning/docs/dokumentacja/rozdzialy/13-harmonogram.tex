@@ -1,0 +1,141 @@
+\chapter{Przebieg realizacji}
+
+Projekt zrealizowano samodzielnie w~okresie od 7 października do 4 listopada 2026 roku.
+Prace podzielono na sześć etapów. Etapy częściowo się nakładały: od chwili, gdy gotowy był
+model danych i~system stylów, moduły funkcjonalne rozwijano równolegle, a~każdy kończył się
+kompletem testów, danymi demonstracyjnymi i~wpisem w~dzienniku stanu projektu. Zasada
+,,moduł jest skończony, gdy ma URL, szablon, test i~dane demo'' pozwoliła uniknąć
+odkładania integracji na koniec.
+
+\section{Diagram Gantta}
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{ganttchart}[
+  time slot format=isodate,
+  x unit=0.48cm, y unit chart=0.55cm, y unit title=0.6cm,
+  vgrid={*6{draw=none},*1{ink!25,dotted}},
+  hgrid style/.style={draw=ink!10},
+  title/.style={draw=ink!40,fill=paperdark},
+  title label font=\sffamily\scriptsize\bfseries,
+  bar/.style={draw=ink,fill=brand!70},
+  bar height=0.55,
+  group/.style={draw=ink,fill=ink},
+  group height=0.25, group peaks height=0.15, group peaks width=0.25,
+  bar label font=\sffamily\scriptsize,
+  group label font=\sffamily\scriptsize\bfseries,
+  milestone/.style={draw=ink,fill=brandteal},
+  milestone label font=\sffamily\scriptsize\bfseries,
+  today=2026-11-05, today rule/.style={draw=brand,dashed,thick},
+  today label=dziś, today label font=\sffamily\scriptsize\color{brand},
+]{2026-10-07}{2026-11-05}
+  \gantttitle{Październik 2026}{25}\gantttitle{Listopad 2026}{5} \\
+  \gantttitle{7.10}{5}\gantttitle{12.10}{7}\gantttitle{19.10}{7}\gantttitle{26.10}{7}\gantttitle{2.11}{4} \\
+  \ganttgroup{I. Analiza i~projekt}{2026-10-07}{2026-10-14} \\
+  \ganttbar{1. Analiza wymagań, wybór technologii}{2026-10-07}{2026-10-09} \\
+  \ganttbar{2. Model danych, podział na moduły}{2026-10-09}{2026-10-14} \\
+  \ganttbar{3. Makiety i~język wizualny}{2026-10-10}{2026-10-14} \\
+  \ganttgroup{II. Fundament}{2026-10-13}{2026-10-24} \\
+  \ganttbar{4. Django, Docker Compose, PostgreSQL, Redis}{2026-10-13}{2026-10-15} \\
+  \ganttbar{5. Konta, role, logowanie, JWT}{2026-10-15}{2026-10-20} \\
+  \ganttbar{6. OAuth2: Discord, GitLab, Bitbucket}{2026-10-19}{2026-10-22} \\
+  \ganttbar{7. System stylów i~motywy kolorów}{2026-10-16}{2026-10-24} \\
+  \ganttgroup{III. Katalog i~społeczność}{2026-10-21}{2026-10-30} \\
+  \ganttbar{8. Kategorie MPTT, katalog, okruszki}{2026-10-21}{2026-10-24} \\
+  \ganttbar{9. Kreator kursu, zgłoszenia, moderacja}{2026-10-23}{2026-10-28} \\
+  \ganttbar{10. Komentarze, głosy, rangi, powiadomienia}{2026-10-26}{2026-10-30} \\
+  \ganttgroup{IV. Nauka i~galeria}{2026-10-24}{2026-10-30} \\
+  \ganttbar{11. Program kursu: sekcje, lekcje, postęp}{2026-10-24}{2026-10-28} \\
+  \ganttbar{12. Testy ABC/otwarte, ocenianie, dyplomy}{2026-10-27}{2026-10-30} \\
+  \ganttbar{13. Galeria: upload, konfigurator DnD, slajder}{2026-10-27}{2026-10-30} \\
+  \ganttbar{14. Redesign wszystkich widoków}{2026-10-28}{2026-10-30} \\
+  \ganttgroup{V. Sklep, asystent AI, style uczenia się}{2026-10-29}{2026-11-04} \\
+  \ganttbar{15. Koszyk, zamówienia, Stripe, webhook}{2026-10-29}{2026-11-01} \\
+  \ganttbar{16. Asystent Bielik: Ollama, strumień, JWT}{2026-10-30}{2026-11-01} \\
+  \ganttbar{17. Style uczenia się: wersje lekcji, analiza}{2026-11-01}{2026-11-03} \\
+  \ganttbar{18. Ankieta, polecanie kursów, postępy, statystyki}{2026-11-02}{2026-11-04} \\
+  \ganttgroup{VI. Weryfikacja i~oddanie}{2026-10-28}{2026-11-04} \\
+  \ganttbar{19. Dane demonstracyjne (seed)}{2026-10-28}{2026-11-02} \\
+  \ganttbar{20. Testy, przegląd dostępności, poprawki}{2026-11-01}{2026-11-03} \\
+  \ganttbar{21. Dokumentacja i~instrukcje}{2026-11-02}{2026-11-04} \\
+  \ganttmilestone{Zakończenie prac}{2026-11-04}
+\end{ganttchart}}
+\caption{Diagram Gantta -- harmonogram realizacji projektu}\label{fig:gantt}
+\end{figure}
+
+\section{Zestawienie zadań}
+
+\begin{table}[H]
+\centering\small
+\caption{Zadania projektu i~terminy}\label{tab:zadania}
+\begin{tabularx}{\linewidth}{@{}rLccr@{}}
+\toprule
+\hd{Nr} & \hd{Zadanie} & \hd{Początek} & \hd{Koniec} & \hd{Dni} \\
+\midrule
+1 & Analiza wymagań prowadzącego, wybór technologii & 07.10 & 09.10 & 3 \\
+2 & Model danych, podział na aplikacje, decyzje projektowe & 09.10 & 14.10 & 6 \\
+3 & Makiety interfejsu i~język wizualny ,,plan zajęć'' & 10.10 & 14.10 & 5 \\
+4 & Szkielet Django, Docker Compose, PostgreSQL, Redis, \code{.env} & 13.10 & 15.10 & 3 \\
+5 & \code{CustomUser}, role, logowanie i~rejestracja, JWT & 15.10 & 20.10 & 6 \\
+6 & OAuth2 (Discord, GitLab, Bitbucket), łączenie kont & 19.10 & 22.10 & 4 \\
+7 & \code{main.css}, 5 tokenów, \code{ColorTheme}, kontrast, przełącznik & 16.10 & 24.10 & 9 \\
+8 & Kategorie MPTT, katalog z~filtrami, okruszki & 21.10 & 24.10 & 4 \\
+9 & Kreator kursu, zgłoszenia z~wątkiem, kolejki moderacji & 23.10 & 28.10 & 6 \\
+10 & Komentarze w~wątkach, głosy, rangi, centrum powiadomień & 26.10 & 30.10 & 5 \\
+11 & Sekcje, lekcje, załączniki, filmy, postęp & 24.10 & 28.10 & 5 \\
+12 & Testy ABC/wielokrotne/otwarte, ocena ręczna, dyplomy PDF & 27.10 & 30.10 & 4 \\
+13 & Galeria: skalowanie, układy, przeciąganie, slajder & 27.10 & 30.10 & 4 \\
+14 & Redesign wszystkich stron (w~tym allauth i~panel admina) & 28.10 & 30.10 & 3 \\
+15 & Koszyk, zamówienia, e-mail, Stripe + webhook, kody & 29.10 & 01.11 & 4 \\
+16 & Asystent Bielik: widżet, API strumieniowe, historia & 30.10 & 01.11 & 3 \\
+17 & Style uczenia się: słownik stylów, wersje lekcji, analiza i~rekomendacja & 01.11 & 03.11 & 3 \\
+18 & Ankieta stylu, polecanie kursów, panel postępów, statystyki, blokada logowania & 02.11 & 04.11 & 3 \\
+19 & Dane demonstracyjne (\code{seed\_demo}) & 28.10 & 02.11 & 6 \\
+20 & Testy automatyczne, przegląd klawiatury i~RWD, poprawki & 01.11 & 03.11 & 3 \\
+21 & Dokumentacja, instrukcje uruchomienia & 02.11 & 04.11 & 3 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Opis etapów}
+
+\subsection*{Etap I -- analiza i~projekt (07--14.10)}
+Rozpisano wymagania prowadzącego na moduły i~punktację, zdecydowano o~monolicie Django
+z~renderowaniem po stronie serwera (prostsze spełnienie wymagań dostępności niż w~aplikacji
+SPA) i~o~lokalnym modelu językowym. Zaprojektowano model danych z~rozstrzygnięciem
+niejasności (np.\ moderator = nauczyciel, test po lekcji lub na końcu, kody dostępu dla
+kolejnych sztuk kursu). Przygotowano makiety i~zasady języka wizualnego, w~tym decyzję
+o~pięciu kolorach bazowych.
+
+\subsection*{Etap II -- fundament (13--24.10)}
+Powstało środowisko Docker Compose, rozszerzony model użytkownika z~rolami, logowanie,
+rejestracja z~zachowaniem danych po błędzie, tokeny JWT i~logowanie przez trzy portale
+OAuth2 z~pobieraniem profilu. Równolegle zbudowano system stylów oparty na tokenach,
+moduł kontrastu WCAG, motywy w~bazie i~przełącznik motywu dostępny z~klawiatury.
+
+\subsection*{Etap III -- katalog i~społeczność (21--30.10)}
+Drzewo kategorii z~przydziałem moderatorów, katalog z~filtrami, trzyetapowy kreator
+kursu ze szkicem, zgłoszenia z~trwałym wątkiem, kolejki moderacji, komentarze w~wątkach
+z~akceptacją i~edycją, głosy z~przeliczaniem reputacji oraz centrum powiadomień.
+
+\subsection*{Etap IV -- nauka i~galeria (24--30.10)}
+Program kursu z~edytorem lekcji, testy wszystkich typów z~blokadami i~oceną ręczną,
+dyplomy PDF oraz trzy widoki galerii z~przeciąganiem i~zapętlonym slajderem. Na koniec etapu przeprowadzono redesign wszystkich widoków
+w~jednolitym stylu.
+
+\subsection*{Etap V -- sklep, asystent AI i~style uczenia się (29.10--04.11)}
+Koszyk z~kumulacją i~scalaniem koszyka gościa, zamówienie z~adresem z~profilu,
+potwierdzenia e-mail, integracja Stripe Checkout z~webhookiem i~kodami dostępu (sprawdzona
+na prawdziwym koncie testowym). Asystent Bielik z~oknem czatu, strumieniowaniem,
+kontekstem lekcji i~wyniku testu, blokadą w~trakcie testu i~historią rozmów (sprawdzony
+z~modelem 7B). Na koniec etapu dodano style uczenia się: słownik stylów zarządzany przez
+administratora, wersje lekcji dla stylów, wybór stylu przez ucznia oraz analizę wyników testów
+z~rekomendacją stylu, a~następnie ankietę diagnostyczną, polecanie kursów dopasowanych do profilu
+stylów ucznia, panel postępów uczniów dla nauczyciela, statystyki platformy oraz zmianę hasła
+i~czasową blokadę logowania.
+
+\subsection*{Etap VI -- weryfikacja i~oddanie (28.10--04.11)}
+Komplet danych demonstracyjnych odtwarzanych jednym poleceniem, uzupełnienie testów
+automatycznych do 393, automatyczny audyt dostępności (axe, Lighthouse), przegląd klawiatury i~responsywności, instrukcje uruchomienia
+(Windows, Stripe, asystent) oraz niniejsza dokumentacja.

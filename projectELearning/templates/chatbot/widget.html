@@ -1,0 +1,55 @@
+{# Okno asystenta w prawym dolnym rogu (tylko zalogowani). Kontekst — atrybuty data-course/lesson/attempt z bloku chat_context strony. #}
+<div class="chat-widget" data-chat-widget
+     data-token-url="{% url 'chatbot:api_token' %}"
+     data-history-url="{% url 'chatbot:api_history' %}"
+     data-message-url="{% url 'chatbot:api_send_message' %}"
+     data-clear-url="{% url 'chatbot:api_clear' %}"
+     data-list-url="{% url 'chatbot:session_list' %}"
+     >
+    <button type="button" class="chat-fab" data-chat-toggle aria-expanded="false" aria-controls="chat-panel">
+        <svg class="chat-fab__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 4h16v12H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>
+        <span class="chat-fab__label">Asystent</span>
+    </button>
+
+    <section id="chat-panel" class="chat-panel" role="dialog" aria-modal="false" aria-labelledby="chat-title" aria-describedby="chat-context" hidden>
+        <header class="chat-panel__head">
+            <div class="chat-panel__bar">
+                <h2 id="chat-title" class="chat-panel__title">AI · Bielik</h2>
+                <nav class="chat-panel__tools" aria-label="Rozmowa z asystentem">
+                    <a href="{% url 'chatbot:session_list' %}" class="chat-panel__tool" data-chat-history-link>Historia</a>
+                    <button type="button" class="chat-panel__tool" data-chat-clear>Wyczyść</button>
+                </nav>
+                <button type="button" class="chat-panel__close" data-chat-close aria-label="Zamknij asystenta">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </button>
+            </div>
+            <p id="chat-context" class="chat-panel__context" data-chat-context>Rozmowa ogólna</p>
+        </header>
+
+        <div class="chat-lock" data-chat-lock role="status" hidden>
+            <p class="chat-lock__title">Trwa test</p>
+            <p class="chat-lock__text" data-chat-lock-text></p>
+            <a href="#" class="btn btn--outline btn--sm" data-chat-lock-link>Wróć do testu</a>
+        </div>
+
+        <div class="chat-log" data-chat-log tabindex="0" role="region" aria-label="Wiadomości">
+            <ol class="chat-log__list" data-chat-list></ol>
+            <div class="chat-log__empty" data-chat-empty>
+                <p><strong>Zapytaj o materiał kursu.</strong></p>
+                <p>Na stronie lekcji asystent zna jej treść. Po wysłaniu testu otwórz wynik — wyjaśni pytania. W trakcie testu nie pomaga.</p>
+            </div>
+        </div>
+        <p class="sr-only" role="status" aria-live="polite" data-chat-status></p>
+        <p id="chat-error" class="chat-error" role="alert" data-chat-error hidden></p>
+
+        <form class="chat-form" data-chat-form novalidate>
+            {# Etykieta dla czytników (placeholder nie zastępuje etykiety), podpowiedź klawiszy w aria-describedby #}
+            <label for="chat-input" class="sr-only">Twoje pytanie do asystenta</label>
+            <p id="chat-input-hint" class="sr-only">Enter wysyła, Shift+Enter — nowa linia.</p>
+            <textarea id="chat-input" class="form-control chat-form__input" name="message" rows="1" maxlength="2000" placeholder="Twoje pytanie…" aria-describedby="chat-input-hint" data-chat-input></textarea>
+            <button type="submit" class="btn btn--primary chat-form__send" data-chat-send>Wyślij</button>
+            <button type="button" class="btn btn--outline chat-form__send" data-chat-stop hidden>Zatrzymaj</button>
+        </form>
+        <p class="chat-panel__model">Model: {{ assistant_model }} · może się mylić</p>
+    </section>
+</div>

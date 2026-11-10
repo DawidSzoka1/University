@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Test: {{ quiz.title }} — {{ course.title }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'learning:my_courses' %}">Moje kursy</a></li>
+                    <li><a href="{% url 'learning:curriculum_edit' course.slug %}">Program: {{ course.title }}</a></li>
+                    <li><span aria-current="page">{{ quiz.title }}</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Test{% if quiz.after_lesson %} po lekcji „{{ quiz.after_lesson.title }}”{% else %} na końcu kursu{% endif %}{% if quiz.is_required %} · obowiązkowy{% endif %}</p>
+            <h1 class="page-head__title">{{ quiz.title }}</h1>
+            <p class="page-head__lead">{{ questions|length }} {{ questions|length|pl_plural:"pytanie,pytania,pytań" }} · {{ quiz.max_score }} pkt · zaliczenie od {{ quiz.pass_percent }}%. Pytania ABC sprawdzają się same; otwarte trafią do Twojej kolejki „Do oceny”.</p>
+        </div>
+        <div class="page-head__actions">
+            <a href="{% url 'learning:quiz_detail' course.slug quiz.pk %}" class="btn btn--outline">Podgląd testu</a>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body quiz-builder">
+    <section aria-labelledby="questions-heading">
+        <h2 id="questions-heading" class="section-title">Pytania</h2>
+        {% if questions %}
+        <ol class="curriculum-lessons quiz-builder__questions">
+            {% for q in questions %}
+            <li class="curriculum-lesson" id="question-{{ q.pk }}">
+                <span class="curriculum-lesson__num" aria-hidden="true">{{ forloop.counter }}</span>
+                <div class="curriculum-lesson__main">
+                    <p class="curriculum-lesson__title quiz-builder__text">{{ q.text|truncatechars:160 }}</p>
+                    <p class="curriculum-lesson__meta">
+                        {{ q.get_question_type_display }}{% if q.is_open %} · odpowiedź: {{ q.get_answer_format_display|lower }}{% else %} · {{ q.choices.all|length }} {{ q.choices.all|length|pl_plural:"odpowiedź,odpowiedzi,odpowiedzi" }}, poprawne: {% for c in q.choices.all %}{% if c.is_correct %}„{{ c.text|truncatechars:30 }}” {% endif %}{% endfor %}{% endif %} · {{ q.points }} pkt{% if q.image %} · zdjęcie{% endif %}{% if q.video_url or q.video_file %} · film{% endif %}{% if q.code %} · kod{% endif %}{% if q.attachment %} · plik{% endif %}
+                    </p>
+                </div>
+                <div class="curriculum-actions">
+                    <form method="post" action="{% url 'learning:question_move' course.slug q.pk 'up' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn" aria-label="Przesuń pytanie {{ forloop.counter }} wyżej"{% if forloop.first %} disabled{% endif %}>↑</button>
+                    </form>
+                    <form method="post" action="{% url 'learning:question_move' course.slug q.pk 'down' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn" aria-label="Przesuń pytanie {{ forloop.counter }} niżej"{% if forloop.last %} disabled{% endif %}>↓</button>
+                    </form>
+                    <a href="{% url 'learning:question_edit' course.slug q.pk %}" class="btn btn--outline btn--sm">Edytuj<span class="sr-only"> pytanie {{ forloop.counter }}</span></a>
+                    <form method="post" action="{% url 'learning:question_delete' course.slug q.pk %}"
+                          data-confirm="Usunąć pytanie {{ forloop.counter }}? Odpowiedzi uczniów na nie też znikną." data-confirm-title="Usunięcie pytania" data-confirm-btn="Usuń" data-confirm-danger="true">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn--ghost btn--sm">Usuń<span class="sr-only"> pytanie {{ forloop.counter }}</span></button>
+                    </form>
+                </div>
+            </li>
+            {% endfor %}
+        </ol>
+        {% else %}
+        {% include "includes/empty_state.html" with title="Test nie ma pytań" description="Uczniowie zobaczą test dopiero, gdy dodasz pierwsze pytanie." %}
+        {% endif %}
+        <p class="quiz-builder__add"><a href="{% url 'learning:question_create' course.slug quiz.pk %}" class="btn btn--primary">+ Dodaj pytanie</a></p>
+    </section>
+
+    <section class="prose-section" aria-labelledby="settings-heading">
+        <h2 id="settings-heading" class="section-title">Ustawienia</h2>
+        {% include "learning/includes/quiz_settings_form.html" with submit_label="Zapisz ustawienia" %}
+        <form method="post" action="{% url 'learning:quiz_delete' course.slug quiz.pk %}" class="quiz-builder__delete"
+              data-confirm="Usunąć test „{{ quiz.title }}” razem z pytaniami i wynikami uczniów?" data-confirm-title="Usunięcie testu" data-confirm-btn="Usuń test" data-confirm-danger="true">
+            {% csrf_token %}
+            <button type="submit" class="comment__action comment__action--danger">Usuń test</button>
+        </form>
+    </section>
+</div>
+{% endblock %}

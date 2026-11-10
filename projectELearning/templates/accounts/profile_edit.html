@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Edycja profilu — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'accounts:profile' %}">Profil</a></li>
+                    <li><span aria-current="page">Edycja</span></li>
+                </ol>
+            </nav>
+            <h1 class="page-head__title">Edycja profilu</h1>
+            <p class="page-head__lead">Dane osobowe, kontakt, zdjęcie profilowe i adres, który podstawimy przy zamówieniu.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    <form method="post" enctype="multipart/form-data" class="form-sheet" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="auth-alert auth-alert--error" role="alert">
+            <span class="auth-alert__icon" aria-hidden="true">!</span>
+            <div class="auth-alert__body">
+                {% for error in form.non_field_errors %}<p class="auth-alert__message">{{ error }}</p>{% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <p class="form-note">Pola oznaczone <span aria-hidden="true">*</span><span class="sr-only">gwiazdką</span> są wymagane.</p>
+
+        <fieldset class="form-sheet__section">
+            <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">01</span> Dane podstawowe</legend>
+            <div class="form-row">
+                {% include "includes/form_field.html" with field=form.first_name %}
+                {% include "includes/form_field.html" with field=form.last_name %}
+            </div>
+            {% include "includes/form_field.html" with field=form.email show_required=True %}
+            {% include "includes/form_field.html" with field=form.phone_number %}
+            {% include "includes/form_field.html" with field=form.avatar help=True %}
+        </fieldset>
+
+        <fieldset class="form-sheet__section">
+            <legend class="form-sheet__legend"><span class="form-sheet__num" aria-hidden="true">02</span> Adres do korespondencji</legend>
+            {% include "includes/form_field.html" with field=form.street_address %}
+            <div class="form-row">
+                {% include "includes/form_field.html" with field=form.postal_code %}
+                {% include "includes/form_field.html" with field=form.city %}
+            </div>
+        </fieldset>
+
+        <div class="form-sheet__actions">
+            <button type="submit" class="btn btn--primary btn--lg">Zapisz zmiany</button>
+            <a href="{% url 'accounts:profile' %}" class="btn btn--ghost">Anuluj</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% load core_tags %}{% autoescape off %}Dzień dobry {{ order.first_name }},
+
+dziękujemy za zamówienie {{ order.number }}. Zamówienie zostało przyjęte i OCZEKUJE NA PŁATNOŚĆ ({{ order.total|pln }}).
+
+Pozycje:
+{% for item in items %}- {{ item.title }} × {{ item.quantity }} — {{ item.line_total|pln }}
+{% endfor %}Razem: {{ order.total|pln }}
+
+Dane: {{ order.full_name }}, {{ order.street_address }}, {{ order.postal_code }} {{ order.city }}
+
+Szczegóły zamówienia i płatność: {{ order_url }}
+Kursy odblokujemy automatycznie, gdy bramka potwierdzi wpłatę.
+
+— Platforma E-Learning (płatności: Stripe, tryb testowy){% endautoescape %}

@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}{{ quiz.title }} — {{ course.title }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block chat_context %}data-course="{{ course.pk }}"{% endblock %}
+
+{% block content %}
+<div class="container lesson-layout">
+    <article class="lesson quiz" aria-labelledby="quiz-title">
+        <nav class="breadcrumbs" aria-label="Okruszki">
+            <ol class="breadcrumbs__list">
+                <li><a href="{% url 'catalog:course_detail' course.slug %}">{{ course.title }}</a></li>
+                <li><span aria-current="page">{{ quiz.title }}</span></li>
+            </ol>
+        </nav>
+        <p class="eyebrow">Test · {{ questions|length }} {{ questions|length|pl_plural:"pytanie,pytania,pytań" }} · {{ quiz.max_score }} pkt · zaliczenie od {{ quiz.pass_percent }}%{% if quiz.is_required %} · obowiązkowy{% endif %}</p>
+        <h1 id="quiz-title" class="lesson__title">{{ quiz.title }}</h1>
+        {% if quiz.description %}<div class="prose quiz__intro">{{ quiz.description|linebreaks }}</div>{% endif %}
+
+        {% if can_switch %}{% include "learning/includes/mode_switch.html" with preview=editor %}{% endif %}
+        {% if can_edit %}<p class="lesson__edit"><a href="{% url 'learning:quiz_edit' course.slug quiz.pk %}" class="btn btn--outline btn--sm">Edytuj pytania i ustawienia</a></p>{% endif %}
+        {% if editor %}
+        {% if not can_switch %}
+        <div class="notice" role="status">
+            <p><strong>Podgląd autora.</strong> Tak test zobaczy uczeń — Ty nie wysyłasz odpowiedzi. Żeby rozwiązać test, zapisz się na kurs (lub kup go) — wtedy uczysz się jak uczeń.</p>
+        </div>
+        {% endif %}
+        {% elif entry.passed %}
+        <div class="notice notice--ok" role="status"><p><strong>Test zaliczony.</strong>{% if following %} Możesz iść dalej.{% endif %}</p></div>
+        {% elif entry.pending %}
+        <div class="notice" role="status"><p><strong>Czeka na ocenę nauczyciela.</strong> Dostaniesz powiadomienie z wynikiem{% if quiz.is_required %}; do tego czasu dalsza część kursu jest zablokowana{% endif %}.</p></div>
+        {% elif attempts_left == 0 %}
+        <div class="notice notice--danger" role="status"><p><strong>Wykorzystano wszystkie podejścia ({{ quiz.max_attempts }}).</strong> Napisz do prowadzącego w komentarzach kursu.</p></div>
+        {% else %}
+        <p class="quiz__rules">
+            {% if quiz.max_attempts %}Podejście {{ attempt_count|add:1 }} z {{ quiz.max_attempts }}.{% else %}Liczba podejść bez limitu.{% endif %}
+            {% if quiz.has_open_questions %}Pytania otwarte sprawdzi nauczyciel — wynik przyjdzie w powiadomieniu.{% else %}Wynik zobaczysz od razu po wysłaniu.{% endif %}
+            Każde pytanie wymaga odpowiedzi.
+        </p>
+        {% endif %}
+
+        {% if attempts %}
+        <section class="quiz__history" aria-labelledby="history-heading">
+            <h2 id="history-heading" class="section-title section-title--sm">Twoje podejścia</h2>
+            <ul class="row-list">
+                {% for a in attempts %}
+                <li class="row-list__item">
+                    <p class="row-list__main"><a href="{% url 'learning:attempt_detail' a.pk %}">{{ a.submitted_at|date:"j E Y, H:i" }}</a>
+                        <span class="row-list__meta">· {% if a.status == 'pending_review' %}czeka na ocenę ({{ a.score }} pkt za pytania zamknięte){% else %}{{ a.score }}/{{ a.max_score }} pkt ({{ a.percent }}%) — {% if a.passed %}zaliczony{% else %}niezaliczony{% endif %}{% endif %}</span></p>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+
+        {% if questions and can_submit or questions and editor %}
+        <form method="post" {% if has_file_questions %}enctype="multipart/form-data" {% endif %}class="quiz__form" novalidate
+              {% if can_submit %}data-confirm="Po wysłaniu nie zmienisz odpowiedzi." data-confirm-title="Wysłać test?" data-confirm-btn="Wyślij odpowiedzi"{% endif %}>
+            {% csrf_token %}
+            {% for q in questions %}
+            <fieldset class="question{% if q.error %} question--error{% endif %}" id="question-{{ q.pk }}"{% if q.error %} aria-describedby="q{{ q.pk }}-error"{% endif %}>
+                <legend class="question__legend"><span class="question__num">Pytanie {{ forloop.counter }}</span> <span class="question__points">{{ q.points }} {{ q.points|pl_plural:"pkt,pkt,pkt" }}</span></legend>
+                <div class="question__text">{{ q.text|linebreaks }}</div>
+                {% include "learning/includes/question_media.html" with embed=q.embed_url %}
+
+                {% if q.question_type == 'closed_single' %}
+                <div class="question__choices">
+                    {% for c in q.choices.all %}
+                    <label class="question__choice" for="q{{ q.pk }}-c{{ c.pk }}">
+                        <input type="radio" name="q{{ q.pk }}" id="q{{ q.pk }}-c{{ c.pk }}" value="{{ c.pk }}"{% if c.pk|stringformat:"s" in q.posted %} checked{% endif %}{% if not can_submit %} disabled{% endif %}>
+                        <span>{{ c.text }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% elif q.question_type == 'closed_multiple' %}
+                <p class="question__hint">Zaznacz wszystkie poprawne odpowiedzi.</p>
+                <div class="question__choices">
+                    {% for c in q.choices.all %}
+                    <label class="question__choice" for="q{{ q.pk }}-c{{ c.pk }}">
+                        <input type="checkbox" name="q{{ q.pk }}" id="q{{ q.pk }}-c{{ c.pk }}" value="{{ c.pk }}"{% if c.pk|stringformat:"s" in q.posted %} checked{% endif %}{% if not can_submit %} disabled{% endif %}>
+                        <span>{{ c.text }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% elif q.answer_format == 'text' or q.answer_format == 'code' %}
+                <div class="form-group">
+                    <label for="q{{ q.pk }}-answer" class="form-label">{% if q.answer_format == 'code' %}Twój kod{% else %}Twoja odpowiedź{% endif %}</label>
+                    <textarea name="q{{ q.pk }}" id="q{{ q.pk }}-answer" class="form-control{% if q.answer_format == 'code' %} form-control--code{% endif %}" rows="{% if q.answer_format == 'code' %}10{% else %}5{% endif %}"{% if q.answer_format == 'code' %} spellcheck="false"{% endif %}{% if q.error %} aria-invalid="true" aria-describedby="q{{ q.pk }}-error"{% endif %}{% if not can_submit %} disabled{% endif %}>{{ q.posted_text }}</textarea>
+                </div>
+                {% else %}
+                <div class="form-group">
+                    <label for="q{{ q.pk }}-file" class="form-label">{% if q.answer_format == 'image' %}Zdjęcie z rozwiązaniem{% else %}Plik z rozwiązaniem{% endif %}</label>
+                    <input type="file" name="q{{ q.pk }}" id="q{{ q.pk }}-file" class="form-control" aria-describedby="q{{ q.pk }}-filehelp{% if q.error %} q{{ q.pk }}-error{% endif %}"{% if q.answer_format == 'image' %} accept="image/jpeg,image/png,image/webp"{% endif %}{% if q.error %} aria-invalid="true"{% endif %}{% if not can_submit %} disabled{% endif %}>
+                    <p class="form-help" id="q{{ q.pk }}-filehelp">{% if q.answer_format == 'image' %}JPEG, PNG lub WebP do 5 MB — np. zdjęcie kartki z rozwiązaniem.{% else %}Np. .py, .pdf, .zip — do 25 MB.{% endif %}{% if q.error %} Plik trzeba wybrać ponownie po błędzie.{% endif %}</p>
+                </div>
+                {% endif %}
+                {% if q.error %}<p class="form-field-error" id="q{{ q.pk }}-error">{{ q.error }}</p>{% endif %}
+            </fieldset>
+            {% endfor %}
+            {% if can_submit %}
+            <button type="submit" class="btn btn--primary btn--lg">Wyślij odpowiedzi</button>
+            {% endif %}
+        </form>
+        {% elif not questions %}
+        {% include "includes/empty_state.html" with title="Test nie ma jeszcze pytań" description="Autor kursu dopiero go przygotowuje." %}
+        {% endif %}
+
+        <nav class="lesson__nav" aria-label="Sugerowana kolejność">
+            {% if previous and previous.accessible %}
+            <a href="{{ previous.url }}" class="lesson__prev"><span aria-hidden="true">←</span> {% if not previous.is_quiz %}{{ previous.number }} {% endif %}{{ previous.title }}</a>
+            {% else %}<span></span>{% endif %}
+            {% if following and following.accessible %}
+            <a href="{{ following.url }}" class="btn btn--primary">Dalej: {% if following.is_quiz %}{{ following.title }}{% else %}{{ following.number }} {{ following.title }}{% endif %} <span aria-hidden="true">→</span></a>
+            {% elif following %}
+            <span class="lesson__locked">Dalej: {{ following.title }} — po zaliczeniu tego testu</span>
+            {% else %}
+            <a href="{% url 'catalog:course_detail' course.slug %}" class="btn btn--outline">Wróć do kursu</a>
+            {% endif %}
+        </nav>
+    </article>
+
+    <aside class="lesson-toc panel" aria-labelledby="toc-heading">
+        <div class="panel__head lesson-toc__head">
+            <h2 id="toc-heading" class="panel__title">Program kursu</h2>
+            <p class="lesson-toc__progress">Postęp: {{ outline.percent }}%</p>
+        </div>
+        {% for section in outline.sections %}
+        <p class="lesson-toc__section">{{ section.number }} {{ section.section.title }}</p>
+        <ol class="lesson-toc__list">
+            {% for entry_item in section.lessons %}
+            <li>
+                {% if entry_item.accessible %}
+                <a href="{{ entry_item.url }}" class="lesson-toc__link{% if entry_item.completed %} is-done{% endif %}"><span class="lesson-toc__mark" aria-hidden="true"></span><span>{{ entry_item.number }} {{ entry_item.title }}</span></a>
+                {% else %}
+                <span class="lesson-toc__link is-locked"><span class="lesson-toc__mark" aria-hidden="true"></span><span>{{ entry_item.number }} {{ entry_item.title }}<span class="sr-only"> (zablokowana)</span></span></span>
+                {% endif %}
+            </li>
+            {% for quiz_entry in entry_item.quizzes %}{% include "learning/includes/toc_quiz.html" with current_quiz=quiz %}{% endfor %}
+            {% endfor %}
+        </ol>
+        {% endfor %}
+        {% if outline.final_quizzes %}
+        <p class="lesson-toc__section">Na koniec</p>
+        <ol class="lesson-toc__list">{% for quiz_entry in outline.final_quizzes %}{% include "learning/includes/toc_quiz.html" with current_quiz=quiz %}{% endfor %}</ol>
+        {% endif %}
+    </aside>
+</div>
+{% endblock %}

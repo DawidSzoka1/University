@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Uczniowie: {{ course.title }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'learning:my_courses' %}">Moje kursy</a></li>
+                    <li><a href="{% url 'catalog:course_detail' course.slug %}">{{ course.title }}</a></li>
+                    <li><span aria-current="page">Uczniowie</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Panel nauczyciela · postępy</p>
+            <h1 class="page-head__title">Uczniowie kursu</h1>
+            <p class="page-head__lead">{{ course.title }} — kto się zapisał, jak daleko doszedł, jak mu idą testy i jakim stylem się uczy.</p>
+        </div>
+        <div class="page-head__actions">
+            <a href="{% url 'learning:curriculum_edit' course.slug %}" class="btn btn--outline">Program kursu</a>
+            <a href="{% url 'learning:grading_queue' %}" class="btn btn--ghost">Do oceny{% if pending %} ({{ pending }}){% endif %}</a>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body stats-page">
+    <section aria-labelledby="summary-heading">
+        <h2 id="summary-heading" class="section-title">Podsumowanie</h2>
+        <dl class="stat-grid">
+            <div class="stat-grid__item"><dt>Zaczęło kurs</dt><dd>{{ started }}</dd></div>
+            <div class="stat-grid__item"><dt>Ukończyło</dt><dd>{{ completed }} <span class="stat-grid__sub">({{ completion_rate }}%)</span></dd></div>
+            <div class="stat-grid__item"><dt>Średni postęp</dt><dd>{{ average_progress }}%</dd></div>
+            <div class="stat-grid__item"><dt>Średni wynik testów</dt><dd>{% if average_score is not None %}{{ average_score }}%{% else %}—{% endif %}</dd></div>
+            <div class="stat-grid__item"><dt>Testy do oceny</dt><dd>{{ pending }}</dd></div>
+        </dl>
+        <div class="progress stat-progress" role="img" aria-label="Ukończyło {{ completed }} z {{ started }} osób ({{ completion_rate }}%)"><span class="progress__bar"><span class="progress__fill" style="width: {{ completion_rate }}%"></span></span><span class="progress__value" aria-hidden="true">{{ completion_rate }}%</span></div>
+
+        <h3 class="section-title section-title--sm">Style uczenia się uczniów</h3>
+        <ul class="tag-list">
+            {% for style, count in style_rows %}<li class="tag">{{ style.name }}: {{ count }}</li>{% endfor %}
+            <li class="tag">bez stylu: {{ no_style }}</li>
+        </ul>
+    </section>
+
+    <section aria-labelledby="students-heading">
+        <h2 id="students-heading" class="section-title">Lista uczniów</h2>
+        <nav class="segmented" aria-label="Filtr uczniów">
+            {% for key, label in filters.items %}
+            <a href="{% if key %}?pokaz={{ key }}{% else %}{{ request.path }}{% endif %}" class="segmented__option"{% if current == key %} aria-current="page"{% endif %}>{{ label }}</a>
+            {% endfor %}
+        </nav>
+        {% if rows %}
+        <div class="table-wrap" role="region" aria-label="Tabela uczniów kursu" tabindex="0">
+            <table class="data-table">
+                <caption class="sr-only">Uczniowie kursu {{ course.title }} z postępem, wynikami testów i stylem uczenia się</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Uczeń</th>
+                        <th scope="col">Zapis</th>
+                        <th scope="col">Postęp</th>
+                        <th scope="col">Lekcje</th>
+                        <th scope="col">Zaliczone testy</th>
+                        <th scope="col">Średni wynik</th>
+                        <th scope="col">Styl (wybrany)</th>
+                        <th scope="col">Ankieta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in rows %}
+                    <tr>
+                        <th scope="row">{{ e.user.get_full_name|default:e.user.username }}<span class="row-list__meta"> @{{ e.user.username }}</span></th>
+                        <td>{{ e.created_at|date:"d.m.Y" }}</td>
+                        <td>{% if e.is_completed %}<span class="tag tag--ok">ukończony</span>{% else %}{{ e.progress_percent }}%{% endif %}</td>
+                        <td>{{ e.lessons_done }} / {{ lesson_total }}</td>
+                        <td>{{ e.quizzes_passed }} / {{ quiz_total }}</td>
+                        <td>{% if e.average_score is not None %}{{ e.average_score }}%{% else %}—{% endif %}</td>
+                        <td>{% if e.user.learning_style and e.user.learning_style.is_active %}{{ e.user.learning_style.name }}{% else %}—{% endif %}</td>
+                        <td>{% if e.survey and e.survey.top_style %}{{ e.survey.top_style.name }}{% else %}—{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% include "includes/pagination.html" %}
+        {% else %}
+        {% include "includes/empty_state.html" with title="Brak uczniów w tym widoku" description="Nikt jeszcze nie spełnia tego filtra." action_url=request.path action_label="Pokaż wszystkich" %}
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

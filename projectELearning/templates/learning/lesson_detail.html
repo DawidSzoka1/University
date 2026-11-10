@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}{{ lesson.title }} — {{ course.title }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block chat_context %}data-course="{{ course.pk }}" data-lesson="{{ lesson.pk }}"{% endblock %}
+
+{% block content %}
+<div class="container lesson-layout">
+    <article class="lesson" aria-labelledby="lesson-title">
+        <nav class="breadcrumbs" aria-label="Okruszki">
+            <ol class="breadcrumbs__list">
+                <li><a href="{% url 'catalog:course_detail' course.slug %}">{{ course.title }}</a></li>
+                <li><span>{{ lesson.section.title }}</span></li>
+                <li><span aria-current="page">{{ lesson.title }}</span></li>
+            </ol>
+        </nav>
+        <p class="eyebrow">Lekcja {{ current.number }} · {{ lesson.duration_minutes }} min{% if current.completed %} · ukończona{% endif %}</p>
+        <h1 id="lesson-title" class="lesson__title">{{ lesson.title }}</h1>
+        {% if can_switch %}{% include "learning/includes/mode_switch.html" %}{% elif preview %}
+        <p class="notice" role="status"><strong>Podgląd autora.</strong> Widzisz wszystkie lekcje bez blokad. Żeby przejść kurs jak uczeń (testy, postęp, dyplom), zapisz się na niego lub go kup.</p>
+        {% endif %}
+        {% if can_edit or user.is_authenticated %}
+        <p class="lesson__edit">
+            {% if can_edit %}<a href="{% url 'learning:lesson_edit' course.slug lesson.pk %}" class="btn btn--outline btn--sm">Edytuj lekcję</a>{% endif %}
+            {% if user.is_authenticated %}<button type="button" class="btn btn--outline btn--sm" data-chat-open aria-controls="chat-panel">Zapytaj asystenta o tę lekcję</button>{% endif %}
+            {% if can_edit %}<a href="{% url 'learning:lesson_variants' course.slug lesson.pk %}" class="btn btn--ghost btn--sm">Wersje dla stylów</a>{% endif %}
+        </p>
+        {% endif %}
+
+        {% if version.has_variants %}
+        <section class="lesson-version" aria-labelledby="version-heading">
+            <h2 id="version-heading" class="lesson-version__title">Wersja lekcji</h2>
+            <nav class="segmented lesson-version__switch" aria-label="Wersja lekcji dla stylu uczenia się">
+                <a href="?wersja=podstawowa" class="segmented__option"{% if not version.variant %} aria-current="page"{% endif %}>Podstawowa</a>
+                {% for variant in version.available %}
+                <a href="?wersja={{ variant.style.slug }}" class="segmented__option"{% if version.variant.pk == variant.pk %} aria-current="page"{% endif %}>{{ variant.style.name }}{% if version.own_style and variant.style_id == version.own_style.pk %} <span class="segmented__count">(Twój styl)</span>{% endif %}</a>
+                {% endfor %}
+            </nav>
+            <p class="lesson-version__info">
+                {% if version.variant %}Czytasz wersję dla stylu <strong>{{ version.variant.style.name }}</strong>.{% else %}Czytasz wersję podstawową.{% endif %}
+                {% if user.is_authenticated %}
+                {% if version.own_style %}Twój styl: {{ version.own_style.name }}{% if version.own_variant_missing %} — ta lekcja nie ma dla niego osobnej wersji{% endif %}.{% else %}Nie masz wybranego stylu.{% endif %}
+                <a href="{% url 'learning:learning_style' %}?next={{ request.path|urlencode }}">{% if version.own_style %}Zmień styl{% else %}Wybierz styl{% endif %}</a>
+                {% endif %}
+            </p>
+        </section>
+        {% endif %}
+        {% if style_tip %}
+        <p class="notice" role="status">
+            {% if style_tip.kind == "switch" %}Na podstawie Twoich wyników w testach polecamy styl <strong>„{{ style_tip.suggested.name }}”</strong>.{% else %}Najlepiej idzie Ci w stylu <strong>„{{ style_tip.suggested.name }}”</strong> — wybierz go, a lekcje z wersjami dopasują się do Ciebie.{% endif %}
+            <a href="{% url 'learning:learning_style' %}?next={{ request.path|urlencode }}">Zobacz analizę i zmień styl</a>
+        </p>
+        {% endif %}
+
+        {% if embed_url %}
+        <div class="lesson__video">
+            <iframe src="{{ embed_url }}" title="Film: {{ lesson.title }}" loading="lazy"
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                    referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+        {% elif lesson.video_file and not version.uses_variant_video %}
+        <div class="lesson__video">
+            <video controls preload="metadata" aria-label="Film: {{ lesson.title }}">
+                <source src="{{ lesson.video_file.url }}">
+                Twoja przeglądarka nie odtwarza tego filmu. <a href="{{ lesson.video_file.url }}">Pobierz film</a>.
+            </video>
+        </div>
+        {% endif %}
+
+        {% if version.content_html %}
+        <div class="prose lesson__content">{{ version.content_html|safe }}</div>
+        {% endif %}
+
+        {% with files=lesson.attachments.all %}
+        {% if files %}
+        <section class="lesson__files" aria-labelledby="files-heading">
+            <h2 id="files-heading" class="section-title section-title--sm">Pliki do pobrania</h2>
+            <ul class="row-list">
+                {% for file in files %}
+                <li class="row-list__item">
+                    <p class="row-list__main"><strong>{{ file.original_name }}</strong> <span class="row-list__meta">· {{ file.extension }} · {{ file.size|filesizeformat }}</span></p>
+                    <a href="{% url 'learning:attachment_download' file.pk %}" class="btn btn--outline btn--sm" aria-label="Pobierz plik {{ file.original_name }}">Pobierz</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+        {% endwith %}
+
+        <nav class="lesson__nav" aria-label="Sugerowana kolejność lekcji">
+            {% if previous and previous.accessible %}
+            <a href="{{ previous.url }}" class="lesson__prev"><span aria-hidden="true">←</span> {% if not previous.is_quiz %}{{ previous.number }} {% endif %}{{ previous.title }}</a>
+            {% else %}<span></span>{% endif %}
+
+            {% if can_track %}
+            <form method="post" action="{% url 'learning:lesson_complete' course.slug lesson.pk %}">
+                {% csrf_token %}
+                {% if version.requested %}<input type="hidden" name="wersja" value="{% if version.variant %}{{ version.variant.style.slug }}{% else %}podstawowa{% endif %}">{% endif %}
+                <button type="submit" class="btn {% if current.completed %}btn--outline{% else %}btn--secondary{% endif %}" aria-pressed="{{ current.completed|yesno:'true,false' }}">
+                    {% if current.completed %}Ukończona — cofnij{% else %}Oznacz jako ukończoną{% endif %}
+                </button>
+            </form>
+            {% endif %}
+
+            {% if following %}
+            {% if following.accessible %}
+            <a href="{{ following.url }}" class="btn btn--primary">Dalej: {% if following.is_quiz %}{{ following.title }}{% else %}{{ following.number }} {{ following.title }}{% endif %} <span aria-hidden="true">→</span></a>
+            {% elif following.locked %}
+            <span class="lesson__locked">Dalej: {{ following.title }} — po zaliczeniu testu</span>
+            {% else %}
+            <span class="lesson__locked">Dalej: {{ following.title }} — po zapisie na kurs</span>
+            {% endif %}
+            {% else %}
+            <a href="{% url 'catalog:course_detail' course.slug %}" class="btn btn--primary">To ostatnia lekcja — wróć do kursu</a>
+            {% endif %}
+        </nav>
+    </article>
+
+    <aside class="lesson-toc panel" aria-labelledby="toc-heading">
+        <div class="panel__head lesson-toc__head">
+            <h2 id="toc-heading" class="panel__title">Program kursu</h2>
+            {% if can_track and outline.lesson_count %}
+            <p class="lesson-toc__progress">Ukończone {{ outline.completed_count }} z {{ outline.lesson_count }} {{ outline.lesson_count|pl_plural:"lekcji,lekcji,lekcji" }}{% if outline.quiz_count %}, zaliczone {{ outline.passed_quiz_count }} z {{ outline.quiz_count }} {{ outline.quiz_count|pl_plural:"testu,testów,testów" }}{% endif %} ({{ outline.percent }}%)</p>
+            <div class="progress" role="img" aria-label="Postęp kursu: {{ outline.percent }}%"><span class="progress__bar"><span class="progress__fill" style="width: {{ outline.percent }}%"></span></span></div>
+            {% endif %}
+        </div>
+        {% for section in outline.sections %}
+        <p class="lesson-toc__section">{{ section.number }} {{ section.section.title }}</p>
+        <ol class="lesson-toc__list">
+            {% for entry in section.lessons %}
+            <li>
+                {% if entry.accessible %}
+                <a href="{% url 'learning:lesson_detail' course.slug entry.lesson.pk %}" class="lesson-toc__link{% if entry.completed %} is-done{% endif %}"{% if entry.lesson.pk == lesson.pk %} aria-current="page"{% endif %}>
+                    <span class="lesson-toc__mark" aria-hidden="true"></span>
+                    <span>{{ entry.number }} {{ entry.lesson.title }}{% if entry.completed %}<span class="sr-only"> (ukończona)</span>{% endif %}</span>
+                </a>
+                {% else %}
+                <span class="lesson-toc__link is-locked"><span class="lesson-toc__mark" aria-hidden="true"></span><span>{{ entry.number }} {{ entry.lesson.title }}<span class="sr-only"> ({% if entry.locked %}po zaliczeniu testu{% else %}dostępna po zapisie{% endif %})</span></span></span>
+                {% endif %}
+            </li>
+            {% for quiz_entry in entry.quizzes %}{% include "learning/includes/toc_quiz.html" %}{% endfor %}
+            {% endfor %}
+        </ol>
+        {% endfor %}
+        {% if outline.final_quizzes %}
+        <p class="lesson-toc__section">Na koniec</p>
+        <ol class="lesson-toc__list">
+            {% for quiz_entry in outline.final_quizzes %}{% include "learning/includes/toc_quiz.html" %}{% endfor %}
+        </ol>
+        {% endif %}
+    </aside>
+</div>
+{% endblock %}

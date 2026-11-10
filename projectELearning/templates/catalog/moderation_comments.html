@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Moderacja: komentarze — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'catalog:moderation_submissions' %}">Moderacja</a></li>
+                    <li><span aria-current="page">Komentarze</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Moderacja</p>
+            <h1 class="page-head__title">Komentarze do akceptacji</h1>
+            <p class="page-head__lead">Komentarze z Twoich kategorii, najstarsze pierwsze. Zatwierdzony komentarz od razu widzą wszyscy, a autor dostaje powiadomienie.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% include "catalog/includes/moderation_nav.html" with active="comments" %}
+
+    {% if comments %}
+    <ul class="row-list moderation-list">
+        {% for comment in comments %}{% with who=comment.author.get_full_name|default:comment.author.username|default:"konta usuniętego" %}
+        <li class="row-list__item moderation-item" id="pending-{{ comment.pk }}">
+            <div class="row-list__main">
+                <p class="row-list__meta">
+                    <a href="{% url 'catalog:course_detail' comment.course.slug %}#comment-{{ comment.pk }}">{{ comment.course.title }}</a>
+                    · {{ comment.course.category.name|default:"bez kategorii" }}
+                    · <time datetime="{{ comment.created_at|date:'c' }}">{{ comment.created_at|date:"j E Y, H:i" }}</time>
+                    {% if comment.edited_at %} · edytowany{% endif %}
+                </p>
+                <h2 class="row-list__title moderation-item__author">{% if comment.author %}{{ comment.author.get_full_name|default:comment.author.username }}{% else %}Konto usunięte{% endif %}{% if comment.parent %} <span class="moderation-item__context">w odpowiedzi do {% if comment.parent.author %}{{ comment.parent.author.get_full_name|default:comment.parent.author.username }}{% else %}konta usuniętego{% endif %}</span>{% endif %}</h2>
+                {% if comment.rating %}<p class="comment__rating">Ocena kursu: <strong>{{ comment.rating }}/5</strong></p>{% endif %}
+                <div class="moderation-item__text">{{ comment.content|linebreaks }}</div>
+            </div>
+            <div class="moderation-item__actions">
+                <form method="post" action="{% url 'catalog:comment_approve' comment.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn btn--primary btn--sm">Zatwierdź<span class="sr-only"> komentarz: {{ who }}</span></button>
+                </form>
+                <form method="post" action="{% url 'catalog:comment_delete' comment.pk %}"
+                      data-confirm="Komentarz zostanie usunięty i autor go nie odzyska." data-confirm-title="Odrzucić komentarz?" data-confirm-btn="Usuń" data-confirm-danger="true">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn btn--ghost btn--sm">Odrzuć i usuń<span class="sr-only"> komentarz: {{ who }}</span></button>
+                </form>
+            </div>
+        </li>
+        {% endwith %}{% endfor %}
+    </ul>
+    {% include "includes/pagination.html" with pagination_label="Strony kolejki komentarzy" %}
+    {% else %}
+    {% include "includes/empty_state.html" with title="Brak komentarzy do akceptacji" description="Wszystkie komentarze w Twoich kategoriach są rozpatrzone. Nowe pojawią się tutaj, a dostaniesz też powiadomienie." %}
+    {% endif %}
+</div>
+{% endblock %}

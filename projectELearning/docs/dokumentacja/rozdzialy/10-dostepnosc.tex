@@ -1,0 +1,107 @@
+\chapter{Dostępność i~użyteczność}\label{ch:dostepnosc}
+
+\section{Zasady przyjęte w~projekcie}
+
+Dostępność potraktowano jako wymaganie nadrzędne -- dotyczy każdej strony platformy,
+również stron logowania przez portale, panelu administracyjnego i~komunikatów
+systemowych. Interfejs nie korzysta z~żadnej biblioteki komponentów; każdy
+element interaktywny został napisany od podstaw w~HTML, CSS i~JavaScripcie, z~semantyką
+rodzimych elementów (\code{button}, \code{a}, \code{details}, \code{dialog},
+\code{fieldset}) zamiast \code{div} z~obsługą kliknięć.
+
+\section{Zgodność z~kryteriami WCAG 2.1}
+
+{\small
+\begin{longtable}{@{}p{4.3cm}p{10.3cm}@{}}
+\caption{Realizacja wybranych kryteriów WCAG 2.1 (poziom A i~AA)}\label{tab:wcag}\\
+\toprule
+\hd{Kryterium} & \hd{Realizacja} \\
+\midrule
+\endfirsthead
+\toprule
+\hd{Kryterium} & \hd{Realizacja} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+1.1.1 Treść nietekstowa & wymagany tekst alternatywny dla zdjęć galerii, zdjęć w~pytaniach i~obrazów w~edytorze lekcji; ikony dekoracyjne z~\code{aria-hidden} \\
+1.3.1 Informacje i~relacje & landmarki \code{header}/\code{nav}/\code{main}/\code{footer}, jeden \code{h1} na stronie, logiczna hierarchia nagłówków, tabele z~\code{th}, grupy pól w~\code{fieldset}/\code{legend} \\
+1.4.1 Użycie koloru & statusy, błędy i~stany (np.\ ,,ukończona'', ,,obowiązkowy'') zawsze z~tekstem lub ikoną, nie tylko kolorem \\
+1.4.3 Kontrast (minimum) & kolor tekstu wyliczany z~kontrastu dla każdego tła i~każdego motywu (rozdz.~9.1) \\
+1.4.4 Zmiana rozmiaru tekstu, 1.4.10 Dopasowanie do ekranu & jednostki \code{rem}/\%, układ mobile-first; brak poziomego przewijania przy 320 px i~zoomie 200\% \\
+1.4.11 Kontrast elementów nietekstowych & ramki pól i~wskaźnik fokusu o~kontraście $\geq$ 3:1 \\
+1.4.13 Treść spod kursora lub fokusu & panele (powiadomienia, menu konta, motyw) otwierane świadomie, zamykane Esc \\
+2.1.1 Klawiatura, 2.1.2 Bez pułapki & wszystkie funkcje z~klawiatury, w~tym DnD (przyciski $\uparrow\downarrow$) i~slajder ($\leftarrow\rightarrow$); fokus nie utyka w~żadnym elemencie \\
+2.2.2 Pauza, zatrzymanie & slajder z~przyciskiem pauzy, zatrzymywany przy fokusie i~najechaniu; bez automatu przy \code{prefers-reduced-motion} \\
+2.4.1 Pomijanie bloków & link ,,Przejdź do treści'' jako pierwszy element strony \\
+2.4.3 Kolejność fokusu & zgodna z~kolejnością wizualną, brak dodatnich \code{tabindex} \\
+2.4.7 Widoczny fokus & \code{:focus-visible} z~obrysem w~kolorze akcentu na każdym elemencie, nigdy \code{outline: none} bez zamiennika \\
+2.4.8 Lokalizacja & okruszki nawigacyjne, \code{aria-current="page"} w~menu i~paginacji \\
+2.5.5 Rozmiar celu & przyciski i~linki menu co najmniej 44$\times$44 px \\
+3.1.1 Język strony & \code{<html lang="pl">} \\
+3.2.2 Przy wprowadzaniu danych & filtry katalogu nie wysyłają formularza same -- wymagają przycisku \\
+3.3.1 Identyfikacja błędów, 3.3.3 Sugestie & komunikat tekstowy przy polu, \code{aria-invalid}, \code{aria-describedby}; zbiorczy komunikat \code{role="alert"} nad formularzem \\
+3.3.2 Etykiety lub instrukcje & każde pole ma \code{<label for>}; placeholder nigdy nie zastępuje etykiety \\
+4.1.2 Nazwa, rola, wartość & \code{aria-expanded}, \code{aria-pressed} (głosy), \code{aria-controls}; własne kontrolki zbudowane na natywnych elementach \\
+4.1.3 Komunikaty o~stanie & toasty, wynik zapisu kolejności, licznik koszyka i~gotowa odpowiedź asystenta w~regionach \code{aria-live}/\code{role="status"} \\
+\end{longtable}
+}
+
+\section{Obsługa klawiaturą}
+
+\begin{table}[H]
+\centering\small
+\caption{Skróty i~zachowania klawiatury w~komponentach}
+\begin{tabularx}{\linewidth}{@{}P{3.8cm}P{3.6cm}L@{}}
+\toprule
+\hd{Komponent} & \hd{Klawisze} & \hd{Zachowanie} \\
+\midrule
+Cała strona & Tab, Shift+Tab & przejście między elementami; pierwszy -- ,,Przejdź do treści'' \\
+Przełącznik motywu, menu konta & Enter/Spacja, $\uparrow\downarrow$, Home, End, Esc & otwarcie, ruch po pozycjach z~zawijaniem, zamknięcie i~powrót fokusu na przycisk \\
+Panel powiadomień & Enter, Tab, Esc & Esc oraz wyjście Tabem poza panel zamyka go \\
+Dialog potwierdzenia & Tab (cyklicznie), Esc & jedyny dozwolony ,,trap'' -- Tab krąży w~otwartym modalu; Esc zamyka, fokus wraca do wywołującego \\
+Okno asystenta & Enter, Shift+Enter, Esc & wysłanie, nowy wiersz, zamknięcie; panel niemodalny -- Tab może z~niego wyjść \\
+Slajder & $\leftarrow\rightarrow$, Spacja/Enter na pauzie & przesunięcie o~jedną kartę, pauza/wznowienie \\
+Konfigurator slajdera & Tab, Enter na $\uparrow\downarrow$ / Dodaj / Usuń & alternatywa dla przeciągania; po przeniesieniu fokus zostaje na karcie \\
+Program kursu w~kreatorze & Enter na $\uparrow\downarrow$, Esc & zmiana kolejności; edycja nazwy w~\code{<details>} zamykanym Esc \\
+Formularze & Enter, Spacja & wysłanie formularza, zaznaczenie pola wyboru \\
+Wybór stylu uczenia się & Tab, $\uparrow\downarrow$, Enter & karty stylów to grupa pól radio w~\code{fieldset}; strzałki zmieniają styl, Enter zapisuje \\
+Ankieta stylu & Tab, $\uparrow\downarrow$, Enter & każde pytanie to \code{fieldset} z~\code{legend}; strzałki zmieniają odpowiedź w~pytaniu, Tab przechodzi do następnego \\
+Wersje lekcji & Tab, Enter & przełącznik wersji to nawigacja z~linkami, bieżąca wersja ma \code{aria-current} \\
+Komentarze & Enter na ,,Odpowiedz'' / ,,Edytuj'', Esc & rozwinięcie formularza w~miejscu, zamknięcie Esc \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Wspólne komponenty dostępne}
+
+\begin{itemize}
+  \item \textbf{Dialog potwierdzenia} (\code{showConfirmDialog}, atrybut
+        \code{data-confirm}) zamiast \code{confirm()} -- używany przy usuwaniu, odrzucaniu
+        i~anulowaniu. Element \code{<dialog>} z~etykietą, opisem, cyklicznym fokusem i~Esc.
+  \item \textbf{Toasty} dla komunikatów \code{django.contrib.messages} -- w~regionie
+        \code{aria-live}, nie zabierają fokusu, mają przycisk zamknięcia.
+  \item \textbf{Paginacja} (\code{includes/pagination.html}) -- \code{nav} z~etykietą,
+        \code{aria-current} na bieżącej stronie, odmiana ,,strona 1 z~5''.
+  \item \textbf{Pusty stan} (\code{includes/empty\_state.html}) -- tekst wyjaśniający
+        i~przycisk następnej akcji zamiast pustej tabeli.
+  \item \textbf{Podgląd zdjęcia przed wysłaniem} -- nazwa, rozmiar, wymiary, ostrzeżenie
+        o~limicie, ,,Usuń wybór'' z~powrotem fokusu do pola, komunikaty \code{aria-live}.
+\end{itemize}
+
+\section{Responsywność}
+
+Układ projektowano od najmniejszego ekranu. Progi: \textbf{48 rem} (tablet -- siatki
+kart w~dwóch kolumnach, slajder 2 karty), \textbf{64 rem} (desktop -- menu poziome,
+3 kolumny, okno asystenta jako panel boczny), \textbf{96 rem} (szerokie ekrany -- etykiety
+przy ikonach w~nagłówku). Szerokości nagłówka i~okna asystenta zmierzono w~Chrome
+dla 320, 768, 1024, 1280, 1366 i~1920 px -- bez poziomego przewijania i~ucinania tekstu.
+
+\section{Unikalny charakter interfejsu}
+
+Język wizualny nawiązuje do \emph{planu zajęć i~zeszytu}: linie zamiast cieni, kanciaste
+przyciski, duża typografia (Bricolage Grotesque w~nagłówkach, Atkinson Hyperlegible -- krój
+zaprojektowany dla osób słabowidzących -- w~treści), numerowane sekcje 01--04 i~prawdziwe
+dane z~bazy zamiast ozdobnych statystyk. Świadomie zrezygnowano z~gradientów, zaokrąglonych
+,,pigułek'' i~kart z~ikonami w~kółkach. Ten sam styl obejmuje strony allauth, dialogi,
+toasty i~panel administratora (django-unfold w~kolorach motywu).

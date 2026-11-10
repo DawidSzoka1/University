@@ -1,0 +1,4 @@
+{% extends "admin/base.html" %}
+
+{# Overrides base_site branding while inheriting all custom token theme features #}
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | E-Learning Admin{% endblock %}

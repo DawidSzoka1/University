@@ -1,0 +1,184 @@
+% Dokumentacja projektowa platformy E-Learning
+% Kompilacja: latexmk -lualatex main.tex
+\documentclass[a4paper,11pt,oneside,parskip=half,headings=standardclasses,chapterprefix=false,numbers=noendperiod]{scrreprt}
+
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{polish}
+\setmainfont{Noto Serif}[Scale=0.94]
+\setsansfont{Noto Sans}
+\setmonofont{Noto Sans Mono}[Scale=0.84]
+
+\usepackage[a4paper,left=2.4cm,right=2.4cm,top=2.6cm,bottom=2.6cm,headheight=15pt]{geometry}
+\usepackage{xcolor}
+\definecolor{brand}{HTML}{B45309}
+\definecolor{brandteal}{HTML}{0F766E}
+\definecolor{ink}{HTML}{111827}
+\definecolor{paper}{HTML}{FFFBEB}
+\definecolor{paperdark}{HTML}{FEF3C7}
+\definecolor{rule}{HTML}{9CA3AF}
+
+\usepackage{graphicx}
+\usepackage{booktabs,longtable,tabularx,array,multirow}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{pdflscape}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes.geometric,shapes.multipart,arrows.meta,calc,fit,backgrounds,shadows}
+\usepackage{pgfgantt}
+\usepackage{adjustbox}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={E-Learning — dokumentacja projektowa},pdfauthor={Dawid Szoka}}
+
+% --- Wygląd nagłówków (KOMA) ---
+\setkomafont{disposition}{\sffamily\bfseries\color{ink}}
+\setkomafont{chapter}{\sffamily\bfseries\Huge}
+\setkomafont{section}{\sffamily\bfseries\Large}
+\setkomafont{subsection}{\sffamily\bfseries\large}
+\setkomafont{subsubsection}{\sffamily\bfseries\normalsize}
+\renewcommand*{\chapterformat}{\textcolor{brand}{\thechapter}\enskip\textcolor{rule}{|}\enskip}
+\renewcommand*{\sectionformat}{\textcolor{brand}{\thesection}\quad}
+\renewcommand*{\subsectionformat}{\textcolor{brand}{\thesubsection}\quad}
+\RedeclareSectionCommand[beforeskip=0pt,afterskip=1.4\baselineskip]{chapter}
+\makeatletter
+\renewcommand*{\chapterlinesformat}[3]{\@hangfrom{#2}{#3}\par\nobreak\vspace{4pt}{\color{brand}\hrule height 1.2pt}}
+\makeatother
+
+% --- Nagłówek i stopka ---
+\usepackage[headsepline=0.4pt,footsepline=0pt]{scrlayer-scrpage}
+\clearpairofpagestyles
+\ihead{\sffamily\small\textcolor{rule}{E-Learning · dokumentacja projektowa}}
+\ohead{\sffamily\small\leftmark}
+\ofoot*{\sffamily\small\pagemark}
+\ifoot*{\sffamily\small\textcolor{rule}{D. Szoka, 89221}}
+\automark{chapter}
+\renewcommand*{\chaptermarkformat}{\thechapter.\ }
+
+% --- Spisy: szersze pole numeru (11.10, 11.28 itd.) ---
+\DeclareTOCStyleEntry[numwidth=3.4em]{tocline}{figure}
+\DeclareTOCStyleEntry[numwidth=3.4em]{tocline}{table}
+\DeclareTOCStyleEntry[numwidth=3.0em]{tocline}{section}
+\DeclareTOCStyleEntry[indent=4.5em,numwidth=3.8em]{tocline}{subsection}
+
+% --- Podpisy ---
+\captionsetup{font={small,sf},labelfont={bf,color=brand},labelsep=period,justification=centering}
+\captionsetup[table]{position=top}
+
+% --- Listy ---
+\setlist{itemsep=2pt,topsep=4pt}
+\setlist[itemize]{label=\textcolor{brand}{\small\textbullet}}
+
+% --- Kod ---
+\lstset{basicstyle=\ttfamily\small,breaklines=true,frame=l,framerule=2pt,rulecolor=\color{brand},
+  xleftmargin=10pt,framexleftmargin=6pt,backgroundcolor=\color{paper},columns=fullflexible,
+  keepspaces=true,showstringspaces=false,
+  literate={ą}{{\k{a}}}1 {ę}{{\k{e}}}1 {ó}{{\'o}}1 {ś}{{\'s}}1 {ł}{{\l}}1 {ż}{{\.z}}1 {ź}{{\'z}}1 {ć}{{\'c}}1 {ń}{{\'n}}1
+           {Ą}{{\k{A}}}1 {Ę}{{\k{E}}}1 {Ó}{{\'O}}1 {Ś}{{\'S}}1 {Ł}{{\L}}1 {Ż}{{\.Z}}1 {Ź}{{\'Z}}1 {Ć}{{\'C}}1 {Ń}{{\'N}}1}
+
+% --- Tabele ---
+\renewcommand{\arraystretch}{1.25}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\hd}[1]{\textsf{\textbf{\small #1}}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\req}[1]{\textsf{\textbf{\textcolor{brand}{#1}}}}
+
+% --- TikZ: style diagramów ---
+\tikzset{
+  >={Stealth[length=2.2mm]},
+  uc/.style={ellipse,draw=ink,fill=paper,align=center,font=\sffamily\scriptsize,inner sep=1.5pt,minimum width=2.7cm,minimum height=0.95cm},
+  ucsys/.style={draw=ink,rounded corners=2pt,fill=white,inner sep=8pt},
+  incl/.style={->,dashed,draw=ink!80},
+  assoc/.style={-,draw=ink!70},
+  box/.style={draw=ink,fill=paper,align=center,font=\sffamily\scriptsize,inner sep=4pt,minimum height=0.8cm},
+  boxd/.style={box,fill=paperdark},
+  ext/.style={box,fill=white,dashed},
+  note/.style={font=\sffamily\tiny,text=ink!80},
+  arr/.style={->,draw=ink},
+  darr/.style={->,dashed,draw=ink},
+  ent/.style={rectangle split,rectangle split parts=2,draw=ink,fill=white,font=\sffamily\tiny,
+    rectangle split part fill={paperdark,white},align=left,inner sep=2.5pt,text width=#1},
+  ent/.default=3.1cm,
+  state/.style={draw=ink,fill=paper,rounded corners=6pt,font=\sffamily\scriptsize,align=center,minimum height=0.8cm,minimum width=2.2cm,inner sep=3pt},
+  act/.style={draw=ink,fill=paper,rounded corners=8pt,font=\sffamily\scriptsize,align=center,minimum height=0.75cm,text width=3.4cm,inner sep=3pt},
+  dec/.style={diamond,draw=ink,fill=paperdark,aspect=2,font=\sffamily\tiny,align=center,inner sep=1pt},
+  startst/.style={circle,fill=ink,minimum size=7pt,inner sep=0},
+  endst/.style={circle,draw=ink,double,double distance=1.2pt,fill=ink,minimum size=6pt,inner sep=0},
+  msg/.style={->,draw=ink,font=\sffamily\tiny},
+  ret/.style={->,dashed,draw=ink!70,font=\sffamily\tiny},
+  lifeline/.style={draw=ink!50,dashed},
+  lhead/.style={draw=ink,fill=paperdark,font=\sffamily\scriptsize\bfseries,minimum width=2.1cm,minimum height=0.7cm,align=center},
+}
+% Aktor UML (ludzik)
+\newcommand{\actor}[3]{% #1 nazwa węzła, #2 pozycja, #3 etykieta
+  \begin{scope}[shift={(#2)}]
+    \draw[ink,thick] (0,0.42) circle (0.13);
+    \draw[ink,thick] (0,0.29) -- (0,-0.08) (-0.2,0.16) -- (0.2,0.16) (0,-0.08) -- (-0.16,-0.36) (0,-0.08) -- (0.16,-0.36);
+    \node[font=\sffamily\scriptsize\bfseries,align=center] at (0,-0.58) {#3};
+    \coordinate (#1) at (0,0.1);
+  \end{scope}}
+
+\tolerance=3000
+\emergencystretch=4em
+\hbadness=10000
+\begin{document}
+
+% ====================== STRONA TYTUŁOWA ======================
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[paper] (current page.south west) rectangle (current page.north east);
+  \fill[brand] (current page.north west) rectangle ([xshift=1.1cm]current page.south west);
+  \def\L{2.6cm}
+  \node[anchor=north west,align=left] at ([xshift=\L,yshift=-2.6cm]current page.north west) {%
+    {\sffamily\bfseries\large\color{ink} Uniwersytet w~Białymstoku}\\[3pt]
+    {\sffamily\color{ink!80} Kierunek: Informatyka · studia II stopnia (magisterskie)}};
+  \draw[ink,line width=0.6pt] ([xshift=\L,yshift=-4.3cm]current page.north west) -- ([xshift=-2.2cm,yshift=-4.3cm]current page.north east);
+  \node[anchor=north west,text width=15cm,align=left] at ([xshift=\L,yshift=-6.4cm]current page.north west) {%
+    {\sffamily\bfseries\color{brand}\large PROJEKT ZALICZENIOWY}\\[0.9cm]
+    {\sffamily\bfseries\fontsize{44}{48}\selectfont\color{ink} E-Learning}\\[0.7cm]
+    {\sffamily\Large\color{ink} Platforma kursów online z~testami,\\[3pt] stylami uczenia się i~asystentem AI}\\[1.2cm]
+    {\sffamily\large\color{ink!80} Dokumentacja projektowa i~techniczna systemu}};
+  \node[anchor=north west,align=left] at ([xshift=\L,yshift=-15.6cm]current page.north west) {%
+    \sffamily\color{ink}\renewcommand{\arraystretch}{1.5}%
+    \begin{tabular}{@{}l@{\hspace{1.2em}}l@{}}
+      {\color{rule}\small PRZEDMIOT} & \textbf{Inteligentne multimedialne systemy uczące} \\
+      {\color{rule}\small PROWADZĄCY} & dr inż. Wiesław Półjanowicz \\
+      {\color{rule}\small ROK AKADEMICKI} & 2026/2027 · I rok studiów magisterskich, semestr 1 \\
+    \end{tabular}};
+  \draw[ink,line width=0.6pt] ([xshift=\L,yshift=6.2cm]current page.south west) -- ([xshift=-2.2cm,yshift=6.2cm]current page.south east);
+  \node[anchor=north west,align=left] at ([xshift=\L,yshift=5.6cm]current page.south west) {%
+    {\sffamily\small\color{rule} AUTOR}\\[3pt]{\sffamily\large\bfseries\color{ink} Dawid Szoka}\\[2pt]{\sffamily\color{ink} nr albumu 89221}};
+  \node[anchor=north west,align=left] at ([xshift=10.6cm,yshift=5.6cm]current page.south west) {%
+    {\sffamily\small\color{rule} DATA}\\[3pt]{\sffamily\large\bfseries\color{ink} 5 listopada 2026}\\[2pt]{\sffamily\color{ink} Białystok}};
+\end{tikzpicture}
+\end{titlepage}
+
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\listoffigures
+\listoftables
+\clearpage
+\pagenumbering{arabic}
+
+\input{rozdzialy/01-wstep}
+\input{rozdzialy/02-aktorzy}
+\input{rozdzialy/03-wymagania}
+\input{rozdzialy/04-przypadki}
+\input{rozdzialy/05-architektura}
+\input{rozdzialy/06-dane}
+\input{rozdzialy/07-dynamika}
+\input{rozdzialy/08-api}
+\input{rozdzialy/09-mechanizmy}
+\input{rozdzialy/10-dostepnosc}
+\input{rozdzialy/11-interfejs}
+\input{rozdzialy/12-testy}
+\input{rozdzialy/13-harmonogram}
+\input{rozdzialy/14-wdrozenie}
+\input{rozdzialy/15-podsumowanie}
+
+\end{document}

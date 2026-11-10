@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Zamówienie {{ order.number }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    {% if is_owner %}<li><a href="{% url 'orders:order_list' %}">Moje zamówienia</a></li>
+                    {% else %}<li><a href="{% url 'orders:manage' %}">Obsługa zamówień</a></li>{% endif %}
+                    <li><span aria-current="page">{{ order.number }}</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Zamówienie z {{ order.created_at|date:"j E Y, H:i" }}</p>
+            <h1 class="page-head__title">{{ order.number }}</h1>
+            <p class="page-head__lead">Status: {% include "orders/includes/status.html" %}{% if order.paid_at %} · opłacone {{ order.paid_at|date:"j E Y, H:i" }}{% endif %}</p>
+        </div>
+        {% if is_owner and order.can_pay %}
+        <div class="page-head__actions">
+            <form method="post" action="{% url 'orders:order_pay' order.number %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn--primary btn--lg"{% if not payments_ready %} disabled aria-describedby="pay-unavailable"{% endif %}>Zapłać {{ order.total|pln }}</button>
+            </form>
+            <form method="post" action="{% url 'orders:order_cancel' order.number %}"
+                  data-confirm="Zamówienie {{ order.number }} zostanie anulowane. Tej operacji nie można cofnąć samodzielnie." data-confirm-title="Anulować zamówienie?" data-confirm-btn="Anuluj zamówienie" data-confirm-cancel-btn="Wróć" data-confirm-danger="true">
+                {% csrf_token %}
+                <button type="submit" class="btn btn--ghost">Anuluj zamówienie</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</header>
+
+<div class="container page-body">
+    {% if is_owner and order.can_pay %}
+    <div class="notice" role="status">
+        {% if payments_ready %}
+        <p><strong>Czekamy na płatność.</strong> Kliknij „Zapłać”, aby przejść do bezpiecznej strony Stripe.{% if test_mode %} To <strong>płatność testowa</strong>: użyj karty <code>4242 4242 4242 4242</code>, dowolnej przyszłej daty ważności i dowolnego CVC — pieniądze nie zostaną pobrane.{% endif %}</p>
+        {% else %}
+        <p id="pay-unavailable"><strong>Płatności online nie są jeszcze skonfigurowane.</strong> Zamówienie czeka — status zmieni moderator lub administrator po otrzymaniu wpłaty.</p>
+        {% endif %}
+    </div>
+    {% elif order.status == 'paid' or order.status == 'completed' %}
+    <div class="notice notice--ok" role="status">
+        <p><strong>Opłacone.</strong> {% if is_owner %}Kursy znajdziesz w <a href="{% url 'learning:my_courses' %}">„Moich kursach”</a>{% if has_codes %}, a kody dla innych osób — poniżej{% endif %}.{% else %}Dostęp do kursów został wydany kupującemu.{% endif %}</p>
+    </div>
+    {% endif %}
+
+    <div class="checkout-layout">
+        <div class="order-main">
+            <section aria-labelledby="items-heading">
+                <h2 id="items-heading" class="section-title section-title--sm">Pozycje</h2>
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th scope="col">Kurs</th><th scope="col">Cena</th><th scope="col">Ilość</th><th scope="col">Wartość</th></tr></thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <th scope="row"><a href="{% url 'catalog:course_detail' item.course.slug %}">{{ item.title }}</a></th>
+                                <td>{{ item.unit_price|pln }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.line_total|pln }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot><tr><th scope="row" colspan="3">Razem</th><td><strong>{{ order.total|pln }}</strong></td></tr></tfoot>
+                    </table>
+                </div>
+            </section>
+
+            {% if has_codes %}
+            <section aria-labelledby="codes-heading" class="order-codes">
+                <h2 id="codes-heading" class="section-title section-title--sm">Kody dostępu dla innych osób</h2>
+                <p class="form-help">Przekaż kod osobie, która ma dostać kurs. Wpisze go na stronie <a href="{% url 'orders:redeem' %}">„Zrealizuj kod”</a> po zalogowaniu.</p>
+                <ul class="row-list">
+                    {% for item in items %}{% for code in item.codes.all %}
+                    <li class="row-list__item">
+                        <p class="row-list__main"><code class="access-code">{{ code.code }}</code> <span class="row-list__meta">· {{ item.title }}</span></p>
+                        <p class="row-list__meta">{% if code.redeemed_by %}Wykorzystany{% if manager or is_owner %} przez {{ code.redeemed_by.get_full_name|default:code.redeemed_by.username }}{% endif %}, {{ code.redeemed_at|date:"j E Y" }}{% else %}Niewykorzystany{% endif %}</p>
+                    </li>
+                    {% endfor %}{% endfor %}
+                </ul>
+            </section>
+            {% endif %}
+
+            <section aria-labelledby="history-heading">
+                <h2 id="history-heading" class="section-title section-title--sm">Historia statusu</h2>
+                <ol class="order-history">
+                    {% for change in history %}
+                    <li class="order-history__item">
+                        <p class="order-history__status"><strong>{{ change.get_status_display }}</strong> <time datetime="{{ change.created_at|date:'c' }}">{{ change.created_at|date:"j E Y, H:i" }}</time></p>
+                        {% if change.note or change.changed_by %}<p class="order-history__note">{{ change.note }}{% if change.changed_by and change.changed_by_id != order.user_id %} — {{ change.changed_by.get_full_name|default:change.changed_by.username }}{% endif %}</p>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ol>
+            </section>
+        </div>
+
+        <aside class="order-side">
+            <section class="panel" aria-labelledby="address-heading">
+                <div class="panel__head"><h2 id="address-heading" class="panel__title">Dane kupującego</h2></div>
+                <address class="order-address">
+                    <strong>{{ order.full_name }}</strong><br>
+                    {{ order.street_address }}<br>
+                    {{ order.postal_code }} {{ order.city }}<br>
+                    {{ order.email }}{% if order.phone_number %}<br>{{ order.phone_number }}{% endif %}
+                </address>
+                {% if manager %}<p class="order-address__meta">Konto: {{ order.user.username }}{% if order.payment_reference %} · Stripe: <code>{{ order.payment_reference|truncatechars:24 }}</code>{% endif %}</p>{% endif %}
+            </section>
+
+            {% if manager %}
+            <section class="panel" aria-labelledby="status-heading">
+                <div class="panel__head"><h2 id="status-heading" class="panel__title">Zmień status</h2></div>
+                <form method="post" action="{% url 'orders:order_status' order.number %}" class="order-status-form" novalidate>
+                    {% csrf_token %}
+                    {% include "includes/form_field.html" with field=status_form.status %}
+                    {% include "includes/form_field.html" with field=status_form.note %}
+                    <p class="form-help">Zmiana na „Opłacone” wydaje dostęp do kursów i kody. Kupujący dostanie powiadomienie.</p>
+                    <button type="submit" class="btn btn--primary btn--block">Zapisz status</button>
+                </form>
+            </section>
+            {% endif %}
+        </aside>
+    </div>
+</div>
+{% endblock %}

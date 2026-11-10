@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Strona główna — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<section class="hero" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+        <div class="hero__content">
+            <p class="eyebrow">Kursy · testy · asystent AI</p>
+            <h1 id="hero-title" class="hero__title">Ucz się w <span class="marker">swoim tempie.</span></h1>
+            <p class="hero__lead">
+                Kursy od praktyków, testy po każdej lekcji i polski asystent AI Bielik,
+                który pomoże, gdy utkniesz. Na komputerze i telefonie.
+            </p>
+            <div class="hero__actions">
+                <a class="btn btn--primary btn--lg" href="{% url 'catalog:course_list' %}">
+                    Przeglądaj kursy <span aria-hidden="true">→</span>
+                </a>
+                {% if user.is_authenticated %}
+                <a class="btn btn--outline btn--lg" href="{% url 'learning:my_courses' %}">Moje kursy</a>
+                {% else %}
+                <a class="btn btn--outline btn--lg" href="{% url 'accounts:login' %}">Zaloguj się lub utwórz konto</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <aside class="ledger" aria-labelledby="latest-heading">
+            <div class="ledger__head">
+                <h2 id="latest-heading" class="ledger__title">Nowe w katalogu</h2>
+                <a class="ledger__more" href="{% url 'catalog:course_list' %}?sort=newest">Cały katalog</a>
+            </div>
+            {% if latest_courses %}
+            <ol class="ledger__list">
+                {% for course in latest_courses %}
+                <li class="ledger__row">
+                    <span class="ledger__num" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</span>
+                    <span class="ledger__body">
+                        <a class="ledger__link" href="{% url 'catalog:course_detail' course.slug %}">{{ course.title }}</a>
+                        <span class="ledger__meta">{{ course.category.name }} · {{ course.get_difficulty_level_display|lower }}</span>
+                    </span>
+                    <span class="ledger__price{% if course.is_course_free %} ledger__price--free{% endif %}">{{ course.get_price_display }}</span>
+                </li>
+                {% endfor %}
+            </ol>
+            {% else %}
+            <p class="ledger__empty">Pierwsze kursy pojawią się tu zaraz po publikacji.</p>
+            {% endif %}
+        </aside>
+    </div>
+</section>
+
+<section class="figures" aria-label="Platforma w liczbach">
+    <dl class="container figures__grid">
+        <div class="figures__item">
+            <dt class="figures__label">{{ course_count|pl_plural:"kurs,kursy,kursów" }} w katalogu</dt>
+            <dd class="figures__value">{{ course_count }}</dd>
+        </div>
+        <div class="figures__item">
+            <dt class="figures__label">{{ category_count|pl_plural:"kategoria tematyczna,kategorie tematyczne,kategorii tematycznych" }}</dt>
+            <dd class="figures__value">{{ category_count }}</dd>
+        </div>
+        <div class="figures__item">
+            <dt class="figures__label">{{ available_themes|length|pl_plural:"motyw kolorystyczny,motywy kolorystyczne,motywów kolorystycznych" }}</dt>
+            <dd class="figures__value">{{ available_themes|length }}</dd>
+        </div>
+    </dl>
+</section>
+
+<section class="block" aria-labelledby="steps-heading">
+    <div class="container">
+        <div class="block__head">
+            <h2 id="steps-heading" class="block__title">Od zapisu do zaliczonego testu.</h2>
+            <p class="block__lead">Cztery kroki, jedna platforma. Bez skakania między aplikacjami i bez zgadywania, co dalej.</p>
+        </div>
+        <ol class="steps">
+            <li class="steps__item">
+                <span class="steps__num" aria-hidden="true">01</span>
+                <h3 class="steps__title">Wybierz kurs</h3>
+                <p class="steps__text">Katalog z kategoriami, filtrami poziomu i ceną. Darmowe kursy otwierasz od razu.</p>
+            </li>
+            <li class="steps__item">
+                <span class="steps__num" aria-hidden="true">02</span>
+                <h3 class="steps__title">Kup w koszyku</h3>
+                <p class="steps__text">Płatność online i potwierdzenie na e-mail. Dostęp do lekcji odblokowuje się po opłaceniu.</p>
+            </li>
+            <li class="steps__item">
+                <span class="steps__num" aria-hidden="true">03</span>
+                <h3 class="steps__title">Ucz się i sprawdzaj</h3>
+                <p class="steps__text">Testy ABC liczą punkty od razu, odpowiedzi otwarte ocenia nauczyciel.</p>
+            </li>
+            <li class="steps__item">
+                <span class="steps__num" aria-hidden="true">04</span>
+                <h3 class="steps__title">Zapytaj Bielika</h3>
+                <p class="steps__text">Polski model językowy wyjaśni trudny fragment lekcji innymi słowami.</p>
+            </li>
+        </ol>
+    </div>
+</section>
+
+{% if categories %}
+<section class="block block--tinted" aria-labelledby="categories-heading">
+    <div class="container split">
+        <div class="split__aside">
+            <h2 id="categories-heading" class="block__title">Kategorie</h2>
+            <p class="block__lead">Każda kategoria ma podkategorie i swojego moderatora, który dba o jakość kursów.</p>
+        </div>
+        <ul class="index-list split__main">
+            {% for entry in categories %}
+            <li>
+                <a class="index-list__link" href="{% url 'catalog:course_list' %}?category={{ entry.category.slug }}">
+                    <span class="index-list__name">{{ entry.category.name }}</span>
+                    <span class="index-list__count">{{ entry.course_count }} {{ entry.course_count|pl_plural:"kurs,kursy,kursów" }} <span aria-hidden="true">→</span></span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</section>
+{% endif %}
+
+{% if available_themes %}
+<section class="block" aria-labelledby="themes-heading">
+    <div class="container">
+        <div class="block__head">
+            <h2 id="themes-heading" class="block__title">Pięć kolorów. Cała platforma.</h2>
+            <p class="block__lead">Każdy motyw to pięć kolorów bazowych — resztę odcieni strona wylicza sama. Wybór zapamiętamy na Twoim koncie.</p>
+        </div>
+        <ul class="theme-tiles">
+            {% for theme in available_themes %}
+            <li>
+                <form method="post" action="{% url 'accounts:set-theme' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="theme" value="{{ theme.pk }}">
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="theme-tile"{% if theme.pk == current_theme_id %} aria-current="true"{% endif %}>
+                        <span class="theme-tile__swatch" aria-hidden="true">
+                            <span style="background: {{ theme.primary }}"></span><span style="background: {{ theme.secondary }}"></span><span style="background: {{ theme.accent }}"></span><span style="background: {{ theme.surface_variant }}"></span><span style="background: {{ theme.surface }}"></span>
+                        </span>
+                        <span class="theme-tile__body">
+                            <span class="theme-tile__name">{{ theme.name }}</span>
+                            <span class="theme-tile__meta">{% if theme.is_dark %}ciemny{% else %}jasny{% endif %}{% if theme.pk == current_theme_id %} · aktualny{% endif %}</span>
+                        </span>
+                    </button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</section>
+{% endif %}
+
+<section class="cta-band" aria-labelledby="cta-heading">
+    <div class="container cta-band__inner">
+        <h2 id="cta-heading" class="cta-band__title">Zacznij od pierwszej lekcji.</h2>
+        {% if user.is_authenticated %}
+        <a class="btn btn--paper btn--lg" href="{% url 'learning:my_courses' %}">Przejdź do moich kursów <span aria-hidden="true">→</span></a>
+        {% else %}
+        <a class="btn btn--paper btn--lg" href="{% url 'accounts:login' %}">Zaloguj się lub utwórz konto <span aria-hidden="true">→</span></a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

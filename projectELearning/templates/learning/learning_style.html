@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Styl uczenia się — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'accounts:profile' %}">Mój profil</a></li>
+                    <li><span aria-current="page">Styl uczenia się</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Twoje konto · nauka</p>
+            <h1 class="page-head__title">Styl uczenia się</h1>
+            <p class="page-head__lead">
+                Wybierz, jak najlepiej się uczysz. Lekcje, które mają osobne wersje, pokażą Ci treść dopasowaną
+                do Twojego stylu — pozostałe są takie same dla wszystkich. Styl możesz zmienić w każdej chwili.
+            </p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body style-page">
+    <section aria-labelledby="choose-heading">
+        <h2 id="choose-heading" class="section-title">01 Twój styl</h2>
+        <p class="section-lead">
+            {% if current %}Obecnie: <strong>{{ current.name }}</strong>.{% else %}Nie masz jeszcze wybranego stylu.{% endif %}
+        </p>
+        <form method="post" class="style-form" novalidate>
+            {% csrf_token %}
+            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+            {% if form.style.errors %}
+            <div class="auth-alert auth-alert--error" role="alert">
+                <span class="auth-alert__icon" aria-hidden="true">!</span>
+                <div class="auth-alert__body"><p class="auth-alert__message">{{ form.style.errors.0 }}</p></div>
+            </div>
+            {% endif %}
+            <fieldset class="style-options">
+                <legend class="sr-only">{{ form.style.label }}</legend>
+                {% for radio in form.style %}
+                <label class="style-option" for="{{ radio.id_for_label }}">
+                    {{ radio.tag }}
+                    <span class="style-option__body">
+                        <span class="style-option__name">{{ radio.choice_label }}{% if analysis.suggested and analysis.differs and radio.data.value|stringformat:"s" == analysis.suggested.pk|stringformat:"s" %} <span class="tag tag--ok">polecany dla Ciebie</span>{% endif %}</span>
+                        {% for style in styles %}{% if style.pk|stringformat:"s" == radio.data.value|stringformat:"s" %}
+                        <span class="style-option__text">{{ style.description }}</span>
+                        {% endif %}{% endfor %}
+                    </span>
+                </label>
+                {% endfor %}
+            </fieldset>
+            <div class="form-sheet__actions">
+                <button type="submit" class="btn btn--primary">Zapisz styl</button>
+                {% if next %}<a href="{{ next }}" class="btn btn--ghost">Wróć do lekcji</a>{% endif %}
+            </div>
+        </form>
+    </section>
+
+    <section aria-labelledby="survey-heading" id="ankieta" class="style-survey">
+        <h2 id="survey-heading" class="section-title">02 Ankieta stylu uczenia się</h2>
+        {% if survey %}
+        <p class="section-lead">
+            Ostatnia ankieta: {{ survey.created_at|date:"j E Y, H:i" }}.
+            {% if survey.top_style %}Dominujący styl w Twoich odpowiedziach: <strong>{{ survey.top_style.name }}</strong>.{% endif %}
+        </p>
+        <ul class="survey-result" aria-label="Wynik ankiety w podziale na style">
+            {% for share in survey_shares %}
+            <li class="survey-result__row">
+                <span class="survey-result__name">{{ share.style.name }}</span>
+                <span class="progress" role="img" aria-label="{{ share.style.name }}: {{ share.percent }}% odpowiedzi"><span class="progress__bar"><span class="progress__fill" style="width: {{ share.percent }}%"></span></span></span>
+                <span class="survey-result__value">{{ share.percent }}%<span class="sr-only"> ({{ share.count }} {{ share.count|pl_plural:"odpowiedź,odpowiedzi,odpowiedzi" }})</span></span>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="form-sheet__actions">
+            {% if survey.top_style and survey.top_style.is_active and survey.top_style != current %}
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="style" value="{{ survey.top_style.pk }}">
+                <button type="submit" class="btn btn--primary">Ustaw „{{ survey.top_style.name }}” jako mój styl</button>
+            </form>
+            {% endif %}
+            <a href="{% url 'learning:style_survey' %}" class="btn btn--outline">Wypełnij ankietę ponownie</a>
+        </div>
+        {% else %}
+        <p class="section-lead">Nie wiesz, który styl wybrać? Odpowiedz na 10 krótkich pytań o to, jak zwykle się uczysz — system wskaże styl, który dominuje w Twoich odpowiedziach.</p>
+        <p><a href="{% url 'learning:style_survey' %}" class="btn btn--primary">Wypełnij ankietę</a></p>
+        {% endif %}
+    </section>
+
+    <section aria-labelledby="analysis-heading" class="style-analysis">
+        <h2 id="analysis-heading" class="section-title">03 Jak Ci idzie w poszczególnych stylach</h2>
+        <p class="section-lead">
+            System zapisuje, w której wersji przerabiasz lekcje, i porównuje wyniki testów zdawanych po nich.
+            Polecenie pojawi się, gdy w danym stylu masz co najmniej dwa ocenione testy.
+        </p>
+
+        <div class="notice" role="status">
+            {% if analysis.kind == "switch" %}
+            <p><strong>Polecamy styl „{{ analysis.suggested.name }}”.</strong> Twoje testy po lekcjach w tym stylu wypadają lepiej niż w stylu „{{ analysis.current.name }}”. Wybierz go wyżej i sprawdź na kolejnych lekcjach.</p>
+            {% elif analysis.kind == "choose" %}
+            <p><strong>Najlepiej idzie Ci w stylu „{{ analysis.suggested.name }}”.</strong> Nie masz wybranego stylu — wybierz go wyżej, a lekcje z wersjami dopasują się do Ciebie.</p>
+            {% elif analysis.kind == "keep" %}
+            <p><strong>Twój styl „{{ analysis.current.name }}” sprawdza się najlepiej.</strong> Nie widzimy stylu, w którym szłoby Ci wyraźnie lepiej.{% if analysis.explore %} Jeśli chcesz porównać, przerób kilka lekcji w wersji „{{ analysis.explore.name }}”.{% endif %}</p>
+            {% elif analysis.graded_attempts %}
+            <p><strong>Za mało danych na polecenie.</strong> Masz {{ analysis.graded_attempts }} {{ analysis.graded_attempts|pl_plural:"oceniony test,ocenione testy,ocenionych testów" }}, ale żaden styl nie ma jeszcze dwóch.{% if analysis.explore %} Spróbuj lekcji w wersji „{{ analysis.explore.name }}”, żeby było z czym porównać.{% endif %}</p>
+            {% else %}
+            <p><strong>Jeszcze nie mamy czego analizować.</strong> Przerób kilka lekcji i rozwiąż testy — polecenie stylu pojawi się tutaj.</p>
+            {% endif %}
+        </div>
+
+        <div class="table-wrap" role="region" aria-label="Tabela wyników w podziale na style" tabindex="0">
+            <table class="data-table">
+                <caption class="sr-only">Wyniki testów i ukończone lekcje w podziale na style uczenia się</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Styl</th>
+                        <th scope="col">Lekcje w tej wersji</th>
+                        <th scope="col">Ocenione testy</th>
+                        <th scope="col">Średni wynik</th>
+                        <th scope="col">Zaliczone</th>
+                        <th scope="col">Wynik ważony</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in analysis.rows %}
+                    <tr>
+                        <th scope="row">{{ row.style.name }}{% if current and row.style.pk == current.pk %} <span class="tag">Twój styl</span>{% endif %}</th>
+                        <td>{{ row.lessons }}</td>
+                        <td>{{ row.attempts }}</td>
+                        <td>{% if row.average is not None %}{{ row.average }}%{% else %}—{% endif %}</td>
+                        <td>{% if row.pass_rate is not None %}{{ row.pass_rate }}%{% else %}—{% endif %}</td>
+                        <td>{% if row.score_display is not None %}{{ row.score_display }}{% else %}—{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="form-help style-analysis__note">
+            Wynik ważony to średnia wyników w stylu, „ściągnięta” w stronę Twojej ogólnej średniej{% if analysis.overall_average is not None %} ({{ analysis.overall_average }}%){% endif %} — dzięki temu jeden udany test nie przesądza o poleceniu.
+            Testy rozwiązane bez przerabiania lekcji w żadnej wersji liczą się do stylu, który był wtedy wybrany na Twoim koncie.
+        </p>
+    </section>
+
+    <section aria-labelledby="courses-heading">
+        <h2 id="courses-heading" class="section-title">04 Kursy dla Ciebie</h2>
+        {% if recommended %}
+        <p class="section-lead">Kursy, na które nie masz jeszcze zapisu, dopasowane do Twojego stylu, wyniku ankiety i wyników testów. <a href="{% url 'catalog:course_list' %}?sort=dopasowane">Cały katalog wg dopasowania</a></p>
+        <ul class="course-grid" aria-label="Kursy polecane dla Twojego stylu uczenia się">
+            {% for fit in recommended %}{% with course=fit.course %}{% include "catalog/includes/course_card.html" with heading_level=3 %}{% endwith %}{% endfor %}
+        </ul>
+        {% else %}
+        <p class="section-lead">Wybierz styl albo wypełnij ankietę — pokażemy kursy z lekcjami przygotowanymi dla Twojego stylu.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

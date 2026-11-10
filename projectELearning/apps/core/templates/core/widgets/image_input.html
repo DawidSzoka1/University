@@ -1,0 +1,18 @@
+<div class="image-input" data-image-input>
+    {% if widget.is_initial and widget.show_current %}
+    <figure class="image-input__figure" data-image-current>
+        <img src="{{ widget.value.url }}" alt="" class="image-input__img" loading="lazy">
+        <figcaption class="image-input__caption">
+            <strong>Obecne zdjęcie</strong> · <a href="{{ widget.value.url }}">otwórz w pełnym rozmiarze</a>
+            <span class="image-input__note" data-image-note hidden></span>
+        </figcaption>
+    </figure>
+    {% endif %}
+    {% if widget.is_initial and widget.allow_clear and not widget.required %}
+    <label class="checkbox-label image-input__clear" for="{{ widget.checkbox_id }}">
+        <input type="checkbox" class="form-checkbox" name="{{ widget.checkbox_name }}" id="{{ widget.checkbox_id }}" data-image-clear{% if widget.attrs.disabled %} disabled{% endif %}{% if widget.attrs.checked %} checked{% endif %}>
+        <span>Usuń obecne zdjęcie</span>
+    </label>
+    {% endif %}
+    <input type="{{ widget.type }}" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>
+</div>

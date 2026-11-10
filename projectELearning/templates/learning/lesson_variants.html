@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Wersje dla stylów: {{ lesson.title }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'catalog:course_detail' course.slug %}">{{ course.title }}</a></li>
+                    <li><a href="{% url 'learning:curriculum_edit' course.slug %}">Program</a></li>
+                    <li><a href="{% url 'learning:lesson_edit' course.slug lesson.pk %}">{{ lesson.title }}</a></li>
+                    <li><span aria-current="page">Style uczenia się</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Lekcja · wersje treści</p>
+            <h1 class="page-head__title">Wersje dla stylów uczenia się</h1>
+            <p class="page-head__lead">
+                Uczeń zobaczy wersję dla swojego stylu, a gdy jej nie ma — treść podstawową lekcji.
+                Pliki do pobrania i testy są wspólne dla wszystkich wersji.
+            </p>
+        </div>
+        <div class="page-head__actions">
+            <a href="{% url 'learning:lesson_detail' course.slug lesson.pk %}" class="btn btn--outline">Zobacz lekcję</a>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    <section aria-labelledby="mode-heading" class="panel style-mode">
+        <div class="panel__head">
+            <h2 id="mode-heading" class="panel__title">Tryb treści</h2>
+        </div>
+        {% if lesson.same_for_all_styles %}
+        <p>Teraz <strong>wszyscy uczniowie widzą tę samą treść</strong>{% if variant_count %} — zapisane wersje ({{ variant_count }}) są ukryte{% endif %}.</p>
+        <form method="post" action="{% url 'learning:lesson_styles_toggle' course.slug lesson.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="same" value="0">
+            <button type="submit" class="btn btn--primary btn--sm">Włącz wersje dla stylów</button>
+        </form>
+        {% else %}
+        <p>Wersje dla stylów są <strong>włączone</strong>. Style bez własnej wersji dostają treść podstawową.</p>
+        <form method="post" action="{% url 'learning:lesson_styles_toggle' course.slug lesson.pk %}"
+              data-confirm="Wszyscy uczniowie zobaczą tę samą, podstawową treść lekcji. Zapisane wersje zostaną zachowane i można je później znowu włączyć."
+              data-confirm-title="Ta sama treść dla każdego stylu?" data-confirm-btn="Tak, jedna treść">
+            {% csrf_token %}
+            <input type="hidden" name="same" value="1">
+            <button type="submit" class="btn btn--outline btn--sm">Ta sama treść dla każdego stylu</button>
+        </form>
+        {% endif %}
+    </section>
+
+    <h2 class="section-title">Style</h2>
+    <ul class="row-list">
+        <li class="row-list__item">
+            <div class="row-list__main">
+                <p class="row-list__title">Wersja podstawowa</p>
+                <p class="row-list__meta">Dla uczniów bez wybranego stylu i dla stylów bez własnej wersji.</p>
+            </div>
+            <a href="{% url 'learning:lesson_edit' course.slug lesson.pk %}" class="btn btn--outline btn--sm">Edytuj<span class="sr-only"> wersję podstawową</span></a>
+        </li>
+        {% for style, variant in rows %}
+        <li class="row-list__item">
+            <div class="row-list__main">
+                <p class="row-list__title">{{ style.name }}
+                    {% if variant %}<span class="tag tag--ok">ma własną wersję</span>{% else %}<span class="tag">treść podstawowa</span>{% endif %}
+                </p>
+                {% if style.author_hint %}<p class="row-list__meta">Wskazówka: {{ style.author_hint }}</p>{% endif %}
+                {% if variant %}<p class="row-list__meta">Zmieniono {{ variant.updated_at|date:"j E Y, H:i" }}{% if variant.video_url %} · własny film{% endif %}</p>{% endif %}
+            </div>
+            <div class="row-list__actions">
+                {% if variant %}
+                <a href="{% url 'learning:lesson_detail' course.slug lesson.pk %}?wersja={{ style.slug }}" class="btn btn--ghost btn--sm">Podgląd<span class="sr-only"> wersji „{{ style.name }}”</span></a>
+                <a href="{% url 'learning:lesson_variant_edit' course.slug lesson.pk style.slug %}" class="btn btn--outline btn--sm">Edytuj<span class="sr-only"> wersję „{{ style.name }}”</span></a>
+                <form method="post" action="{% url 'learning:lesson_variant_delete' course.slug lesson.pk style.slug %}"
+                      data-confirm="Usunąć wersję dla stylu „{{ style.name }}”? Uczniowie z tym stylem zobaczą treść podstawową."
+                      data-confirm-title="Usunąć wersję?" data-confirm-btn="Usuń" data-confirm-danger="true">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn--ghost btn--sm">Usuń<span class="sr-only"> wersję „{{ style.name }}”</span></button>
+                </form>
+                {% else %}
+                <a href="{% url 'learning:lesson_variant_edit' course.slug lesson.pk style.slug %}" class="btn btn--primary btn--sm">+ Dodaj wersję<span class="sr-only"> dla stylu „{{ style.name }}”</span></a>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% if inactive %}
+    <p class="form-help">Wersje dla wyłączonych stylów ({{ inactive|length }}) są zachowane, ale niewidoczne dla uczniów: {% for v in inactive %}{{ v.style.name }}{% if not forloop.last %}, {% endif %}{% endfor %}.</p>
+    {% endif %}
+
+    <p><a href="{% url 'learning:curriculum_edit' course.slug %}" class="btn btn--ghost">Wróć do programu kursu</a></p>
+</div>
+{% endblock %}

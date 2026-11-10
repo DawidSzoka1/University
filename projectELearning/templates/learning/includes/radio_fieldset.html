@@ -1,0 +1,11 @@
+{# Grupa radio jako <fieldset> z <legend>, pomoc i błąd powiązane aria-describedby. field = pole z RadioSelect #}
+<fieldset class="choice-fieldset{% if field.errors %} form-group--error{% endif %}"{% if field.help_text or field.errors %} aria-describedby="{% if field.help_text %}{{ field.auto_id }}_helptext{% endif %}{% if field.errors %} {{ field.auto_id }}-error{% endif %}"{% endif %}>
+    <legend class="form-label">{{ field.label }}</legend>
+    {% if field.help_text %}<p class="form-help" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>{% endif %}
+    <div class="choice-fieldset__options">
+        {% for radio in field %}
+        <label class="choice-fieldset__option" for="{{ radio.id_for_label }}">{{ radio.tag }} <span>{{ radio.choice_label }}</span></label>
+        {% endfor %}
+    </div>
+    {% if field.errors %}<p class="form-field-error" id="{{ field.auto_id }}-error">{{ field.errors.0 }}</p>{% endif %}
+</fieldset>

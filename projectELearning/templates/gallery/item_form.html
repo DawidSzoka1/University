@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Edycja: {{ item.title }} — Galeria — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'gallery:slider_view' %}">Galeria</a></li>
+                    <li><a href="{% url 'gallery:upload_image' %}">Zdjęcia w bazie</a></li>
+                    <li><span aria-current="page">{{ item.title }}</span></li>
+                </ol>
+            </nav>
+            <h1 class="page-head__title">Edytuj zdjęcie</h1>
+            <p class="page-head__lead">Zmiany zobaczysz od razu we wszystkich układach, w których jest to zdjęcie.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body gallery-admin">
+    <figure class="gallery-admin__preview">
+        <img src="{{ item.image.url }}" alt="{{ item.image_alt }}" width="{{ item.width }}" height="{{ item.height }}">
+        <figcaption>{{ item.width }}×{{ item.height }} px{% if item.was_resized %} (oryginał {{ item.original_width }}×{{ item.original_height }}){% endif %}</figcaption>
+    </figure>
+    <form method="post" enctype="multipart/form-data" class="form-sheet" novalidate>
+        {% csrf_token %}
+        {% include "includes/form_field.html" with field=form.title show_required=True %}
+        {% include "includes/form_field.html" with field=form.image help=True %}
+        {% include "includes/form_field.html" with field=form.image_alt show_required=True help=True %}
+        {% include "includes/form_field.html" with field=form.description show_required=True help=True %}
+        {% include "includes/form_field.html" with field=form.related_course help=True %}
+        <div class="comment-form__actions">
+            <button type="submit" class="btn btn--primary">Zapisz zmiany</button>
+            <a href="{% url 'gallery:upload_image' %}" class="btn btn--ghost">Anuluj</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

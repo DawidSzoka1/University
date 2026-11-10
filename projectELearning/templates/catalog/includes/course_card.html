@@ -1,0 +1,45 @@
+{# Karta kursu; heading_level (2/3), uzasadnienie polecenia: course.fit_reason (style uczenia się) #}
+<li class="course-card">
+    <div class="course-card__media"{% if not course.thumbnail %} aria-hidden="true"{% endif %}>
+        {% if course.thumbnail %}
+        <img src="{{ course.thumbnail.url }}" alt="" class="course-card__img" loading="lazy">
+        {% else %}
+        <span class="course-card__cover">{{ course.category.name|default:"Kurs" }}</span>
+        {% endif %}
+    </div>
+
+    <div class="course-card__body">
+        <p class="course-card__meta">
+            {% if course.category %}{{ course.category.name }} · {% endif %}{{ course.get_difficulty_level_display|lower }}{% if course.duration_hours %} · {{ course.duration_hours }} h{% endif %}
+        </p>
+        <h{{ heading_level|default:2 }} class="course-card__title">
+            <a href="{% url 'catalog:course_detail' course.slug %}" class="course-card__link">{{ course.title }}</a>
+        </h{{ heading_level|default:2 }}>
+        {% if course.fit_reason %}
+        <p class="course-card__fit"><span class="course-card__fit-label">Dla Ciebie:</span> {{ course.fit_reason }}</p>
+        {% elif course.description %}
+        <p class="course-card__text">{{ course.description|truncatewords:22 }}</p>
+        {% endif %}
+        <dl class="course-card__facts">
+            <div>
+                <dt>Ocena</dt>
+                <dd>{% if course.reviews_count %}{{ course.average_rating|floatformat:1 }} ({{ course.reviews_count }}){% else %}brak{% endif %}</dd>
+            </div>
+            <div>
+                <dt>Kursanci</dt>
+                <dd>{{ course.students_count }}{% if course.students_count %} · ukończyło {{ course.completed_count }}{% endif %}</dd>
+            </div>
+            {% if course.author %}
+            <div>
+                <dt>Autor</dt>
+                <dd>{{ course.author.get_full_name|default:course.author.username }}</dd>
+            </div>
+            {% endif %}
+        </dl>
+    </div>
+
+    <div class="course-card__foot">
+        <strong class="course-card__price{% if course.is_course_free %} course-card__price--free{% endif %}">{{ course.get_price_display }}</strong>
+        <span class="course-card__more" aria-hidden="true">Szczegóły →</span>
+    </div>
+</li>

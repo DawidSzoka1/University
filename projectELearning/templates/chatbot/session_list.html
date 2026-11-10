@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Asystent AI — historia rozmów — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><span aria-current="page">Asystent AI</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">AI · Bielik</p>
+            <h1 class="page-head__title">Asystent kursu</h1>
+            <p class="page-head__lead">Polski model językowy Bielik wyjaśnia materiał innymi słowami. Okno czatu jest zawsze w prawym dolnym rogu; na stronie lekcji asystent zna jej treść. W trakcie testu nie pomaga — po wysłaniu odpowiedzi otwórz wynik i zapytaj o pytania, z którymi był problem.</p>
+        </div>
+        <div class="page-head__actions">
+            <button type="button" class="btn btn--primary" data-chat-open aria-controls="chat-panel">Otwórz czat</button>
+            <a href="{% url 'chatbot:session_general' %}" class="btn btn--outline">Rozmowa ogólna na pełnej stronie</a>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    <h2 class="section-title">Twoje rozmowy</h2>
+    {% if sessions %}
+    <ul class="row-list chat-sessions">
+        {% for session in sessions %}
+        <li class="row-list__item">
+            <div class="row-list__main">
+                <p><a href="{% url 'chatbot:session_detail' session.pk %}"><strong>{{ session.title }}</strong></a>
+                    <span class="row-list__meta">· {{ session.message_count }} {{ session.message_count|pl_plural:"wiadomość,wiadomości,wiadomości" }} · ostatnia {{ session.last_message_at|date:"j E Y, H:i" }}</span></p>
+                {% if session.last_message %}
+                <p class="chat-sessions__preview">{% if session.last_message.is_bot %}Asystent{% else %}Ty{% endif %}: {{ session.last_message.message_text|truncatechars:140 }}</p>
+                {% endif %}
+            </div>
+            <form method="post" action="{% url 'chatbot:session_clear' session.pk %}"
+                  data-confirm="Rozmowa „{{ session.title }}” zostanie trwale usunięta." data-confirm-title="Usunąć rozmowę?" data-confirm-btn="Usuń" data-confirm-danger="true">
+                {% csrf_token %}
+                <button type="submit" class="btn btn--outline btn--sm" aria-label="Usuń rozmowę {{ session.title }}">Usuń</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% include "includes/pagination.html" %}
+    {% else %}
+    {% url 'learning:my_courses' as courses_url %}
+    {% include "includes/empty_state.html" with title="Nie masz jeszcze rozmów" description="Otwórz lekcję w jednym ze swoich kursów i kliknij „Zapytaj asystenta o tę lekcję” albo ikonę czatu w prawym dolnym rogu." action_url=courses_url action_label="Przejdź do moich kursów" %}
+    {% endif %}
+</div>
+{% endblock %}

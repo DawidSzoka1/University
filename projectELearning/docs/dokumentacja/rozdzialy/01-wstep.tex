@@ -1,0 +1,113 @@
+\chapter{Charakterystyka przedsięwzięcia}
+
+\section{Cel projektu}
+
+\textbf{E-Learning} to webowa platforma kursów online zbudowana w~jednym spójnym systemie
+Django. Łączy cztery obszary, które w~typowych rozwiązaniach są rozproszone między osobnymi
+narzędziami: \emph{sklep} z~kursami (koszyk, zamówienia, płatność online), \emph{środowisko
+nauki} (lekcje, testy z~ocenianiem automatycznym i~ręcznym, dyplomy), \emph{moderowaną
+społeczność} (komentarze w~wątkach, głosy, rangi, zgłaszanie kursów) oraz \emph{asystenta
+AI} opartego o~polski model językowy Bielik, uruchamiany lokalnie przez Ollamę.
+
+Projekt powstał w~ramach przedmiotu \emph{Inteligentne multimedialne systemy uczące}. Poza funkcjami biznesowymi
+istotnym celem była \textbf{dostępność i~użyteczność}: cały serwis ma być obsługiwalny wyłącznie klawiaturą,
+zgodny z~WCAG 2.1 na poziomie AA i~zbudowany bez gotowych bibliotek komponentów
+(Bootstrap, Tailwind, szablony). Wygląd platformy opiera się na autorskim arkuszu stylów
+sterowanym pięcioma kolorami bazowymi, które administrator może zmieniać z~panelu.
+
+Niniejszy dokument opisuje system w~stanie po zakończeniu prac implementacyjnych. Zawiera
+analizę wymagań, model aktorów i~przypadków użycia, architekturę, model danych, opis
+interfejsów programistycznych, kluczowych algorytmów, zagadnień dostępności, przegląd
+interfejsu użytkownika, sposób weryfikacji, przebieg realizacji oraz instrukcję
+uruchomienia. Odbiorcami dokumentu są osoba oceniająca projekt oraz każdy, kto chciałby
+system uruchomić lub rozwijać.
+
+\section{Słownik pojęć}
+
+\begin{table}[H]
+\centering\small
+\caption{Słownik pojęć używanych w~dokumentacji}
+\begin{tabularx}{\linewidth}{@{}P{3.6cm}L@{}}
+\toprule
+\hd{Pojęcie} & \hd{Znaczenie} \\
+\midrule
+Kurs & Produkt w~katalogu: opis, cena (lub bezpłatny), poziom, kategoria, program złożony z~sekcji i~lekcji oraz testów. \\
+Program kursu & Uporządkowana lista sekcji (\code{CourseSection}), w~każdej lekcje (\code{Lesson}); testy mogą stać po wybranej lekcji albo na końcu kursu. \\
+Test & Zestaw pytań (\code{Quiz}): jednokrotnego wyboru (ABC), wielokrotnego wyboru i~otwartych. Test obowiązkowy blokuje dalszą naukę do czasu zaliczenia. \\
+Podejście & Jedno wysłanie testu przez ucznia (\code{Attempt}) wraz z~odpowiedziami i~wynikiem. \\
+Zapis & Powiązanie ucznia z~kursem (\code{Enrollment}), powstaje po zapisie na kurs bezpłatny, opłaceniu zamówienia albo wykorzystaniu kodu dostępu. \\
+Zgłoszenie kursu & Kurs przesłany do akceptacji przez osobę bez uprawnień moderatora danej kategorii; ma trwały wątek dyskusji z~nauczycielami. \\
+Moderator kategorii & Nauczyciel przypisany przez administratora do kategorii; akceptuje kursy, komentarze i~ocenia testy otwarte w~swojej gałęzi drzewa. \\
+Reputacja / ranga & Suma głosów ,,lubię / nie lubię'' oddanych na komentarze użytkownika i~wynikający z~niej tytuł (Obserwator, Nowicjusz, Pomocnik, Ekspert, Mistrz). \\
+Motyw & Nazwany zestaw pięciu kolorów bazowych (\code{ColorTheme}); odcienie pochodne i~kolory tekstu są wyliczane automatycznie. \\
+Układ slajdera & Nazwana konfiguracja kart w~galerii (\code{SliderPreset}); tylko jeden jest wyświetlany publicznie. \\
+Kod dostępu & Jednorazowy kod wydawany za drugą i~kolejną sztukę tego samego kursu w~zamówieniu; pozwala zapisać na kurs inną osobę. \\
+Styl uczenia się & Preferowany sposób przyswajania wiedzy (\code{LearningStyle}); domyślnie cztery style VARK: wzrokowiec, słuchowiec, czytanie i~pisanie, praktyk. Administrator dodaje kolejne. \\
+Ankieta stylu & Dziesięć pytań sytuacyjnych; każda odpowiedź wskazuje jeden styl. Wynikiem jest procentowy rozkład stylów i styl dominujący. \\
+Profil stylów ucznia & Udział każdego stylu u ucznia wyliczony z wybranego stylu, wyniku ankiety i stylu, w którym uczniowi najlepiej idą testy; podstawa polecania kursów. \\
+Wersja lekcji & Treść lekcji przygotowana dla jednego stylu (\code{LessonVariant}); uczeń bez własnej wersji widzi treść podstawową. \\
+Asystent, Bielik & Czat z~polskim modelem językowym Bielik (Ollama), znający kontekst bieżącej lekcji lub wyniku testu. \\
+JWT & JSON Web Token -- token dostępu używany przez API czatu i~koszyka. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Zakres systemu}
+
+Zakres funkcjonalny platformy podzielono na dziewięć modułów, odpowiadających zarazem
+aplikacjom Django w~katalogu \code{apps/}.
+
+\begin{enumerate}[label=\textbf{M\arabic*.},leftmargin=1.2cm]
+  \item \textbf{Konta i~role} -- rejestracja, logowanie hasłem oraz przez Discord, GitLab
+        i~Bitbucket (OAuth2), zmiana hasła, czasowa blokada po pięciu nieudanych logowaniach,
+        profil z~adresem i~awatarem, trzy role, tokeny JWT, statystyki platformy dla administratora.
+  \item \textbf{Katalog} -- drzewo kategorii z~okruszkami nawigacyjnymi, wyszukiwarka,
+        filtry (kategoria, poziom, cena), sortowanie (także ,,dopasowane do mnie''), sekcja
+        ,,Polecane dla Ciebie'', szczegóły kursu z~liczbą osób, które kurs zaczęły i~ukończyły.
+  \item \textbf{Tworzenie i~moderacja treści} -- trzyetapowy kreator kursu (dane, program,
+        publikacja), zgłoszenia z~wątkiem dyskusji, kolejki moderacji, zarządzanie
+        kategoriami i~przydziałem moderatorów.
+  \item \textbf{Społeczność} -- komentarze i~recenzje w~wątkach z~akceptacją, edycja,
+        głosowanie, reputacja i~rangi, centrum powiadomień.
+  \item \textbf{Sklep} -- koszyk (także dla gościa) z~kumulacją ilości, zamówienie z~adresem
+        z~profilu, e-mail potwierdzający, płatność Stripe w~trybie testowym z~webhookiem,
+        kody dostępu, obsługa statusów zamówień.
+  \item \textbf{Nauka} -- lekcje z~treścią sformatowaną, filmem i~załącznikami, postęp,
+        testy ABC i~otwarte (tekst, kod, zdjęcie, plik), ocenianie ręczne, dyplomy PDF
+        z~publiczną weryfikacją, style uczenia się: wybór stylu przez ucznia, wersje lekcji
+        dla stylów, ankieta diagnostyczna, rekomendacja stylu na podstawie wyników testów
+        oraz polecanie kursów dopasowanych do profilu stylów ucznia; panel postępów uczniów
+        kursu dla nauczyciela.
+  \item \textbf{Asystent AI} -- okno czatu na każdej stronie, strumieniowanie odpowiedzi,
+        kontekst lekcji i~wyniku testu, blokada w~trakcie rozwiązywania testu, historia
+        rozmów.
+  \item \textbf{Galeria} -- dodawanie zdjęć ze skalowaniem, konfigurator układów slajdera
+        z~przeciąganiem, zapętlony slajder publiczny.
+  \item \textbf{Wygląd i~dostępność} -- motywy kolorystyczne, autorski system stylów,
+        pełna obsługa klawiaturą i~zgodność z~WCAG 2.1 AA.
+\end{enumerate}
+
+\subsection*{Poza zakresem}
+
+Świadomie \emph{nie} realizowano: płatności produkcyjnych (Stripe działa wyłącznie
+w~trybie testowym), wystawiania faktur, transmisji wideo na żywo, aplikacji mobilnej
+(serwis jest w~pełni responsywny), hostingu modelu językowego w~chmurze oraz
+wielojęzyczności interfejsu (UI jest po polsku).
+
+\section{Założenia projektowe}
+
+\begin{itemize}
+  \item \textbf{Jeden monolit, wiele aplikacji.} Każdy moduł to osobna aplikacja Django
+        z~własnymi modelami, widokami, adresami i~testami; współdzielą one użytkownika,
+        kurs i~system powiadomień.
+  \item \textbf{Renderowanie po stronie serwera.} Strony generują szablony Django;
+        JavaScript jedynie \emph{ulepsza} interfejs (strumień czatu, zmiana ilości w~koszyku
+        bez przeładowania, przeciąganie kart). Każda akcja działa też bez skryptów, przez
+        zwykły formularz.
+  \item \textbf{Zmiany stanu wyłącznie metodą POST} z~tokenem CSRF; jedynym wyjątkiem jest
+        webhook płatności weryfikowany podpisem HMAC.
+  \item \textbf{Uprawnienia sprawdzane w~widoku}, a~nie tylko przez ukrywanie przycisków.
+  \item \textbf{Bez zewnętrznych usług dla danych użytkownika}: zdjęcia są skalowane
+        lokalnie (Pillow), model AI działa na własnym serwerze, a~wypowiedzi
+        uczniów nie trafiają do chmury.
+\end{itemize}

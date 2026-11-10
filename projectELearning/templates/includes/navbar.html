@@ -1,0 +1,188 @@
+{% load core_tags %}
+{# Główna nawigacja: marka, linki (aktywny oznaczony aria-current), motyw, konto, menu mobilne #}
+{% with ns=request.resolver_match.namespace url_name=request.resolver_match.url_name %}
+<nav class="navbar" aria-label="Nawigacja główna">
+    <div class="container navbar__inner">
+        <a href="{% url 'core:home' %}" class="navbar__brand"{% if ns == 'core' and url_name == 'home' %} aria-current="page"{% endif %}>
+            <span class="navbar__brand-mark" aria-hidden="true">e</span>
+            <span class="navbar__brand-text">E-Learning</span>
+        </a>
+
+        <div id="primary-nav" class="navbar__menu">
+            <ul class="navbar__list">
+                <li class="navbar__item">
+                    <a href="{% url 'catalog:course_list' %}" class="navbar__link"{% if ns == 'catalog' and url_name != 'course_create' and url_name != 'moderation_submissions' and url_name != 'moderation_comments' and url_name|slice:':9' != 'category_' %} aria-current="page"{% endif %}>Kursy</a>
+                </li>
+                <li class="navbar__item">
+                    <a href="{% url 'gallery:slider_view' %}" class="navbar__link"{% if ns == 'gallery' %} aria-current="page"{% endif %}>Galeria</a>
+                </li>
+
+                {% if user.is_authenticated %}
+                    <li class="navbar__item">
+                        <a href="{% url 'catalog:course_create' %}" class="navbar__link"{% if url_name == 'course_create' %} aria-current="page"{% endif %}>{% if user.is_staff or user.role == 'moderator' or user.role == 'admin' %}Utwórz kurs{% else %}Zaproponuj kurs{% endif %}</a>
+                    </li>
+                    <li class="navbar__item">
+                        <a href="{% url 'learning:my_courses' %}" class="navbar__link"{% if ns == 'learning' and url_name != 'grading_queue' and url_name != 'attempt_grade' %} aria-current="page"{% endif %}>Moje kursy</a>
+                    </li>
+                    {% if user.is_staff or user.is_superuser or user.role == 'moderator' or user.role == 'admin' %}
+                    <li class="navbar__item">
+                        <a href="{% url 'catalog:moderation_submissions' %}" class="navbar__link"{% if url_name == 'moderation_submissions' or url_name == 'moderation_comments' or url_name|slice:':9' == 'category_' or url_name == 'grading_queue' or url_name == 'attempt_grade' or url_name == 'manage' or url_name == 'stats' %} aria-current="page"{% endif %}>Moderacja</a>
+                    </li>
+                    {% endif %}
+                    <li class="navbar__item">
+                        <a href="{% url 'chatbot:session_list' %}" class="navbar__link"{% if ns == 'chatbot' %} aria-current="page"{% endif %}>
+                            Asystent <span class="navbar__tag">AI</span>
+                        </a>
+                    </li>
+                {% endif %}
+                <li class="navbar__item">
+                    <a href="{% url 'orders:cart' %}" class="navbar__link"{% if ns == 'orders' and url_name == 'cart' or ns == 'orders' and url_name == 'checkout' %} aria-current="page"{% endif %}{% if cart_count %} aria-label="Koszyk, {{ cart_count }} {{ cart_count|pl_plural:'sztuka,sztuki,sztuk' }}"{% endif %}>
+                        Koszyk{% if cart_count %} <span class="navbar__tag" aria-hidden="true">{{ cart_count }}</span>{% endif %}
+                    </a>
+                </li>
+            </ul>
+
+            {# Akcje konta widoczne tylko w rozwiniętym menu mobilnym #}
+            <div class="navbar__mobile-actions">
+                {% if user.is_authenticated %}
+                    <p class="navbar__mobile-user">
+                        <span class="navbar__avatar" aria-hidden="true">{{ user.username|first|upper }}</span>
+                        <span>
+                            <strong>{{ user.get_full_name|default:user.username }}</strong>
+                            <span class="navbar__mobile-role">{{ user.get_role_display }}</span>
+                        </span>
+                    </p>
+                    <div class="navbar__mobile-buttons">
+                        {% if user.is_staff %}
+                        <a href="{% url 'admin:index' %}" class="btn btn--outline">Panel Admina</a>
+                        {% endif %}
+                        <a href="{% url 'accounts:profile' %}" class="btn btn--outline">Mój profil</a>
+                        <a href="{% url 'orders:order_list' %}" class="btn btn--outline">Moje zamówienia</a>
+                        <a href="{% url 'learning:learning_style' %}" class="btn btn--outline">Styl uczenia się</a>
+                        <a href="{% url 'accounts:logout' %}" class="btn btn--ghost">Wyloguj się</a>
+                    </div>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="btn btn--primary btn--block">Zaloguj się</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="navbar__actions">
+            <details class="theme-switcher" data-theme-switcher>
+                <summary
+                    class="theme-switcher__summary"
+                    aria-label="Motyw kolorystyczny{% if current_theme %}: {{ current_theme.name }}{% endif %}"
+                >
+                    <span class="swatch-strip" aria-hidden="true">
+                        <span style="background: {{ theme_primary }}"></span><span style="background: {{ theme_secondary }}"></span><span style="background: {{ theme_accent }}"></span><span style="background: {{ theme_surface_variant }}"></span><span style="background: {{ theme_background }}"></span>
+                    </span>
+                    <span class="theme-switcher__label">Motyw</span>
+                    <svg class="theme-switcher__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                </summary>
+
+                <div class="theme-switcher__panel">
+                    <p class="theme-switcher__title">Wybierz motyw</p>
+                    {% if available_themes %}
+                    <ul class="theme-switcher__list">
+                        {% for theme in available_themes %}
+                        <li>
+                            <form method="post" action="{% url 'accounts:set-theme' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="theme" value="{{ theme.pk }}">
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <button type="submit" class="theme-option"{% if theme.pk == current_theme_id %} aria-current="true"{% endif %}>
+                                    <span class="swatch-strip swatch-strip--wide" aria-hidden="true">
+                                        <span style="background: {{ theme.primary }}"></span><span style="background: {{ theme.secondary }}"></span><span style="background: {{ theme.accent }}"></span><span style="background: {{ theme.surface_variant }}"></span><span style="background: {{ theme.surface }}"></span>
+                                    </span>
+                                    <span class="theme-option__name">{{ theme.name }}</span>
+                                    <span class="theme-option__meta">
+                                        {% if theme.pk == current_theme_id %}aktualny{% elif theme.is_default %}domyślny{% elif theme.is_dark %}ciemny{% else %}jasny{% endif %}
+                                    </span>
+                                </button>
+                            </form>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="theme-switcher__empty">Brak zdefiniowanych motywów.</p>
+                    {% endif %}
+                    <a class="theme-switcher__all" href="{% url 'accounts:select-theme' %}">Wszystkie motywy</a>
+                </div>
+            </details>
+
+            {% if user.is_authenticated %}
+                <div class="navbar__item--notifications">
+                    <button
+                        class="navbar__icon-btn"
+                        type="button"
+                        aria-expanded="false"
+                        aria-controls="notification-panel"
+                        data-notification-toggle
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 01-3.46 0"></path></svg>
+                        <span class="sr-only">Powiadomienia</span>
+                        {% if unread_notifications_count %}<span class="navbar__badge">{{ unread_notifications_count }}</span><span class="sr-only"> {{ unread_notifications_count|pl_plural:'nieprzeczytane,nieprzeczytane,nieprzeczytanych' }}</span>{% endif %}
+                    </button>
+                    <div class="navbar__notification-dropdown" id="notification-panel" role="region" aria-labelledby="notification-panel-title" hidden>
+                        <div class="notice-panel__head">
+                            <h2 id="notification-panel-title" class="notice-panel__title">Powiadomienia</h2>
+                            {% if unread_notifications_count %}<span class="notice-panel__count">{{ unread_notifications_count }} {{ unread_notifications_count|pl_plural:"nowe,nowe,nowych" }}</span>{% endif %}
+                        </div>
+                        {% with items=recent_notifications %}
+                        {% if items %}
+                        <ul class="notice-panel__list">
+                            {% for notification in items %}
+                            <li>{% include "includes/notification_item.html" %}</li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="navbar__notification-empty">Nie masz jeszcze powiadomień.</p>
+                        {% endif %}
+                        {% endwith %}
+                        <a href="{% url 'core:notification_list' %}" class="notice-panel__all">Wszystkie powiadomienia</a>
+                    </div>
+                </div>
+
+                {# Konto: profil, panel admina i wylogowanie w jednym menu — pasek mieści się od 64rem #}
+                <details class="account-menu" data-account-menu>
+                    <summary class="account-menu__summary" aria-label="Konto: {{ user.get_full_name|default:user.username }}">
+                        <span class="navbar__avatar" aria-hidden="true">{{ user.username|first|upper }}</span>
+                        <span class="navbar__user-name" aria-hidden="true">{{ user.get_short_name|default:user.username }}</span>
+                        <svg class="account-menu__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                    </summary>
+                    <div class="account-menu__panel">
+                        <p class="account-menu__who">
+                            <strong>{{ user.get_full_name|default:user.username }}</strong>
+                            <span>{{ user.get_role_display }}{% if user.rank_title %} · {{ user.rank_title }}{% endif %}</span>
+                        </p>
+                        <ul class="account-menu__list">
+                            <li><a href="{% url 'accounts:profile' %}" class="account-menu__link"{% if ns == 'accounts' and url_name == 'profile' %} aria-current="page"{% endif %}>Mój profil</a></li>
+                            <li><a href="{% url 'core:notification_list' %}" class="account-menu__link">Powiadomienia</a></li>
+                            <li><a href="{% url 'orders:order_list' %}" class="account-menu__link"{% if ns == 'orders' and url_name == 'order_list' %} aria-current="page"{% endif %}>Moje zamówienia</a></li>
+                            <li><a href="{% url 'learning:learning_style' %}" class="account-menu__link"{% if ns == 'learning' and url_name == 'learning_style' %} aria-current="page"{% endif %}>Styl uczenia się</a></li>
+                            {% if user.is_staff %}
+                            <li><a href="{% url 'core:stats' %}" class="account-menu__link"{% if url_name == 'stats' %} aria-current="page"{% endif %}>Statystyki platformy</a></li>
+                            <li><a href="{% url 'admin:index' %}" class="account-menu__link">Panel Admina</a></li>
+                            {% endif %}
+                            <li><a href="{% url 'accounts:logout' %}" class="account-menu__link account-menu__link--logout">Wyloguj się</a></li>
+                        </ul>
+                    </div>
+                </details>
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="navbar__login-btn"{% if ns == 'accounts' and url_name == 'login' or ns == 'accounts' and url_name == 'register' %} aria-current="page"{% endif %}>Zaloguj się</a>
+            {% endif %}
+
+            <button
+                class="navbar__toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="primary-nav"
+                aria-label="Otwórz menu nawigacji"
+            >
+                <span class="navbar__toggle-icon" aria-hidden="true"><span class="navbar__toggle-bar"></span><span class="navbar__toggle-bar"></span><span class="navbar__toggle-bar"></span></span>
+                <span class="navbar__toggle-text" aria-hidden="true">Menu</span>
+            </button>
+        </div>
+    </div>
+</nav>
+{% endwith %}

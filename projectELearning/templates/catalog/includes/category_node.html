@@ -1,0 +1,54 @@
+{% load core_tags %}
+{# Węzeł drzewa kategorii z akcjami (rekurencyjnie). node = category_views.CategoryNode #}
+{% with c=node.category %}
+<li class="category-tree__item" id="category-{{ c.pk }}">
+    <div class="category-tree__row{% if not c.is_active %} is-hidden{% endif %}">
+        <div class="category-tree__main">
+            <p class="category-tree__name">
+                <a href="{% url 'catalog:course_list' %}?category={{ c.slug }}">{{ c.name }}</a>
+                {% if not c.is_active %}<span class="tag">ukryta</span>{% endif %}
+            </p>
+            <p class="category-tree__meta">
+                {{ node.total_courses }} {{ node.total_courses|pl_plural:"kurs,kursy,kursów" }}{% if node.children and node.total_courses != c.course_count %} (z podkategoriami){% endif %}
+                {% with mods=c.moderators.all %}{% if mods %} · nauczyciele: {% for m in mods %}{{ m.get_full_name|default:m.username }}{% if not forloop.last %}, {% endif %}{% endfor %}{% elif not c.parent_id %} · <strong>brak nauczyciela</strong>{% endif %}{% endwith %}
+            </p>
+        </div>
+        <div class="category-tree__actions">
+            {% if node.can_add_child %}
+            <a href="{% url 'catalog:category_create' %}?rodzic={{ c.pk }}" class="comment__action">Dodaj podkategorię<span class="sr-only"> w „{{ c.name }}”</span></a>
+            {% endif %}
+            {% if node.can_manage %}
+            <a href="{% url 'catalog:category_edit' c.pk %}" class="comment__action">Edytuj<span class="sr-only"> „{{ c.name }}”</span></a>
+            {% if not node.is_first %}
+            <form method="post" action="{% url 'catalog:category_move' c.pk 'gora' %}">
+                {% csrf_token %}
+                <button type="submit" class="category-tree__move" aria-label="Przesuń „{{ c.name }}” wyżej"><span aria-hidden="true">↑</span></button>
+            </form>
+            {% else %}<span class="category-tree__move category-tree__move--none" aria-hidden="true"></span>{% endif %}
+            {% if not node.is_last %}
+            <form method="post" action="{% url 'catalog:category_move' c.pk 'dol' %}">
+                {% csrf_token %}
+                <button type="submit" class="category-tree__move" aria-label="Przesuń „{{ c.name }}” niżej"><span aria-hidden="true">↓</span></button>
+            </form>
+            {% else %}<span class="category-tree__move category-tree__move--none" aria-hidden="true"></span>{% endif %}
+            <form method="post" action="{% url 'catalog:category_toggle' c.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="comment__action">{% if c.is_active %}Ukryj{% else %}Pokaż{% endif %}<span class="sr-only"> „{{ c.name }}”</span></button>
+            </form>
+            {% if not node.children and not c.course_count %}
+            <form method="post" action="{% url 'catalog:category_delete' c.pk %}"
+                  data-confirm="Kategoria „{{ c.name }}” zostanie usunięta." data-confirm-title="Usunąć kategorię?" data-confirm-btn="Usuń" data-confirm-danger="true">
+                {% csrf_token %}
+                <button type="submit" class="comment__action comment__action--danger">Usuń<span class="sr-only"> „{{ c.name }}”</span></button>
+            </form>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    {% if node.children %}
+    <ul class="category-tree category-tree--nested" aria-label="Podkategorie: {{ c.name }}">
+        {% for child in node.children %}{% include "catalog/includes/category_node.html" with node=child %}{% endfor %}
+    </ul>
+    {% endif %}
+</li>
+{% endwith %}

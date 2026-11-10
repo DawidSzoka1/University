@@ -1,0 +1,84 @@
+# ===========================
+# E-Learning Platform - Django
+# ===========================
+
+# ---------------------
+# Django Core
+# ---------------------
+Django>=5.1,<5.2
+
+# ---------------------
+# Database
+# ---------------------
+psycopg[binary]>=3.2,<4.0
+
+# ---------------------
+# Authentication & OAuth2
+# ---------------------
+django-allauth[socialaccount]>=65.0,<66.0
+djangorestframework>=3.15,<4.0
+djangorestframework-simplejwt>=5.3,<6.0
+
+# ---------------------
+# Image Processing
+# ---------------------
+Pillow>=11.0,<12.0
+
+# ---------------------
+# PDF (dyplomy ukończenia kursu)
+# ---------------------
+reportlab>=4.2,<5.0
+
+# ---------------------
+# HTML Sanitization (XSS protection)
+# ---------------------
+bleach>=6.1,<7.0
+
+# ---------------------
+# Category Trees (MPTT)
+# ---------------------
+django-mptt>=0.16,<1.0
+
+# ---------------------
+# WYSIWYG Editor
+# ---------------------
+django-ckeditor-5>=0.2,<1.0
+
+# ---------------------
+# Modern Admin Interface
+# ---------------------
+django-unfold>=0.96.0,<1.0
+
+# ---------------------
+# CORS (for API/chatbot)
+# ---------------------
+django-cors-headers>=4.4,<5.0
+
+# ---------------------
+# Environment variables
+# ---------------------
+django-environ>=0.11,<1.0
+
+# ---------------------
+# Payments (Stripe sandbox)
+# ---------------------
+stripe>=12,<13
+
+# ---------------------
+# AI / LLM Integration
+# ---------------------
+ollama>=0.4,<1.0
+
+# ---------------------
+# Dev / Testing
+# ---------------------
+django-debug-toolbar>=4.4,<5.0
+factory-boy>=3.3,<4.0
+pytest-django>=4.8,<5.0
+pytest>=8.0,<9.0
+
+# ---------------------
+# Deployment helpers
+# ---------------------
+gunicorn>=22.0,<23.0
+whitenoise>=6.7,<7.0

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Weryfikacja dyplomu {{ code }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><span aria-current="page">Dyplom {{ code }}</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Weryfikacja dyplomu</p>
+            {% if certificate %}
+            <h1 class="page-head__title">Dyplom jest ważny</h1>
+            <p class="page-head__lead">Platforma E-Learning wystawiła dyplom nr <strong>{{ certificate.code }}</strong>.</p>
+            {% else %}
+            <h1 class="page-head__title">Nie znaleziono dyplomu</h1>
+            <p class="page-head__lead">Nie wystawiliśmy dyplomu o numerze „{{ code }}”. Sprawdź, czy numer jest przepisany bez błędów.</p>
+            {% endif %}
+        </div>
+        {% if is_owner %}
+        <div class="page-head__actions">
+            <a href="{% url 'learning:certificate_download' certificate.code %}" class="btn btn--primary">Pobierz dyplom (PDF)</a>
+        </div>
+        {% endif %}
+    </div>
+</header>
+
+{% if certificate %}
+<div class="container page-body">
+    <dl class="fact-list panel certificate-facts">
+        <div><dt>Imię i nazwisko</dt><dd>{{ certificate.full_name }}</dd></div>
+        <div><dt>Kurs</dt><dd><a href="{% url 'catalog:course_detail' certificate.course.slug %}">{{ certificate.course_title }}</a></dd></div>
+        <div><dt>Prowadzący</dt><dd>{{ certificate.teacher_name|default:"—" }}</dd></div>
+        <div><dt>Data wystawienia</dt><dd>{{ certificate.issued_at|date:"j E Y" }}</dd></div>
+    </dl>
+</div>
+{% endif %}
+{% endblock %}

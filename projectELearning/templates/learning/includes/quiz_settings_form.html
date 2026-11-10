@@ -1,0 +1,19 @@
+{# Formularz ustawień testu (nowy test i edycja) #}
+<form method="post" class="form-sheet quiz-settings" novalidate>
+    {% csrf_token %}
+    {% include "includes/form_field.html" with field=form.title show_required=True %}
+    {% include "includes/form_field.html" with field=form.description help=True %}
+    {% include "includes/form_field.html" with field=form.after_lesson help=True %}
+    <div class="form-group form-group--checkbox">
+        <label class="checkbox-label" for="{{ form.is_required.id_for_label }}">{{ form.is_required }} <span>{{ form.is_required.label }}</span></label>
+        <p class="form-help" id="{{ form.is_required.auto_id }}_helptext">{{ form.is_required.help_text }}</p>
+    </div>
+    <div class="form-row">
+        {% include "includes/form_field.html" with field=form.pass_percent help=True %}
+        {% include "includes/form_field.html" with field=form.max_attempts help=True %}
+    </div>
+    <div class="comment-form__actions">
+        <button type="submit" class="btn btn--primary">{{ submit_label }}</button>
+        <a href="{% url 'learning:curriculum_edit' course.slug %}" class="btn btn--ghost">Wróć do programu</a>
+    </div>
+</form>

@@ -1,0 +1,12 @@
+{# Ocena kursu jako grupa radio: prefix = unikalny przedrostek id, current = bieżąca wartość #}
+<fieldset class="rating-field">
+    <legend class="form-label">Ocena kursu <span class="rating-field__hint">(opcjonalnie)</span></legend>
+    <div class="rating-field__options">
+        <input type="radio" class="rating-field__input" name="rating" id="rating-{{ prefix }}-none" value=""{% if not current %} checked{% endif %}>
+        <label for="rating-{{ prefix }}-none" class="rating-field__option">Bez oceny</label>
+        {% for value, label in rating_choices %}
+        <input type="radio" class="rating-field__input" name="rating" id="rating-{{ prefix }}-{{ value }}" value="{{ value }}"{% if current|stringformat:"s" == value|stringformat:"s" %} checked{% endif %}>
+        <label for="rating-{{ prefix }}-{{ value }}" class="rating-field__option">{{ label }}</label>
+        {% endfor %}
+    </div>
+</fieldset>

@@ -1,0 +1,141 @@
+{% load static %}<!DOCTYPE html>
+{# ANTY-WCAG: strona CELOWO łamie dostępność (wymóg projektu). Nie poprawiać — opis naruszeń: core:anti_wcag_guide #}
+{# Brak lang, viewport blokuje powiększanie, brak skip-linka i landmarków, tytuł nic nie mówi #}
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Strona</title>
+    <link rel="stylesheet" href="{% static 'anti_wcag/anty-wcag.css' %}">
+</head>
+<body>
+    {# Pasek dla prowadzącego — jedyny „normalny” element strony #}
+    <div class="aw-demo-bar">Strona demonstracyjna Anty-WCAG (część projektu). <a href="{% url 'core:anti_wcag_guide' %}">Opis naruszeń</a> · <a href="{% url 'core:home' %}">Wróć na platformę</a></div>
+
+    {# NIEPRZEWIDYWALNE MENU: rozwija się tylko na :hover, przy zmianie szerokości okna skacze w przeciwległy róg, fokus zmienia położenie/treść #}
+    <div class="aw-menu aw-menu--tl" id="aw-menu">
+        <div class="aw-menu__item">
+            <span class="aw-menu__top">Kursy ▾</span>
+            <div class="aw-menu__sub">
+                <a href="#kursy">Programowanie</a>
+                <a href="#kursy">Grafika</a>
+                <a href="#kursy">Bazy danych</a>
+            </div>
+        </div>
+        <div class="aw-menu__item">
+            <span class="aw-menu__top">Konto ▾</span>
+            <div class="aw-menu__sub">
+                <a href="#formularz">Rejestracja</a>
+                <a href="#formularz">Logowanie</a>
+            </div>
+        </div>
+        <a href="#promo" class="aw-menu__top aw-menu__jumpy" id="aw-jumpy">Promocje</a>
+    </div>
+
+    <div class="aw-page">
+        {# STRUKTURA NAGŁÓWKÓW: zaczyna się od h4, potem h1 w środku, h3 przed h2, h6 jako zwykły akapit #}
+        <h4 class="aw-hero-kicker">Witamy na platformie!!!</h4>
+
+        {# KONTRAST: jasnożółty tekst na białym tle #}
+        <div class="aw-hero">
+            <p class="aw-hero__title">SUPER KURSY -70%</p>
+            <p class="aw-hero__lead">Tylko dziś wszystkie kursy taniej. Oferta ważna do odwołania. Szczegóły w regulaminie promocji dostępnym w siedzibie firmy.</p>
+            <img src="{% static 'anti_wcag/banner.svg' %}" class="aw-hero__img">
+        </div>
+
+        <h1 class="aw-small-h1">kursy</h1>
+
+        {# KONTRAST: ciemnoszary tekst na czarnym tle + migający tekst bez możliwości zatrzymania #}
+        <div class="aw-dark">
+            <p>Nowość! Kurs „Python od zera” już dostępny. Zapisy trwają, liczba miejsc ograniczona, decyduje kolejność zgłoszeń.</p>
+            <p class="aw-blink">!!! OSTATNIE MIEJSCA !!!</p>
+        </div>
+
+        {# INFORMACJA TYLKO KOLOREM: legenda bez tekstu, status kursu wyłącznie kolorem nazwy #}
+        <h3>Dostępność</h3>
+        <div class="aw-legend" id="kursy">
+            <span class="aw-dot aw-dot--green"></span>
+            <span class="aw-dot aw-dot--red"></span>
+            <span class="aw-dot aw-dot--orange"></span>
+        </div>
+        <ul class="aw-courses">
+            <li class="aw-green">Python od zera</li>
+            <li class="aw-red">Django w praktyce</li>
+            <li class="aw-orange">Docker dla każdego</li>
+            <li class="aw-red">Analiza danych</li>
+            <li class="aw-green">HTML i CSS</li>
+        </ul>
+        <h6 class="aw-h6-paragraph">Kursy oznaczone na zielono można kupić od ręki, pozostałe zgodnie z legendą. Więcej informacji kliknij tutaj.</h6>
+        <h2>Opinie</h2>
+
+        {# POWIĘKSZENIE: szerokość w vw, tekst w px, stała wysokość i overflow:hidden — po powiększeniu tekst ucina się i nachodzi na znaczek #}
+        <div class="aw-zoom">
+            <div class="aw-zoom__card">
+                <p>„Najlepszy kurs, jaki przeszedłem. Polecam każdemu, kto chce zacząć programować i zmienić pracę w pół roku.” — Marek</p>
+                <span class="aw-zoom__badge">TOP</span>
+            </div>
+            <div class="aw-zoom__card">
+                <p>„Materiały są świetne, a prowadzący odpowiada na pytania w komentarzach w ciągu jednego dnia.” — Ania</p>
+                <span class="aw-zoom__badge">TOP</span>
+            </div>
+            <div class="aw-zoom__card">
+                <p>„Certyfikat pomógł mi na rozmowie rekrutacyjnej. Testy wymagają jednak sporo pracy.” — Kuba</p>
+                <span class="aw-zoom__badge">TOP</span>
+            </div>
+        </div>
+
+        {# KLAWIATURA: przyciski działające tylko myszą — div bez tabindex i button z tabindex=-1 #}
+        <div class="aw-cta" id="promo">
+            <div class="aw-btn" id="aw-mouse-only">Zapisz się teraz</div>
+            <button type="button" class="aw-btn aw-btn--ghost" tabindex="-1" id="aw-mouse-only-2">Kup kurs</button>
+            <span class="aw-cta__result" id="aw-cta-result"></span>
+        </div>
+
+        {# PROBLEMATYCZNY FORMULARZ: placeholder zamiast etykiet, chaotyczny tabindex, błędy tylko kolorem, brak wskazania złego pola, reset po 15 s #}
+        {# Pole „Kod rabatowy” otwiera popup przy fokusie #}
+        <h5>Zapisz się</h5>
+        <form class="aw-form" id="formularz" novalidate>
+            <input type="text" name="imie" placeholder="Imię" tabindex="9">
+            <input type="text" name="email" placeholder="E-mail" tabindex="3">
+            <input type="text" name="telefon" placeholder="Telefon" tabindex="12">
+            <input type="text" name="kod" placeholder="Kod pocztowy" tabindex="1">
+            <input type="text" name="rabat" placeholder="Kod rabatowy" tabindex="6" id="aw-promo-field">
+            <select name="kurs" tabindex="2">
+                <option>Wybierz</option>
+                <option>Python od zera</option>
+                <option>Django w praktyce</option>
+            </select>
+            <button type="submit" class="aw-submit" tabindex="15">OK</button>
+            <p class="aw-form__msg" id="aw-form-msg"></p>
+        </form>
+
+        {# PUŁAPKA KLAWIATUROWA: po wejściu Tabem do panelu Tab i Shift+Tab krążą tylko między dwoma polami, Esc nie działa #}
+        <div class="aw-trap" id="aw-trap">
+            <p class="aw-trap__title">Czat z konsultantem</p>
+            <input type="text" placeholder="Twoje imię" class="aw-trap__field">
+            <input type="text" placeholder="Wiadomość" class="aw-trap__field">
+        </div>
+
+        <p class="aw-footer">© firma · <a href="#">kliknij tutaj</a> · <a href="#">więcej</a> · <a href="#">tutaj</a></p>
+    </div>
+
+    {# UPORCZYWY POPUP 1: otwiera go fokus na polu „Kod rabatowy”; przycisk × ucieka przed kursorem, brak Esc #}
+    <div class="aw-popup" id="aw-popup-promo" hidden>
+        <div class="aw-popup__box">
+            <span class="aw-popup__close" id="aw-popup-close">×</span>
+            <p class="aw-popup__title">CZEKAJ!</p>
+            <p>Zanim wpiszesz kod — sprawdź nasze pakiety premium! Tylko teraz 3 kursy w cenie 2!</p>
+        </div>
+    </div>
+
+    {# UPORCZYWY POPUP 2: pojawia się sam po kilku sekundach, nie ma przycisku zamknięcia ani obsługi Esc, znika sam #}
+    <div class="aw-popup aw-popup--auto" id="aw-popup-auto" hidden>
+        <div class="aw-popup__box">
+            <p class="aw-popup__title">Newsletter</p>
+            <p>Zapisz się na newsletter i odbierz kod -10%! Okno zamknie się samo.</p>
+        </div>
+    </div>
+
+    <script src="{% static 'anti_wcag/anty-wcag.js' %}"></script>
+</body>
+</html>

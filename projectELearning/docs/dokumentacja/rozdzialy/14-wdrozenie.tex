@@ -1,0 +1,154 @@
+\chapter{Instalacja i~uruchomienie}
+
+\section{Wymagania środowiskowe}
+
+\begin{itemize}
+  \item Docker Engine z~Docker Compose v2 (Linux) albo Docker Desktop z~WSL 2 (Windows,
+        szczegółowa instrukcja: \code{docs/uruchomienie-windows.md}), ok. 2 GB miejsca na
+        obrazy i~dane;
+  \item opcjonalnie dla asystenta AI: ok. 5 GB na model Bielik 7B oraz 8 GB RAM (zalecana
+        karta graficzna -- wtedy Ollamę najlepiej uruchomić bezpośrednio na komputerze);
+  \item opcjonalnie: konto testowe Stripe (klucze \code{sk\_test\_}/\code{pk\_test\_}) oraz
+        aplikacje OAuth2 w~Discordzie, GitLabie i~Bitbuckecie.
+\end{itemize}
+
+Bez kluczy Stripe, OAuth2 i~bez Ollamy platforma uruchamia się w~pełni -- odpowiednie moduły
+pokazują wtedy czytelny komunikat zamiast błędu.
+
+\section{Pierwsze uruchomienie}
+
+\begin{lstlisting}
+cp .env.example .env                 # Windows: Copy-Item .env.example .env
+# w .env ustaw DJANGO_SECRET_KEY na długi losowy ciąg znaków
+docker compose up --build -d         # db + redis + web; web wykonuje migracje przy starcie
+docker compose exec -T web python scripts/seed_data.py --reset   # dane demonstracyjne
+# platforma: http://localhost:8000     panel administracyjny: http://localhost:8000/admin/
+\end{lstlisting}
+
+\subsection*{Najważniejsze zmienne \code{.env}}
+
+\begin{table}[H]
+\centering\small
+\caption{Konfiguracja środowiska}
+\begin{tabularx}{\linewidth}{@{}P{5.0cm}L@{}}
+\toprule
+\hd{Zmienna} & \hd{Znaczenie} \\
+\midrule
+\code{DJANGO\_SECRET\_KEY}, \code{DJANGO\_DEBUG}, \code{DJANGO\_ALLOWED\_HOSTS} & podstawowa konfiguracja Django \\
+\code{POSTGRES\_*}, \code{DB\_HOST\_PORT} & baza danych; port na hoście (domyślnie 5433) \\
+\code{REDIS\_URL}, \code{REDIS\_HOST\_PORT} & Redis; port na hoście (domyślnie 6380) \\
+\code{EMAIL\_BACKEND}, \code{DEFAULT\_FROM\_EMAIL}, \code{SITE\_URL} & wysyłka e-maili (domyślnie do konsoli), adres w~linkach \\
+\code{STRIPE\_SECRET\_KEY}, \code{STRIPE\_PUBLISHABLE\_KEY}, \code{STRIPE\_WEBHOOK\_SECRET} & płatności testowe; sekret webhooka może zostać pusty przy usłudze \code{stripe-cli} \\
+\code{OLLAMA\_BASE\_URL}, \code{OLLAMA\_MODEL}, \code{OLLAMA\_TIMEOUT} & adres Ollamy (\code{http://ollama:11434} lub \code{http://host.docker.internal:11434}), model, limit czasu \\
+\code{CHATBOT\_QUIZ\_LOCK\_MINUTES} & czas blokady asystenta po otwarciu testu \\
+\code{DISCORD\_*}, \code{GITLAB\_*}, \code{BITBUCKET\_*} & identyfikatory i~sekrety aplikacji OAuth2 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Moduły opcjonalne}
+
+\paragraph{Asystent AI} (szczegóły: \code{docs/asystent-bielik.md}):
+\begin{lstlisting}
+docker compose --profile ai up -d ollama
+docker compose exec ollama ollama pull hf.co/speakleash/Bielik-Minitron-7B-v3.0-Instruct-GGUF:Q4_K_M
+\end{lstlisting}
+Przy Ollamie zainstalowanej na komputerze wystarczy \code{ollama pull} tego modelu
+i~ustawienie \code{OLLAMA\_BASE\_URL=http://host.docker.internal:11434}.
+
+\paragraph{Płatności Stripe} (szczegóły: \code{docs/platnosci-stripe.md}): wpisać klucze
+testowe w~\code{.env} i~uruchomić \code{docker compose --profile stripe up -d}. Usługa
+\code{stripe-cli} nasłuchuje zdarzeń, przekazuje je na \code{/orders/webhook/stripe/}
+i~sama zapisuje sekret \code{whsec\_} w~\code{.stripe/webhook\_secret}. Karta testowa:
+\code{4242 4242 4242 4242}, dowolna przyszła data i~CVC.
+
+\paragraph{Logowanie przez portale}: w~każdym portalu utworzyć aplikację OAuth2 z~adresem
+zwrotnym \code{http://localhost:8000/accounts/social/<portal>/login/callback/}
+(\code{discord}, \code{gitlab}, \code{bitbucket\_oauth2}) i~wpisać identyfikator oraz
+sekret do \code{.env}.
+
+\section{Dane demonstracyjne i~konta testowe}
+
+Polecenie \code{seed\_demo} (oraz jego nakładka \code{scripts/seed\_data.py}) tworzy komplet
+danych pokazujących każdy moduł: drzewo 11 kategorii, 10 opublikowanych kursów
+z~okładkami, sekcjami, lekcjami (kod, tabele, zdjęcia, pliki, filmy) i~testami wszystkich
+typów, zapisy z~postępem, podejścia zaliczone, niezaliczone i~czekające na ocenę, dyplomy,
+komentarze w~wątkach z~głosami, zgłoszenia kursów z~wątkiem, zamówienia we wszystkich
+statusach z~kodem dostępu, zdjęcia galerii z~trzema układami slajdera, rozmowy z~asystentem,
+powiadomienia, motywy kolorystyczne oraz style uczenia się: style wybrane przez pięciu
+uczniów, osiem wersji lekcji w~kursie Pythona i~historię wyników, dzięki której system
+poleca uczniowi \code{student2} zmianę stylu, style polecane przez autorów w~9 kursach oraz pięć
+wypełnionych ankiet. Bez flagi \code{--reset} polecenie dopisuje tylko
+brakujące dane.
+
+\begin{table}[H]
+\centering\small
+\caption{Konta testowe}\label{tab:konta}
+\begin{tabularx}{\linewidth}{@{}P{3.4cm}P{2.6cm}P{2.0cm}L@{}}
+\toprule
+\hd{Rola} & \hd{Login} & \hd{Hasło} & \hd{Co warto pokazać} \\
+\midrule
+Administrator & \code{admin} & \code{admin123!} & Moderacja, kategorie, galeria i~układy slajdera, motywy, style uczenia się, panel \code{/admin/} \\
+Nauczyciel (moderator) & \code{instructor} & \code{test123!} & tworzenie kursu, wersje lekcji dla stylów, kolejki akceptacji, ocenianie testów, zamówienia \\
+Nauczyciele & \code{m.wisniewska}, \code{p.zielinski}, \code{k.lewandowska} & \code{test123!} & moderatorzy innych kategorii \\
+Uczeń & \code{student1} & \code{test123!} & moje kursy, lekcje w~wersji ,,Wzrokowiec'', testy, dyplom, asystent \\
+Uczeń & \code{student2} & \code{test123!} & rekomendacja stylu ,,Praktyk'', koszyk z~kumulacją, zamówienia \\
+Uczeń bez wybranego stylu & \code{kuba.dabrowski} & \code{test123!} & wynik ankiety (Praktyk 80\%) i~polecane kursy tylko z~ankiety \\
+Pozostali uczniowie & np.\ \code{ola.krawczyk} & \code{test123!} & komentarze, głosy, różne motywy \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Codzienne polecenia}
+
+\begin{table}[H]
+\centering\small
+\caption{Polecenia administracyjne}
+\begin{tabularx}{\linewidth}{@{}P{6.6cm}L@{}}
+\toprule
+\hd{Polecenie} & \hd{Działanie} \\
+\midrule
+\code{docker compose up -d} / \code{stop} & uruchomienie / zatrzymanie (dane zostają) \\
+\code{docker compose logs -f web} & podgląd logów aplikacji (także e-maili w~trybie deweloperskim) \\
+\code{docker compose exec web python manage.py test} & testy automatyczne \\
+\code{docker compose exec web python manage.py check} & kontrola konfiguracji \\
+\code{... manage.py makemigrations --check --dry-run} & kontrola, czy modele mają migracje \\
+\code{... manage.py createsuperuser} & własne konto administratora \\
+\code{... scripts/seed\_data.py --reset} & odtworzenie danych demo od zera \\
+\code{docker compose down -v} & usunięcie kontenerów wraz z~bazą i~plikami \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Praca bez Dockera dla aplikacji: wirtualne środowisko \code{.venv} z~\code{requirements.txt},
+baza i~Redis z~Compose, a~w~poleceniach \code{POSTGRES\_HOST=localhost POSTGRES\_PORT=5433}.
+
+\section{Rozwiązywanie problemów}
+
+\begin{table}[H]
+\centering\small
+\caption{Typowe problemy}
+\begin{tabularx}{\linewidth}{@{}P{5.4cm}L@{}}
+\toprule
+\hd{Objaw} & \hd{Rozwiązanie} \\
+\midrule
+\code{port is already allocated} (8000, 5433, 6380) & zmienić \code{DB\_HOST\_PORT}/\code{REDIS\_HOST\_PORT} w~\code{.env} lub zwolnić port \\
+\code{env file .env not found} & skopiować \code{.env.example} do \code{.env} (uwaga na nazwę \code{.env.txt} w~Windows) \\
+Strona nie odpowiada zaraz po starcie & pierwszy start wykonuje migracje -- poczekać na \code{Starting development server} w~logach \\
+Asystent: ,,serwer modelu nie odpowiada'' & uruchomić Ollamę (profil \code{ai} lub na hoście) i~sprawdzić \code{OLLAMA\_BASE\_URL} \\
+Asystent: ,,model nie jest pobrany'' & \code{ollama pull} z~nazwą z~\code{OLLAMA\_MODEL} \\
+Zamówienie zostaje ,,Oczekuje na płatność'' & uruchomić \code{stripe-cli}; ewentualnie odświeżyć stronę zamówienia -- system sam sprawdzi stan w~Stripe \\
+Logowanie przez portal: \code{redirect\_uri mismatch} & adres zwrotny w~portalu musi dokładnie odpowiadać podanemu wyżej \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Uwagi do wdrożenia produkcyjnego}
+
+Konfiguracja w~repozytorium jest przeznaczona do pracy deweloperskiej i~prezentacji. Przy
+wdrożeniu publicznym należy: ustawić \code{DJANGO\_DEBUG=False} i~właściwe
+\code{ALLOWED\_HOSTS}, uruchomić aplikację przez \code{gunicorn} (jest w~zależnościach) za
+serwerem WWW obsługującym pliki statyczne i~media (także żądania zakresowe dla filmów),
+włączyć HTTPS z~bezpiecznymi ciasteczkami, HSTS i~\code{CSRF\_TRUSTED\_ORIGINS}, ograniczyć
+CORS, skonfigurować prawdziwy serwer SMTP oraz produkcyjny webhook Stripe z~własnym
+sekretem.

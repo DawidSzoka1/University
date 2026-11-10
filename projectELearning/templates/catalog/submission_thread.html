@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Zgłoszenie: {{ course.title }} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    {% if is_moderator %}<li><a href="{% url 'catalog:moderation_submissions' %}">Moderacja</a></li>{% else %}<li><a href="{% url 'catalog:course_list' %}">Kursy</a></li>{% endif %}
+                    <li><a href="{% url 'catalog:course_detail' course.slug %}">{{ course.title }}</a></li>
+                    <li><span aria-current="page">Zgłoszenie</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Zgłoszenie kursu · status: {{ course.get_status_display|lower }}</p>
+            <h1 class="page-head__title">{{ course.title }}</h1>
+            <p class="page-head__lead">
+                {% if course.author %}Autor: {{ course.author.get_full_name|default:course.author.username }}{% endif %}{% if course.category %} · kategoria {{ course.category.name }}{% endif %}.
+                Rozmowa jest zapisana — wrócisz do niej po ponownym zalogowaniu.
+            </p>
+        </div>
+        <div class="page-head__actions">
+            <a href="{% url 'catalog:course_detail' course.slug %}" class="btn btn--outline">Podgląd kursu</a>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body submission">
+    {% if course.status == 'rejected' and course.rejection_reason %}
+    <div class="notice notice--danger" role="status">
+        <p><strong>Zgłoszenie odrzucone.</strong> Powód: {{ course.rejection_reason }}
+        {% if course.author_id == user.pk %}<a href="{% url 'learning:curriculum_edit' course.slug %}#publish">Popraw kurs i wyślij ponownie</a>{% endif %}</p>
+    </div>
+    {% elif course.status == 'approved' %}
+    <div class="notice" role="status"><p><strong>Kurs zaakceptowany</strong> i widoczny w katalogu. Wątek zostaje do wglądu.</p></div>
+    {% elif course.status == 'draft' %}
+    <div class="notice" role="status"><p>Kurs jest szkicem — nauczyciele zobaczą go po wysłaniu do akceptacji.</p></div>
+    {% endif %}
+
+    <div class="submission__layout">
+        <section class="submission__thread" aria-labelledby="thread-heading">
+            <h2 id="thread-heading" class="section-title">Wiadomości{% if paginator.count %} <span class="section-title__count">({{ paginator.count }})</span>{% endif %}</h2>
+            {% if messages_page %}
+            {% include "includes/pagination.html" with pagination_label="Strony wątku (starsze wiadomości)" %}
+            <ol class="thread">
+                {% for message in messages_page %}
+                <li class="thread__message{% if message.author_id == course.author_id %} thread__message--author{% endif %}" id="message-{{ message.pk }}">
+                    <p class="thread__meta">
+                        <strong>{% if message.author %}{{ message.author.get_full_name|default:message.author.username }}{% else %}Konto usunięte{% endif %}</strong>
+                        {% if message.author_id == course.author_id %}<span class="tag">Autor kursu</span>{% else %}<span class="tag tag--ok">Nauczyciel</span>{% endif %}
+                        · <time datetime="{{ message.created_at|date:'c' }}">{{ message.created_at|date:"j E Y, H:i" }}</time>
+                    </p>
+                    <div class="thread__text">{{ message.content|linebreaks }}</div>
+                </li>
+                {% endfor %}
+            </ol>
+            {% else %}
+            <p class="text-muted">Nikt jeszcze nie napisał. {% if is_moderator %}Zadaj autorowi pytanie albo poproś o poprawki.{% else %}Możesz opisać nauczycielowi swój kurs albo zapytać o wymagania.{% endif %}</p>
+            {% endif %}
+
+            <form method="post" action="{% url 'catalog:submission_thread' course.slug %}" class="comment-form" novalidate>
+                {% csrf_token %}
+                {% include "includes/form_field.html" with field=form.content show_required=True %}
+                <div class="comment-form__actions">
+                    <button type="submit" class="btn btn--primary">Wyślij wiadomość</button>
+                </div>
+            </form>
+        </section>
+
+        {% if can_decide %}
+        <aside class="panel submission__decision" aria-labelledby="decision-heading">
+            <div class="panel__head"><h2 id="decision-heading" class="panel__title">Decyzja</h2></div>
+            <div class="submission__decision-body">
+                <form method="post" action="{% url 'catalog:submission_decide' course.slug %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="approve">
+                    <button type="submit" class="btn btn--primary btn--block">Zaakceptuj i opublikuj</button>
+                </form>
+                <form method="post" action="{% url 'catalog:submission_decide' course.slug %}" class="submission__reject" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reject">
+                    {% include "includes/form_field.html" with field=reject_form.reason show_required=True help=True %}
+                    <button type="submit" class="btn btn--outline btn--block">Odrzuć z tym powodem</button>
+                </form>
+            </div>
+        </aside>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Moje zamówienia — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><span aria-current="page">Moje zamówienia</span></li>
+                </ol>
+            </nav>
+            <h1 class="page-head__title">Moje zamówienia</h1>
+            <p class="page-head__lead">Status zmienia się automatycznie po płatności. Opłacone kursy znajdziesz w „Moich kursach”, a kody dla innych osób — w szczegółach zamówienia.</p>
+        </div>
+        <div class="page-head__actions">
+            <a href="{% url 'orders:cart' %}" class="btn btn--primary">Koszyk{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+            <a href="{% url 'orders:redeem' %}" class="btn btn--outline">Zrealizuj kod</a>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% if orders %}
+    <div class="table-wrap">
+        <table class="data-table">
+            <caption class="sr-only">Twoje zamówienia, od najnowszego</caption>
+            <thead><tr><th scope="col">Numer</th><th scope="col">Data</th><th scope="col">Kursy</th><th scope="col">Wartość</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <th scope="row"><a href="{{ order.get_absolute_url }}">{{ order.number }}</a></th>
+                    <td>{{ order.created_at|date:"j E Y, H:i" }}</td>
+                    <td>{{ order.item_count }}</td>
+                    <td>{{ order.total|pln }}</td>
+                    <td>{% include "orders/includes/status.html" %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include "includes/pagination.html" %}
+    {% else %}
+    {% url 'catalog:course_list' as catalog_url %}
+    {% include "includes/empty_state.html" with title="Nie masz jeszcze zamówień" description="Dodaj płatny kurs do koszyka i złóż zamówienie — tu zobaczysz jego status i historię." action_url=catalog_url action_label="Przejdź do katalogu" %}
+    {% endif %}
+</div>
+{% endblock %}

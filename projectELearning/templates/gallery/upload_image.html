@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}Galeria: zdjęcia w bazie — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'gallery:slider_view' %}">Galeria</a></li>
+                    <li><span aria-current="page">Zdjęcia w bazie</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Galeria · krok 1 z 3</p>
+            <h1 class="page-head__title">Zdjęcia w bazie</h1>
+            <p class="page-head__lead">Dodaj zdjęcie z pełnym opisem. Duże zdjęcia są automatycznie skalowane na serwerze (Pillow) do maks. 1600×1200 px — bez usług w chmurze.</p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% include "gallery/includes/nav.html" with active="upload" can_upload=True %}
+
+    <div class="gallery-admin">
+        <section class="gallery-admin__form" aria-labelledby="upload-heading">
+            <h2 id="upload-heading" class="section-title section-title--sm">Nowe zdjęcie</h2>
+            <form method="post" enctype="multipart/form-data" class="form-sheet" novalidate>
+                {% csrf_token %}
+                {% include "includes/form_field.html" with field=form.title show_required=True %}
+                {% include "includes/form_field.html" with field=form.image show_required=True help=True %}
+                {% include "includes/form_field.html" with field=form.image_alt show_required=True help=True %}
+                {% include "includes/form_field.html" with field=form.description show_required=True help=True %}
+                {% include "includes/form_field.html" with field=form.related_course help=True %}
+                <button type="submit" class="btn btn--primary">Dodaj do bazy</button>
+            </form>
+        </section>
+
+        <section class="gallery-admin__library" aria-labelledby="library-heading">
+            <h2 id="library-heading" class="section-title section-title--sm">W bazie <span class="section-title__count">({{ paginator.count }})</span></h2>
+            {% if items %}
+            <ul class="gallery-grid">
+                {% for item in items %}
+                <li class="gallery-tile" id="item-{{ item.pk }}">
+                    <img src="{{ item.image.url }}" alt="{{ item.image_alt }}" loading="lazy" width="{{ item.width }}" height="{{ item.height }}">
+                    <div class="gallery-tile__body">
+                        <p class="gallery-tile__title">{{ item.title }}</p>
+                        <p class="gallery-tile__meta">
+                            {{ item.width }}×{{ item.height }} px{% if item.was_resized %} · przeskalowane z {{ item.original_width }}×{{ item.original_height }}{% endif %}
+                        </p>
+                        <p class="gallery-tile__meta">
+                            {% with uses=item.preset_appearances.all %}{% if uses %}W układach: {% for use in uses %}{{ use.preset.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}Nie jest w żadnym układzie{% endif %}{% endwith %}
+                        </p>
+                        <div class="gallery-tile__actions">
+                            <a href="{% url 'gallery:item_edit' item.pk %}" class="comment__action">Edytuj<span class="sr-only"> „{{ item.title }}”</span></a>
+                            <form method="post" action="{% url 'gallery:item_delete' item.pk %}"
+                                  data-confirm="Zdjęcie „{{ item.title }}” zniknie z bazy i ze wszystkich układów slajdera." data-confirm-title="Usunąć zdjęcie?" data-confirm-btn="Usuń" data-confirm-danger="true">
+                                {% csrf_token %}
+                                <button type="submit" class="comment__action comment__action--danger">Usuń<span class="sr-only"> „{{ item.title }}”</span></button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% include "includes/pagination.html" with pagination_label="Strony bazy zdjęć" %}
+            {% else %}
+            {% include "includes/empty_state.html" with title="Baza jest pusta" description="Dodaj pierwsze zdjęcie formularzem obok." %}
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

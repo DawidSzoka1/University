@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Ankieta stylu uczenia się — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <nav class="breadcrumbs" aria-label="Okruszki">
+                <ol class="breadcrumbs__list">
+                    <li><a href="{% url 'core:home' %}">Strona główna</a></li>
+                    <li><a href="{% url 'learning:learning_style' %}">Styl uczenia się</a></li>
+                    <li><span aria-current="page">Ankieta</span></li>
+                </ol>
+            </nav>
+            <p class="eyebrow">Ankieta · {{ questions|length }} pytań · ok. 3 minuty</p>
+            <h1 class="page-head__title">Jak się uczysz?</h1>
+            <p class="page-head__lead">
+                Wybierz w każdym pytaniu odpowiedź, która najlepiej opisuje Twoje zachowanie. Nie ma dobrych
+                ani złych odpowiedzi. Na końcu zobaczysz, jaki styl uczenia się dominuje w Twoich odpowiedziach.
+            </p>
+        </div>
+    </div>
+</header>
+
+<div class="container page-body">
+    {% if not questions %}
+    {% include "includes/empty_state.html" with title="Ankieta nie ma jeszcze pytań" description="Administrator nie dodał pytań ankiety. Styl możesz wybrać samodzielnie." action_url=request.path action_label="Wróć" %}
+    {% else %}
+    <form method="post" class="survey" novalidate>
+        {% csrf_token %}
+        {% if errors %}
+        <div class="auth-alert auth-alert--error" role="alert" tabindex="-1" data-autofocus-error>
+            <span class="auth-alert__icon" aria-hidden="true">!</span>
+            <div class="auth-alert__body"><p class="auth-alert__message">Odpowiedz na wszystkie pytania — zaznaczone pytania nie mają odpowiedzi. Pozostałe odpowiedzi zostały zachowane.</p></div>
+        </div>
+        {% endif %}
+        <ol class="survey__list">
+            {% for question in questions %}
+            <li>
+                <fieldset class="survey-q{% if question.pk in errors %} form-group--error{% endif %}"{% if question.pk in errors %} aria-describedby="q{{ question.pk }}-error"{% endif %}>
+                    <legend class="survey-q__legend"><span class="survey-q__num">{{ forloop.counter }}.</span> {{ question.text }}</legend>
+                    {% for option in question.options.all %}
+                    <label class="survey-q__option" for="q{{ question.pk }}-{{ option.pk }}">
+                        <input type="radio" id="q{{ question.pk }}-{{ option.pk }}" name="q{{ question.pk }}" value="{{ option.pk }}"{% for qid, oid in selected.items %}{% if qid == question.pk and oid == option.pk %} checked{% endif %}{% endfor %}{% if question.pk in errors %} aria-invalid="true"{% endif %}>
+                        <span>{{ option.text }}</span>
+                    </label>
+                    {% endfor %}
+                    {% for qid, message in errors.items %}{% if qid == question.pk %}<p class="form-field-error" id="q{{ question.pk }}-error">{{ message }}</p>{% endif %}{% endfor %}
+                </fieldset>
+            </li>
+            {% endfor %}
+        </ol>
+        <div class="form-sheet__actions">
+            <button type="submit" class="btn btn--primary btn--lg">Zobacz wynik</button>
+            <a href="{% url 'learning:learning_style' %}" class="btn btn--ghost">Anuluj</a>
+        </div>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

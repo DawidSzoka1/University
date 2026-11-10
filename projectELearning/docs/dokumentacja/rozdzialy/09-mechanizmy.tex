@@ -1,0 +1,282 @@
+\chapter{Kluczowe mechanizmy i~algorytmy}
+
+\section{Motywy kolorystyczne i~kontrast WCAG}
+
+\subsection{Pięć tokenów bazowych}
+Cały wygląd witryny wynika z~pięciu zmiennych CSS zdefiniowanych w~\code{:root} pliku
+\code{static/css/main.css}: \code{--color-primary}, \code{--color-secondary},
+\code{--color-accent}, \code{--color-surface}, \code{--color-surface-variant}. Wszystkie
+pozostałe odcienie (najechanie, ramki, tła kart, teksty pomocnicze) są wyprowadzane
+funkcjami \code{color-mix()} lub składnią względną \code{hsl(from …)}, np.:
+
+\begin{lstlisting}
+--color-primary-light: color-mix(in srgb, var(--color-primary) 22%, var(--color-surface));
+--color-primary-hover: color-mix(in srgb, var(--color-primary) 85%, black);
+--color-on-surface-muted: color-mix(in srgb, var(--color-on-surface) 74%, var(--color-surface));
+\end{lstlisting}
+
+W~arkuszu nie ma innych literałów kolorów (wyjątek: logotypy portali OAuth). W~stanie domyślnym szablon bazowy nie nadpisuje \code{:root}, więc
+ręczna zmiana tokenu w~pliku CSS zmienia tonację całej witryny. Gdy użytkownik wybierze
+motyw, \code{base.html} wstawia blok \code{<style>} z~pięcioma kolorami motywu i~wyliczonymi
+kolorami tekstu.
+
+\subsection{Wyliczanie koloru tekstu}
+Kolor tekstu na każdym z~teł (\code{--color-on-*}) i~tryb jasny/ciemny
+(\code{data-theme-mode}) wylicza moduł \code{apps/core/colors.py} zgodnie z~definicją WCAG
+2.1. Dla kanału $c \in \{R,G,B\}$ zapisanego w~zakresie 0--255:
+\[
+c_{\text{lin}} = \begin{cases} \dfrac{c/255}{12{,}92} & \text{gdy } c/255 \le 0{,}04045\\[8pt]
+\left(\dfrac{c/255 + 0{,}055}{1{,}055}\right)^{2{,}4} & \text{w~przeciwnym razie}\end{cases}
+\qquad L = 0{,}2126\,R_{\text{lin}} + 0{,}7152\,G_{\text{lin}} + 0{,}0722\,B_{\text{lin}}
+\]
+\[
+\text{kontrast}(C_1, C_2) = \frac{L_{\max} + 0{,}05}{L_{\min} + 0{,}05} \in [1, 21]
+\]
+Funkcja \code{readable\_text\_color(tło)} wybiera biały albo prawie czarny
+(\code{\#111827}) tekst -- ten, który daje wyższy kontrast z~tłem. Motyw jest oznaczany
+jako ciemny, gdy tekst na kolorze \code{surface} ma być jasny. Panel administracyjny
+(django-unfold) otrzymuje skalę odcieni wyliczoną funkcją \code{unfold\_palette()}, która
+szuka najsłabszego przesunięcia koloru spełniającego kontrast 4,5:1 na wszystkich tłach.
+Administrator wpisuje więc tylko pięć kolorów -- czytelność gwarantuje system.
+
+\subsection{Kontrola dostępności motywu}\label{sec:theme-check}
+Formularz motywu w~panelu administratora (\code{ColorThemeForm.clean}) odrzuca zestaw kolorów,
+dla którego \code{theme\_accessibility\_problems()} zgłasza problem: tekst na tle i~na tle
+kontenerów poniżej 4,5:1 (lub tła wymagające różnych kolorów tekstu), tekst pomocniczy (76\%
+tekstu + tło) poniżej 4,5:1, napis na przycisku w~kolorze głównym, dodatkowym lub akcentowym
+poniżej 4,5:1 oraz kolor marki użyty jako tekst poniżej 4,5:1. Komunikaty po polsku podają
+zmierzony kontrast i~wskazówkę, co zmienić.
+
+\subsection{Rozstrzyganie aktywnego motywu}
+Procesor kontekstu \code{theme\_colors} wybiera motyw w~kolejności: motyw zapisany
+w~profilu zalogowanego użytkownika $\rightarrow$ motyw z~sesji gościa $\rightarrow$
+motyw oznaczony jako domyślny $\rightarrow$ wartości z~arkusza CSS.
+
+\section{Uprawnienia moderatorów w~drzewie kategorii}
+
+Nauczyciel moderuje kategorię, jeśli jest przypisany do niej \emph{lub do dowolnego jej
+przodka}. Dzięki MPTT sprawdzenie sprowadza się do jednego zapytania: kategoria
+\code{c} jest w~gałęzi kategorii \code{m}, gdy \code{c.tree\_id = m.tree\_id} oraz
+\code{m.lft $\le$ c.lft} i~\code{c.rght $\le$ m.rght}. Na tej samej zasadzie działa
+filtr katalogu ,,kategoria z~podkategoriami'' i~liczniki kursów w~drzewie. Lista osób
+powiadamianych o~zgłoszeniu (\code{course\_reviewers}) to moderatorzy wszystkich przodków
+kategorii kursu, a~gdy ich brak -- administratorzy.
+
+\section{Reputacja i~rangi}
+
+Każdy głos \code{CommentVote} ma wartość $+1$ lub $-1$. Sygnały \code{post\_save}
+i~\code{post\_delete} przeliczają reputację autora komentarza jako sumę głosów na
+wszystkie jego komentarze (przeliczenie zamiast inkrementacji odporne jest na zmianę głosu
+i~usunięcie komentarza), a~następnie ustalają rangę:
+
+\begin{table}[H]
+\centering\small
+\caption{Progi rang}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\hd{Ranga} & Obserwator & Nowicjusz & Pomocnik & Ekspert & Mistrz \\
+\midrule
+\hd{Punkty} & $\le -1$ & 0 -- 10 & 11 -- 50 & 51 -- 200 & $> 200$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Ponowne kliknięcie tego samego przycisku cofa głos, kliknięcie przeciwnego zmienia jego
+wartość. Nie można głosować na własne ani nieopublikowane komentarze.
+
+\section{Ocenianie testów}
+
+Dla pytania zamkniętego z~liczbą punktów $p$, zbiorem poprawnych odpowiedzi $K$ i~zbiorem
+zaznaczonym przez ucznia $Z$ przyznawane jest
+\[
+\text{punkty} = \begin{cases} p & \text{gdy } Z = K \\ 0 & \text{w~przeciwnym razie,}\end{cases}
+\]
+czyli w~pytaniu wielokrotnego wyboru nie ma punktów częściowych -- zaznaczenie
+dodatkowej błędnej odpowiedzi zeruje wynik pytania. Pytanie otwarte otrzymuje punkty od
+oceniającego (0..$p$). Wynik procentowy podejścia to
+$100 \cdot \sum \text{punkty} / \sum p$, a~test jest zaliczony, gdy wynik
+$\ge$ \code{pass\_percent}. Gdy test zawiera choć jedno pytanie otwarte, wynik jest
+ustalany dopiero po ocenie ręcznej (\code{finalize\_attempt}).
+
+\paragraph{Blokady w~programie.} Funkcja \code{build\_outline()} przechodzi program kursu
+w~kolejności (sekcje, lekcje, testy po lekcjach, testy końcowe). Po napotkaniu
+niezaliczonego testu obowiązkowego wszystkie kolejne elementy otrzymują flagę
+\code{locked}. Autor, nauczyciele kategorii i~administrator w~trybie podglądu nie podlegają
+blokadom; jeśli jednak sami zapisali się na kurs, domyślnie uczą się jak uczniowie
+i~mogą przełączyć tryb.
+
+\paragraph{Postęp i~ukończenie.} Postęp kursu to odsetek ukończonych elementów (lekcji
+i~zaliczonych testów). Gdy osiągnie 100\%, \code{on\_course\_completed} oznacza zapis
+jako ukończony, aktualizuje statystyki kursu, wysyła powiadomienie i~-- jeśli kurs ma
+włączoną opcję -- wystawia dyplom z~unikalnym numerem. Dyplom PDF generuje
+\code{reportlab} z~fontami osadzonymi w~repozytorium; adres weryfikacji
+\code{/learning/dyplom/<kod>/} jest publiczny.
+
+\section{Koszyk i~realizacja zamówienia}
+
+\begin{itemize}
+  \item \textbf{Kumulacja.} \code{add\_to\_cart} szuka pozycji z~tym samym kursem; jeśli
+        istnieje, zwiększa \code{quantity} (z~ograniczeniem do 10), w~przeciwnym razie
+        tworzy pozycję. Unikalność (\code{cart}, \code{course}) gwarantuje to również na
+        poziomie bazy.
+  \item \textbf{Koszyk gościa.} Identyfikator koszyka jest trzymany w~sesji. Sygnał
+        \code{user\_logged\_in} scala go z~koszykiem konta (\code{merge\_carts} sumuje
+        ilości tych samych kursów).
+  \item \textbf{Zamówienie.} \code{place\_order} w~jednej transakcji kopiuje ceny
+        i~tytuły, nadaje numer \code{ORD-RRRR-NNNNNN} (kolejny w~danym roku), zapisuje
+        adres (opcjonalnie także w~profilu), czyści koszyk i~rejestruje wysłanie e-maila po
+        zatwierdzeniu transakcji.
+  \item \textbf{Realizacja.} Dla każdej pozycji: jeśli kupujący nie ma jeszcze kursu,
+        pierwsza sztuka tworzy \code{Enrollment}; pozostałe sztuki tworzą kody
+        \code{AccessCode}. Kod można wykorzystać raz, na koncie, które kursu jeszcze nie ma.
+  \item \textbf{Bezpieczeństwo płatności.} Webhook sprawdza podpis
+        \code{Stripe-Signature}, numer zamówienia z~\code{metadata}, kwotę w~groszach
+        i~walutę; zdarzenie dla zamówienia już opłaconego jest ignorowane.
+\end{itemize}
+
+\section{Asystent AI}
+
+\paragraph{Prompt.} Wiadomość systemowa (\code{llm.system\_prompt}) określa rolę
+asystenta (Bielik -- asystent nauki; odpowiedzi wyłącznie po polsku, zwięźle, zwykle do
+200 słów; opieranie się na materiałach kursu i~przyznawanie się do braku informacji zamiast
+zmyślania; naprowadzanie zamiast podawania gotowych odpowiedzi do testów; kod w~blokach,
+bez HTML) oraz dołącza kontekst strony: treść lekcji oczyszczoną z~HTML (do 6000
+znaków), opis i~program kursu albo wynik testu (pytania, odpowiedzi ucznia, punkty,
+komentarze nauczyciela; poprawne odpowiedzi tylko wtedy, gdy uczeń mógłby je i~tak
+zobaczyć na stronie wyniku). Za nią idzie do 12 ostatnich wiadomości rozmowy, z~pominięciem
+odmów.
+
+\paragraph{Blokada w~trakcie testu.} Otwarcie testu do rozwiązania tworzy
+\code{QuizSitting}; wysłanie testu go usuwa. Dopóki istnieje rekord młodszy niż
+\code{CHATBOT\_QUIZ\_LOCK\_MINUTES} (60 min), każde pytanie -- z~dowolnej strony
+i~dowolnego kursu -- otrzymuje stałą odmowę bez kontaktu z~modelem. Uniemożliwia to
+proszenie asystenta o~rozwiązanie testu.
+
+\paragraph{Bezpieczeństwo odpowiedzi.} Tekst modelu jest najpierw escapowany, a~dopiero
+potem zamieniany z~ograniczonego Markdownu (pogrubienie, kursywa, kod, listy, akapity) na
+HTML (\code{formatting.render\_reply}) -- model nie może wstrzyknąć znaczników do strony.
+
+\paragraph{Parametry.} Bielik-Minitron 7B v3.0 Instruct w~kwantyzacji Q4\_K\_M,
+temperatura 0,4, okno kontekstu 8192 tokeny, model utrzymywany w~pamięci 30 minut. Na
+komputerze z~kartą graficzną pierwszy fragment odpowiedzi pojawia się po kilku sekundach,
+a~cała odpowiedź trwała w~testach około 5~s.
+
+\section{Style uczenia się i~rekomendacja stylu}\label{sec:styles-algo}
+
+\paragraph{Wybór wersji lekcji.} Funkcja \code{resolve\_version()} (\code{apps/learning/styles.py})
+zwraca wersję dla stylu ucznia, jeśli lekcja ma włączone wersje i~istnieje wersja dla jego
+aktywnego stylu; w~przeciwnym razie treść podstawową. Parametr \code{?wersja=<slug>} (lub
+\code{podstawowa}) pozwala obejrzeć inną wersję. Treść i~film wersji zastępują treść i~film
+lekcji; pliki do pobrania i~testy są wspólne, aby wyniki dało się porównywać między stylami.
+
+\paragraph{Zbieranie danych.} Oznaczenie lekcji jako ukończonej zapisuje w~\code{LessonProgress.style}
+wersję, którą uczeń właśnie czytał. Przy wysłaniu testu \code{style\_for\_attempt()} przypisuje
+podejściu najczęstszy styl wersji przerobionych przez ucznia w~tym kursie, a~gdy takich nie ma --
+styl aktualnie wybrany na koncie.
+
+\paragraph{Rekomendacja.} Dla każdego aktywnego stylu $s$ liczona jest liczba ocenionych podejść
+$n_s$ i~ich średni wynik $\bar{x}_s$. Aby pojedynczy test nie przesądzał o~wyniku, średnia jest
+ściągana w~stronę ogólnej średniej ucznia $\bar{x}$ (wygładzanie bayesowskie z~wagą $K=2$):
+\[
+w_s = \frac{n_s\,\bar{x}_s + K\,\bar{x}}{n_s + K}.
+\]
+Kandydatami są style z~$n_s \ge 2$; wygrywa najwyższe $w_s$ (przy remisie -- odsetek zaliczeń,
+potem liczba lekcji w~tej wersji). Jeśli uczeń nie ma stylu, system proponuje zwycięzcę; jeśli
+zwycięzca różni się od stylu ucznia o~co najmniej 5 punktów procentowych -- poleca zmianę;
+w~przeciwnym razie potwierdza obecny styl. Przy braku danych proponuje styl jeszcze
+niesprawdzony, aby zebrać porównanie. Rekomendacja nigdy nie zmienia stylu automatycznie.
+Styl ucznia trafia też do promptu asystenta AI, który dopasowuje formę wyjaśnień.
+
+\section{Ankieta stylu i~polecanie kursów}\label{sec:recommend}
+
+\paragraph{Ankieta.} Wynik stylu $s$ to odsetek odpowiedzi wskazujących ten styl:
+$a_s = n_s / N$, gdzie $N$ -- liczba pytań (domyślnie 10). Styl dominujący to
+$\arg\max_s a_s$; remis rozstrzyga kolejność stylów (pole \code{order}), więc te same odpowiedzi
+zawsze dają ten sam wynik. Pytania opisują zachowania (,,Musisz nauczyć się obsługi nowego
+programu. Od czego zaczynasz?''), a nie pytają wprost o~styl.
+
+\paragraph{Profil stylów ucznia.} Z~trzech źródeł powstaje wektor udziałów $p_s$ (suma 1):
+\[
+\tilde p_s = 1{,}0\cdot[s = \text{styl wybrany}] \;+\; 1{,}0\cdot a_s \;+\; 0{,}5\cdot[s = \text{styl polecany z~wyników testów}],
+\qquad p_s = \tilde p_s \Big/ \textstyle\sum_t \tilde p_t .
+\]
+Deklaracja ucznia i~ankieta mają równą wagę, a~wyniki testów -- połowę (to sygnał pośredni, liczony
+dopiero po zebraniu danych). Brak któregoś źródła po prostu go pomija.
+
+\paragraph{Dopasowanie kursu.} Dla kursu $k$ i~stylu $s$:
+\[
+f_{k,s} = 0{,}7\cdot\frac{\text{lekcje kursu z~wersją dla } s}{\text{wszystkie lekcje kursu}} \;+\; 0{,}3\cdot[\text{autor zaznaczył } s],
+\qquad \text{match}(k) = \sum_s p_s\, f_{k,s}.
+\]
+Większą wagę ma to, co kurs faktycznie zawiera (wersje lekcji), mniejszą -- deklaracja autora.
+Polecane są opublikowane kursy z~$\text{match}>0$, na które uczeń nie jest zapisany, malejąco
+(przy remisie decyduje ocena i~liczba uczestników). Uzasadnienie przy kursie wskazuje styl
+o~największym wkładzie, np. ,,4 z~7 lekcji ma wersję dla stylu »Praktyk«''. Wartość liczbowa nie
+jest pokazywana uczniowi -- ma znaczenie tylko kolejność.
+
+\paragraph{Ograniczenia metody.} Teoria stylów uczenia się (m.in. VARK) jest krytykowana -- badania
+nie potwierdzają jednoznacznie, że nauczanie dopasowane do deklarowanego stylu poprawia wyniki.
+Dlatego system nie traktuje deklaracji ani ankiety jako pewnika: porównuje rzeczywiste wyniki testów
+po lekcjach w~różnych wersjach (sekcja~\ref{sec:styles-algo}) i~na tej podstawie podpowiada zmianę
+stylu, a~polecanie kursów uwzględnia ten sygnał. Wszystkie wagi są heurystykami projektowymi.
+
+\section{Statystyki i~postępy}
+Panel uczniów kursu i~statystyki platformy liczą dane na bieżąco z~bazy (agregacje ORM:
+\code{Count}, \code{Avg}, \code{Sum}), więc nie wymagają osobnych tabel. Procent ukończenia to
+$100 \cdot \text{ukończone zapisy} / \text{wszystkie zapisy}$. Zdenormalizowane liczniki kursu
+(\code{students\_count}, \code{completed\_count}) są przeliczane przy zapisie, ukończeniu
+i~cofnięciu ukończenia kursu.
+
+\section{Galeria i~slajder}
+
+\paragraph{Skalowanie.} Po walidacji formularza (rozszerzenie, poprawność obrazu w~Pillow,
+do 10 MB) \code{GalleryItem.save()} obraca obraz zgodnie z~EXIF, zmniejsza go
+proporcjonalnie do mieszczenia się w~1600$\times$1200 px i~zapisuje wymiary przed i~po --
+użytkownik dostaje komunikat ,,przeskalowano z~$W\times H$''.
+
+\paragraph{Zmiana kolejności.} Konfigurator wysyła po upuszczeniu karty JSON
+\code{\{"items": [id zdjęcia, …]\}} z~nową kolejnością. Serwer sprawdza, czy lista zawiera
+dokładnie te same zdjęcia co układ (bez powtórzeń), i~w~transakcji przypisuje
+\code{order = 1, 2, 3, …} tylko tym istniejącym rekordom, których pozycja się zmieniła --
+żaden rekord nie jest usuwany ani tworzony.
+
+\paragraph{Pętla bez końca.} Slajder (\code{gallery\_slider.js}) nie klonuje kart:
+przesunięcie w~prawo animuje przesunięcie ścieżki o~szerokość jednej karty, a~po
+zakończeniu animacji przenosi pierwszy element DOM na koniec i~zeruje przesunięcie (dla
+kierunku przeciwnego -- odwrotnie). Dzięki temu pętla działa dla dowolnej liczby kart,
+także mniejszej niż liczba widocznych. Liczbę widocznych kart (1/2/3) określa zmienna
+\code{--per-view} zależna od szerokości ekranu (progi 48 i~64 rem); karty poza widokiem
+mają atrybut \code{inert}, więc fokus klawiatury do nich nie trafia.
+
+\section{Powiadomienia}
+
+Wszystkie moduły tworzą powiadomienia jedną funkcją \code{notify(user, kind, title,
+message, url)} (lub \code{notify\_many}), która sprawdza rodzaj i~to, czy adres jest
+wewnętrzny. Rodzaje: komentarz zaakceptowany / oczekujący / odrzucony, odpowiedź na
+komentarz, nowe zgłoszenie kursu, wiadomość i~zmiana statusu zgłoszenia, test do
+sprawdzenia, test oceniony, kurs ukończony, zmiana statusu zamówienia, komunikat
+systemowy. Otwarcie powiadomienia to POST, który oznacza je jako przeczytane i~przekierowuje
+pod zapisany adres.
+
+\section{Mechanizmy bezpieczeństwa -- podsumowanie}
+
+\begin{table}[H]
+\centering\small
+\caption{Zagrożenia i~zastosowane zabezpieczenia}
+\begin{tabularx}{\linewidth}{@{}P{3.4cm}L@{}}
+\toprule
+\hd{Zagrożenie} & \hd{Zabezpieczenie} \\
+\midrule
+SQL Injection & wyłącznie ORM Django (zapytania parametryzowane), brak \code{raw()}/\code{extra()} \\
+XSS & autoescape szablonów, \code{bleach} z~listą dozwolonych znaczników dla HTML z~CKEditora, escapowanie odpowiedzi modelu \\
+CSRF & token CSRF w~każdym formularzu POST, zmiany stanu tylko POST, API wyłącznie z~JWT \\
+Podszycie się pod płatność & podpis HMAC webhooka, kontrola kwoty/waluty, weryfikacja sesji przez API \\
+Nieuprawniony dostęp & sprawdzanie ról i~własności w~widokach, pliki lekcji i~odpowiedzi przez chronione widoki \\
+Złośliwe pliki & walidacja typu i~rozmiaru, ponowne zapisanie obrazów przez Pillow, nazwy plików generowane przez serwer \\
+Otwarte przekierowania & przekierowania po logowaniu i~z~powiadomień tylko na adresy wewnętrzne \\
+Przejęcie konta przez OAuth & dołączanie portalu do konta dopiero po zalogowaniu na to konto, ten sam e-mail, ważność 15 min \\
+Zgadywanie hasła & czasowa blokada logowania: 5 nieudanych prób w~15 min $\rightarrow$ 5 min blokady konta (login i~e-mail liczą się razem); licznik w~Redis \\
+Clickjacking & \code{XFrameOptionsMiddleware} \\
+\bottomrule
+\end{tabularx}
+\end{table}

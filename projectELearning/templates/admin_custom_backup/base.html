@@ -1,0 +1,197 @@
+{% load i18n static %}<!DOCTYPE html>
+<html lang="pl" data-theme-mode="{{ theme_mode|default:'light' }}" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}{% endblock %} | E-Learning Admin</title>
+
+    <link rel="stylesheet" href="{% block stylesheet %}{% static 'admin/css/base.css' %}{% endblock %}">
+
+    {% if not is_popup and is_nav_sidebar_enabled %}
+    <link rel="stylesheet" href="{% static 'admin/css/nav_sidebar.css' %}">
+    <script src="{% static 'admin/js/nav_sidebar.js' %}" defer></script>
+    {% endif %}
+
+    {# Dynamic Theme Variables from Active Theme (same token system as main app) #}
+    <style>
+        :root {
+            color-scheme: {{ theme_mode|default:"light" }};
+            --color-primary: {{ theme_primary|default:"#B45309" }};
+            --color-secondary: {{ theme_secondary|default:"#0F766E" }};
+            --color-accent: {{ theme_accent|default:"#D97706" }};
+            --color-surface: {{ theme_background|default:"#FFFBEB" }};
+            --color-surface-variant: {{ theme_surface_variant|default:"#FEF3C7" }};
+            --color-on-primary: {{ theme_on_primary|default:"#FFFFFF" }};
+            --color-on-secondary: {{ theme_on_secondary|default:"#FFFFFF" }};
+            --color-on-accent: {{ theme_on_accent|default:"#FFFFFF" }};
+            --color-on-surface: {{ theme_on_surface|default:"#111827" }};
+            --color-on-surface-variant: {{ theme_on_surface_variant|default:"#111827" }};
+        }
+    </style>
+
+    {# Custom Modern Admin Design System #}
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+
+    {% block extrastyle %}{% endblock %}
+    {% block extrahead %}{% endblock %}
+    {% block responsive %}
+        <link rel="stylesheet" href="{% static 'admin/css/responsive.css' %}">
+    {% endblock %}
+    {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE">{% endblock %}
+</head>
+
+<body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}" data-admin-utc-offset="{% now 'Z' %}">
+    <a href="#content-start" class="skip-to-content-link">Przejdź do treści głównej</a>
+
+    <div id="container">
+        {% if not is_popup %}
+        <header id="header" class="custom-admin-header">
+            <div id="branding" class="custom-admin-branding">
+                {% block branding %}
+                <a href="{% url 'admin:index' %}" class="custom-admin-brand-link">
+                    <span class="custom-admin-brand-badge" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                            <path d="M9 8h6"/>
+                            <path d="M9 12h4"/>
+                        </svg>
+                    </span>
+                    <span class="custom-admin-brand-text">E-Learning<span class="custom-admin-brand-dot">.</span> <small>Panel Zarządzania</small></span>
+                </a>
+                {% endblock %}
+            </div>
+
+            {% block usertools %}
+            {% if has_permission %}
+            <div id="user-tools" class="custom-admin-usertools">
+                {# Theme Switcher embedded directly in Admin Top Bar #}
+                <details class="admin-theme-switcher" data-theme-switcher>
+                    <summary class="admin-theme-switcher__summary" aria-label="Zmień motyw panelu admina">
+                        <span class="admin-theme-switcher__swatch" aria-hidden="true" style="background: conic-gradient(from 0deg, {{ theme_primary }} 0 20%, {{ theme_secondary }} 20% 40%, {{ theme_accent }} 40% 60%, {{ theme_surface_variant }} 60% 80%, {{ theme_background }} 80% 100%);"></span>
+                        <span class="admin-theme-switcher__label">Motyw: <strong>{{ current_theme.name|default:"Domyślny" }}</strong></span>
+                        <svg class="admin-theme-switcher__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </summary>
+
+                    <div class="admin-theme-switcher__panel">
+                        <p class="admin-theme-switcher__title">Wybierz motyw panelu:</p>
+                        {% if available_themes %}
+                        <div class="admin-theme-switcher__list" role="list">
+                            {% for theme in available_themes %}
+                            <div class="admin-theme-switcher__item" role="listitem">
+                                <form method="post" action="{% url 'accounts:set-theme' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="theme" value="{{ theme.pk }}">
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <button type="submit" class="admin-theme-option" {% if theme.pk == current_theme_id %}aria-current="true"{% endif %}>
+                                        <span class="admin-theme-option__swatch" aria-hidden="true" style="background: conic-gradient(from 0deg, {{ theme.primary }} 0deg 120deg, {{ theme.secondary }} 120deg 240deg, {{ theme.accent }} 240deg 360deg);"></span>
+                                        <span class="admin-theme-option__name">{{ theme.name }}</span>
+                                        {% if theme.pk == current_theme_id %}<span class="admin-theme-option__check" aria-hidden="true">✓</span>{% endif %}
+                                    </button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </details>
+
+                <div class="custom-admin-userlinks">
+                    <a href="{% url 'core:home' %}" class="custom-admin-link custom-admin-link--site" title="Przejdź na stronę główną platformy">
+                        <span>Otwórz platformę &nearr;</span>
+                    </a>
+                    <span class="custom-admin-user-name">
+                        <strong>{% firstof user.get_full_name user.get_username %}</strong> ({{ user.get_role_display }})
+                    </span>
+                    <form id="logout-form" method="post" action="{% url 'admin:logout' %}" class="custom-admin-logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="custom-admin-logout-btn" title="Wyloguj się">Wyloguj</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            {% endblock %}
+        </header>
+
+        {% block nav-breadcrumbs %}
+        <nav aria-label="Ścieżka nawigacji" class="custom-admin-breadcrumbs-wrap">
+            {% block breadcrumbs %}
+            <div class="breadcrumbs custom-admin-breadcrumbs">
+                <a href="{% url 'admin:index' %}">Start</a>
+                {% if title %} &rsaquo; <span>{{ title }}</span>{% endif %}
+            </div>
+            {% endblock %}
+        </nav>
+        {% endblock %}
+        {% endif %}
+
+        <div class="main custom-admin-main" id="main">
+            {% if not is_popup and is_nav_sidebar_enabled %}
+                {% block nav-sidebar %}
+                    {% include "admin/nav_sidebar.html" %}
+                {% endblock %}
+            {% endif %}
+
+            <main id="content-start" class="content custom-admin-content" tabindex="-1">
+                {% block messages %}
+                {# Floating Toast Container matching the main application #}
+                <div id="toast-container" class="toast-container" role="region" aria-label="Powiadomienia systemowe" aria-live="polite">
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div
+                            class="toast toast--{{ message.tags|default:'info' }}"
+                            role="{% if 'error' in message.tags or 'danger' in message.tags %}alert{% else %}status{% endif %}"
+                            data-toast
+                            data-auto-dismiss="4500"
+                        >
+                            <span class="toast__icon" aria-hidden="true">
+                                {% if 'success' in message.tags %}
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                                {% elif 'error' in message.tags or 'danger' in message.tags %}
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                {% elif 'warning' in message.tags %}
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                {% else %}
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                {% endif %}
+                            </span>
+                            <div class="toast__content">
+                                <p class="toast__message">{{ message }}</p>
+                            </div>
+                            <button type="button" class="toast__close" aria-label="Zamknij powiadomienie" data-toast-close>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                {% endblock messages %}
+
+                <div id="content" class="{% block coltype %}colM{% endblock %}">
+                    {% block pretitle %}{% endblock %}
+                    {% block content_title %}{% if title %}<h1 class="custom-admin-page-title">{{ title }}</h1>{% endif %}{% endblock %}
+                    {% block content_subtitle %}{% if subtitle %}<h2>{{ subtitle }}</h2>{% endif %}{% endblock %}
+                    {% block content %}
+                        {% block object-tools %}{% endblock %}
+                        {{ content }}
+                    {% endblock %}
+                    {% block sidebar %}{% endblock %}
+                    <br class="clear">
+                </div>
+            </main>
+        </div>
+
+        <footer id="footer" class="custom-admin-footer">
+            <p>&copy; {% now "Y" %} E-Learning Platform — Dedykowany Panel Administracyjny</p>
+        </footer>
+    </div>
+
+    {# Global custom accessible confirm dialog #}
+    {% include "includes/confirm_dialog.html" %}
+
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
