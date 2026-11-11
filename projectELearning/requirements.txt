@@ -13,6 +13,11 @@ Django>=5.1,<5.2
 psycopg[binary]>=3.2,<4.0
 
 # ---------------------
+# Cache (Redis) — klient wymagany przez django.core.cache.backends.redis.RedisCache
+# ---------------------
+redis>=5.0,<6.0
+
+# ---------------------
 # Authentication & OAuth2
 # ---------------------
 django-allauth[socialaccount]>=65.0,<66.0
