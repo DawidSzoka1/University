@@ -1,0 +1,76 @@
+{% load core_tags %}
+{# Panel ucznia: liczby, kontynuacja nauki, wyniki testów, polecane kursy #}
+<section aria-labelledby="dash-figures-heading">
+    <h2 id="dash-figures-heading" class="sr-only">Twoja nauka w liczbach</h2>
+    <dl class="stat-grid">
+        <div class="stat-grid__item"><dt>Kursy w trakcie</dt><dd>{{ in_progress_count }}</dd></div>
+        <div class="stat-grid__item"><dt>Ukończone kursy</dt><dd>{{ completed_count }}</dd></div>
+        <div class="stat-grid__item"><dt>Dyplomy</dt><dd>{{ certificate_count }}</dd></div>
+        <div class="stat-grid__item"><dt>Testy czekające na ocenę</dt><dd>{{ pending_attempt_count }}</dd></div>
+    </dl>
+</section>
+
+<section aria-labelledby="dash-continue-heading">
+    <h2 id="dash-continue-heading" class="section-title">01 Kontynuuj naukę</h2>
+    {% if in_progress %}
+    <ul class="row-list">
+        {% for enrollment in in_progress %}
+        <li class="row-list__item">
+            <div class="row-list__main">
+                <p class="row-list__title"><a href="{% url 'catalog:course_detail' enrollment.course.slug %}">{{ enrollment.course.title }}</a></p>
+                <p class="row-list__meta">{{ enrollment.course.category.name|default:"Bez kategorii" }}{% if enrollment.next_lesson %} · dalej: {% if enrollment.next_lesson.is_quiz %}test{% else %}lekcja {{ enrollment.next_lesson.number }}{% endif %}{% endif %}</p>
+            </div>
+            <div class="progress" role="img" aria-label="Postęp: {{ enrollment.progress_percent }}%">
+                <span class="progress__bar"><span class="progress__fill" style="width: {{ enrollment.progress_percent }}%"></span></span>
+                <span class="progress__value" aria-hidden="true">{{ enrollment.progress_percent }}%</span>
+            </div>
+            {% if enrollment.next_lesson %}
+            <a href="{{ enrollment.next_lesson.url }}" class="btn btn--primary btn--sm">Kontynuuj<span class="sr-only"> kurs {{ enrollment.course.title }}</span></a>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    <p class="dashboard__more"><a href="{% url 'learning:my_courses' %}">Wszystkie moje kursy ({{ in_progress_count|add:completed_count }})</a></p>
+    {% else %}
+    <p class="section-lead">{% if completed_count %}Ukończone kursy znajdziesz w zakładce <a href="{% url 'learning:my_courses' %}">Moje kursy</a>. Wybierz kolejny w <a href="{% url 'catalog:course_list' %}">katalogu</a>.{% else %}Nie uczysz się jeszcze żadnego kursu. Zapisz się na darmowy albo kup płatny w <a href="{% url 'catalog:course_list' %}">katalogu</a>.{% endif %}</p>
+    {% endif %}
+</section>
+
+<section aria-labelledby="dash-attempts-heading">
+    <h2 id="dash-attempts-heading" class="section-title">02 Ostatnie testy</h2>
+    {% if recent_attempts %}
+    <ul class="row-list">
+        {% for attempt in recent_attempts %}
+        <li class="row-list__item">
+            <div class="row-list__main">
+                <p class="row-list__title"><a href="{% url 'learning:attempt_detail' attempt.pk %}">{{ attempt.quiz.title }}</a>
+                    {% if attempt.status == 'pending_review' %}<span class="tag">czeka na ocenę</span>{% elif attempt.passed %}<span class="tag tag--ok">zaliczony</span>{% else %}<span class="tag tag--danger">niezaliczony</span>{% endif %}
+                </p>
+                <p class="row-list__meta">{{ attempt.quiz.course.title }} · <time datetime="{{ attempt.submitted_at|date:'c' }}">{{ attempt.submitted_at|time_ago }}</time>{% if attempt.status == 'graded' %} · {{ attempt.score }}/{{ attempt.max_score }} pkt ({{ attempt.percent }}%){% endif %}</p>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="section-lead">Wyniki testów pojawią się tutaj po pierwszym podejściu.</p>
+    {% endif %}
+</section>
+
+<section aria-labelledby="dash-recommended-heading">
+    <h2 id="dash-recommended-heading" class="section-title">03 Polecane dla Ciebie</h2>
+    {% if recommended %}
+    <p class="section-lead">Kursy dopasowane do Twojego stylu uczenia się. <a href="{% url 'learning:learning_style' %}">Twój styl i analiza wyników</a></p>
+    <ul class="course-grid" aria-label="Kursy polecane dla Twojego stylu uczenia się">
+        {% for fit in recommended %}{% with course=fit.course %}{% include "catalog/includes/course_card.html" with heading_level=3 %}{% endwith %}{% endfor %}
+    </ul>
+    {% else %}
+    <p class="section-lead">Wybierz styl uczenia się albo wypełnij krótką ankietę, a pokażemy kursy dopasowane do Ciebie. <a href="{% url 'learning:style_survey' %}">Wypełnij ankietę</a></p>
+    {% endif %}
+</section>
+
+{% if proposed_count %}
+<section aria-labelledby="dash-proposed-heading">
+    <h2 id="dash-proposed-heading" class="section-title">04 Twoje propozycje kursów</h2>
+    <p class="section-lead">Masz {{ proposed_count }} {{ proposed_count|pl_plural:"propozycję kursu,propozycje kursów,propozycji kursów" }}. Status i rozmowę z nauczycielem znajdziesz w <a href="{% url 'learning:my_courses' %}#authored-heading">Moje kursy → Tworzę</a>.</p>
+</section>
+{% endif %}

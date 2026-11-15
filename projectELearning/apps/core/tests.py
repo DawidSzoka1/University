@@ -329,21 +329,21 @@ class AdminCustomThemeTests(TestCase):
             self.assertEqual(response.status_code, 200, f"Błąd w widoku admina dla {path}")
 
     def test_platform_navbar_has_admin_link_for_staff_user(self):
-        # When staff user visits the platform, navbar displays "Panel Admina" link
+        # When staff user visits the platform, navbar displays "Panel Django" link
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
-        self.assertIn("Panel Admina", content)
+        self.assertIn("Panel Django", content)
         self.assertIn("/admin/", content)
 
-        # When regular student visits, "Panel Admina" is not shown
+        # When regular student visits, "Panel Django" is not shown
         from apps.accounts.models import CustomUser
         student = CustomUser.objects.create_user(
             username="student_user", email="student@example.com", password="Pass123!", role="student"
         )
         self.client.force_login(student)
         resp_student = self.client.get("/")
-        self.assertNotIn("Panel Admina", resp_student.content.decode())
+        self.assertNotIn("Panel Django", resp_student.content.decode())
 
 
 
@@ -472,7 +472,8 @@ class NotificationPanelTests(TestCase):
         self.client.force_login(self.user)
 
     def test_panel_shows_five_newest_own_notifications_with_unread_state(self):
-        content = self.client.get("/").content.decode()
+        # nie „/” — panel startowy zalogowanego sam pokazuje nieprzeczytane powiadomienia
+        content = self.client.get("/catalog/").content.decode()
         self.assertIn('aria-controls="notification-panel"', content)
         # Nazwa przycisku zawiera widoczną liczbę (WCAG 2.5.3): „Powiadomienia 4 nieprzeczytane”
         self.assertIn('<span class="sr-only">Powiadomienia</span>', content)

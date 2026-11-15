@@ -31,6 +31,7 @@ chatbot Bielik, moderowana społeczność, galeria/slajder, motywy kolorów, str
 **Sklep (2026-11-01): koszyk z kumulacją (także gość), zamówienie z adresem z profilu, e-mail, Stripe Checkout sandbox + webhook → „Opłacone”, kody dostępu, obsługa statusów w Moderacji. Konfiguracja: `docs/platnosci-stripe.md`.**
 **Asystent AI (2026-11-01): okno czatu Bielik (Ollama) w prawym dolnym rogu z kontekstem lekcji/wyniku testu, blokada w trakcie testu, API JWT ze strumieniem, historia rozmów per uczeń i kurs.**
 **Style uczenia się (2026-11-05): `LearningStyle` (4 style VARK z migracji, admin dodaje kolejne), wersje lekcji `LessonVariant` + `Lesson.same_for_all_styles`, wybór stylu `/learning/styl-uczenia/`, analiza wyników i rekomendacja (`apps/learning/styles.py`). Ankieta stylu, polecanie kursów, panel uczniów kursu, statystyki `/statystyki/`, zmiana hasła i blokada logowania. Scenariusz pokazu: `docs/prezentacja.md`; laptop z Windows: `docs/uruchomienie-laptop-windows.md`.**
+**Panele startowe (2026-11-15): `/` po zalogowaniu = panel ucznia / nauczyciela / administratora (`apps/core/dashboard.py`), prezentacja platformy pod `/o-platformie/`.**
 Działa: `manage.py check`, migracje, seed, `runserver`, strona główna (hero, korzyści,
 pasek motywów, CTA), wszystkie ścieżki z navbara, admin Django, wybór i edycja motywów.
 Logowanie i rejestracja to jeden przycisk w navbarze. Płatności: Stripe (klucze testowe w `.env`,

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load core_tags %}
+
+{% block title %}{% if dashboard_role == 'admin' %}Panel administratora{% elif dashboard_role == 'teacher' %}Panel nauczyciela{% else %}Mój panel{% endif %} — E-Learning{% endblock %}
+
+{% block main_class %} site-main--flush{% endblock %}
+
+{% block content %}
+<header class="page-head">
+    <div class="container page-head__inner">
+        <div class="page-head__text">
+            <p class="eyebrow">{% if dashboard_role == 'admin' %}Panel administratora{% elif dashboard_role == 'teacher' %}Panel nauczyciela{% else %}Panel ucznia{% endif %} · {% now "j E Y" %}</p>
+            <h1 class="page-head__title">Cześć, {{ user.first_name|default:user.username }}.</h1>
+            <p class="page-head__lead">
+                {% if dashboard_role == 'admin' %}Stan platformy, kolejki do obsłużenia i narzędzia administracyjne w jednym miejscu.
+                {% elif dashboard_role == 'teacher' %}Zgłoszenia, komentarze i testy czekające na Ciebie oraz kursy, które prowadzisz.
+                {% else %}Wróć do przerwanej lekcji, sprawdź wyniki testów i zobacz kursy dobrane do Twojego stylu uczenia się.{% endif %}
+            </p>
+        </div>
+        <div class="page-head__actions">
+            {% if dashboard_role == 'admin' %}
+            <a class="btn btn--primary" href="{% url 'catalog:category_create' %}">Dodaj kategorię</a>
+            <a class="btn btn--outline" href="{% url 'catalog:course_create' %}">Utwórz kurs</a>
+            {% elif dashboard_role == 'teacher' %}
+            <a class="btn btn--primary" href="{% url 'catalog:course_create' %}">Utwórz kurs</a>
+            <a class="btn btn--outline" href="{% url 'catalog:moderation_submissions' %}">Moderacja</a>
+            {% else %}
+            <a class="btn btn--primary" href="{% url 'learning:my_courses' %}">Moje kursy</a>
+            <a class="btn btn--outline" href="{% url 'catalog:course_list' %}">Przeglądaj katalog</a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+<div class="container page-body dashboard">
+    {% if dashboard_role == 'admin' %}
+        {% include "core/includes/dashboard_admin.html" %}
+    {% elif dashboard_role == 'teacher' %}
+        {% include "core/includes/dashboard_teacher.html" %}
+    {% else %}
+        {% include "core/includes/dashboard_student.html" %}
+    {% endif %}
+
+    <section aria-labelledby="dash-notices-heading">
+        <h2 id="dash-notices-heading" class="section-title">Nowe powiadomienia{% if unread_count %} <span class="section-title__count">({{ unread_count }})</span>{% endif %}</h2>
+        {% if recent_unread %}
+        <ul class="notice-list">
+            {% for notification in recent_unread %}
+            <li>{% include "includes/notification_item.html" %}</li>
+            {% endfor %}
+        </ul>
+        <p class="dashboard__more"><a href="{% url 'core:notification_list' %}?pokaz=nieprzeczytane">Wszystkie nieprzeczytane powiadomienia</a></p>
+        {% else %}
+        <p class="section-lead">Wszystko przeczytane. <a href="{% url 'core:notification_list' %}">Historia powiadomień</a></p>
+        {% endif %}
+    </section>
+
+    <p class="dashboard__about"><a href="{% url 'core:about' %}">O platformie — strona dla nowych osób</a></p>
+</div>
+{% endblock %}

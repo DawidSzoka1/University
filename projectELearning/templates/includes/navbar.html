@@ -53,8 +53,9 @@
                         </span>
                     </p>
                     <div class="navbar__mobile-buttons">
+                        <a href="{% url 'core:home' %}" class="btn btn--outline">{% if user.is_staff or user.is_superuser or user.role == 'admin' %}Panel administratora{% elif user.role == 'moderator' %}Panel nauczyciela{% else %}Mój panel{% endif %}</a>
                         {% if user.is_staff %}
-                        <a href="{% url 'admin:index' %}" class="btn btn--outline">Panel Admina</a>
+                        <a href="{% url 'admin:index' %}" class="btn btn--outline">Panel Django</a>
                         {% endif %}
                         <a href="{% url 'accounts:profile' %}" class="btn btn--outline">Mój profil</a>
                         <a href="{% url 'orders:order_list' %}" class="btn btn--outline">Moje zamówienia</a>
@@ -156,13 +157,14 @@
                             <span>{{ user.get_role_display }}{% if user.rank_title %} · {{ user.rank_title }}{% endif %}</span>
                         </p>
                         <ul class="account-menu__list">
+                            <li><a href="{% url 'core:home' %}" class="account-menu__link"{% if ns == 'core' and url_name == 'home' %} aria-current="page"{% endif %}>{% if user.is_staff or user.is_superuser or user.role == 'admin' %}Panel administratora{% elif user.role == 'moderator' %}Panel nauczyciela{% else %}Mój panel{% endif %}</a></li>
                             <li><a href="{% url 'accounts:profile' %}" class="account-menu__link"{% if ns == 'accounts' and url_name == 'profile' %} aria-current="page"{% endif %}>Mój profil</a></li>
                             <li><a href="{% url 'core:notification_list' %}" class="account-menu__link">Powiadomienia</a></li>
                             <li><a href="{% url 'orders:order_list' %}" class="account-menu__link"{% if ns == 'orders' and url_name == 'order_list' %} aria-current="page"{% endif %}>Moje zamówienia</a></li>
                             <li><a href="{% url 'learning:learning_style' %}" class="account-menu__link"{% if ns == 'learning' and url_name == 'learning_style' %} aria-current="page"{% endif %}>Styl uczenia się</a></li>
                             {% if user.is_staff %}
                             <li><a href="{% url 'core:stats' %}" class="account-menu__link"{% if url_name == 'stats' %} aria-current="page"{% endif %}>Statystyki platformy</a></li>
-                            <li><a href="{% url 'admin:index' %}" class="account-menu__link">Panel Admina</a></li>
+                            <li><a href="{% url 'admin:index' %}" class="account-menu__link">Panel Django</a></li>
                             {% endif %}
                             <li><a href="{% url 'accounts:logout' %}" class="account-menu__link account-menu__link--logout">Wyloguj się</a></li>
                         </ul>

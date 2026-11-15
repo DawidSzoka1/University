@@ -1,0 +1,43 @@
+{% load core_tags %}
+{# Kolejki moderacji: liczba + najstarsze pozycje (nauczyciel — swoje kategorie, admin — wszystko). Parametr: number #}
+<section aria-labelledby="dash-queues-heading">
+    <h2 id="dash-queues-heading" class="section-title">{{ number }} Do zrobienia</h2>
+    {% with total=submission_count|add:comment_count|add:grading_count %}
+    <p class="section-lead">{% if total %}{{ total }} {{ total|pl_plural:"sprawa czeka,sprawy czekają,spraw czeka" }} na Twoją decyzję — najstarsze na górze.{% else %}Kolejki są puste. Nic nie czeka na Twoją decyzję.{% endif %}</p>
+    {% endwith %}
+    <div class="dash-columns">
+        <section class="dash-queue" aria-labelledby="queue-submissions-heading">
+            <h3 id="queue-submissions-heading" class="dash-queue__title">Zgłoszenia kursów <span class="dash-queue__count">{{ submission_count }}</span></h3>
+            {% if submissions %}
+            <ul class="dash-queue__list">
+                {% for course in submissions %}
+                <li><a href="{% url 'catalog:submission_thread' course.slug %}">{{ course.title }}</a><span class="dash-queue__meta">{{ course.author.get_full_name|default:course.author.username }} · {{ course.category.name|default:"bez kategorii" }}</span></li>
+                {% endfor %}
+            </ul>
+            {% else %}<p class="dash-queue__empty">Brak zgłoszeń.</p>{% endif %}
+            <a class="btn btn--outline btn--sm" href="{% url 'catalog:moderation_submissions' %}">Kolejka zgłoszeń</a>
+        </section>
+        <section class="dash-queue" aria-labelledby="queue-comments-heading">
+            <h3 id="queue-comments-heading" class="dash-queue__title">Komentarze <span class="dash-queue__count">{{ comment_count }}</span></h3>
+            {% if comments %}
+            <ul class="dash-queue__list">
+                {% for comment in comments %}
+                <li><a href="{% url 'catalog:course_detail' comment.course.slug %}#comment-{{ comment.pk }}">{{ comment.content|truncatechars:60 }}</a><span class="dash-queue__meta">{{ comment.author.get_full_name|default:comment.author.username|default:"konto usunięte" }} · {{ comment.course.title }}</span></li>
+                {% endfor %}
+            </ul>
+            {% else %}<p class="dash-queue__empty">Brak komentarzy do akceptacji.</p>{% endif %}
+            <a class="btn btn--outline btn--sm" href="{% url 'catalog:moderation_comments' %}">Kolejka komentarzy</a>
+        </section>
+        <section class="dash-queue" aria-labelledby="queue-grading-heading">
+            <h3 id="queue-grading-heading" class="dash-queue__title">Testy do oceny <span class="dash-queue__count">{{ grading_count }}</span></h3>
+            {% if attempts %}
+            <ul class="dash-queue__list">
+                {% for attempt in attempts %}
+                <li><a href="{% url 'learning:attempt_grade' attempt.pk %}">{{ attempt.quiz.title }}</a><span class="dash-queue__meta">{{ attempt.user.get_full_name|default:attempt.user.username }} · {{ attempt.quiz.course.title }}</span></li>
+                {% endfor %}
+            </ul>
+            {% else %}<p class="dash-queue__empty">Brak testów do oceny.</p>{% endif %}
+            <a class="btn btn--outline btn--sm" href="{% url 'learning:grading_queue' %}">Kolejka „Do oceny”</a>
+        </section>
+    </div>
+</section>

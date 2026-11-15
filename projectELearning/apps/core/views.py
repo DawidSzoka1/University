@@ -10,7 +10,16 @@ from apps.core.pagination import paginate_queryset
 
 
 def home(request: HttpRequest) -> HttpResponse:
-    """Strona główna — hero z nowościami, liczby, kroki nauki, kategorie, motywy, CTA."""
+    """Strona główna: gość widzi prezentację platformy, zalogowany — panel swojej roli."""
+    if request.user.is_authenticated:
+        from apps.core.dashboard import dashboard_context
+
+        return render(request, "core/dashboard.html", dashboard_context(request.user))
+    return about(request)
+
+
+def about(request: HttpRequest) -> HttpResponse:
+    """Prezentacja platformy — hero z nowościami, liczby, kroki nauki, kategorie, motywy, CTA."""
     published = Course.objects.published()
 
     root_categories = Category.objects.filter(is_active=True, parent__isnull=True).order_by("order", "name")[:6]

@@ -1,0 +1,89 @@
+{% load core_tags %}
+{# Panel administratora: liczby, narzędzia, kolejki, kategorie z nauczycielami, ostatnie zamówienia i konta #}
+<section aria-labelledby="dash-figures-heading">
+    <h2 id="dash-figures-heading" class="sr-only">Platforma w liczbach</h2>
+    <dl class="stat-grid">
+        <div class="stat-grid__item"><dt>Aktywne konta</dt><dd>{{ user_total }} <span class="stat-grid__sub">(+{{ user_new_30 }} w 30 dni)</span></dd></div>
+        <div class="stat-grid__item"><dt>Opublikowane kursy</dt><dd>{{ course_published }}</dd></div>
+        <div class="stat-grid__item"><dt>Kategorie</dt><dd>{{ category_total }}</dd></div>
+        <div class="stat-grid__item"><dt>Zamówienia do realizacji</dt><dd>{{ orders_to_fulfil }}</dd></div>
+        <div class="stat-grid__item"><dt>Sprzedaż w 30 dni</dt><dd>{{ revenue_30|pln }}</dd></div>
+    </dl>
+</section>
+
+<section aria-labelledby="dash-tools-heading">
+    <h2 id="dash-tools-heading" class="section-title">01 Zarządzanie platformą</h2>
+    <p class="section-lead">Wszystko poniżej działa w platformie, bez panelu Django — poza pozycjami oznaczonymi „panel Django”.</p>
+    <ul class="tool-list">
+        <li><a class="tool-list__link" href="{% url 'catalog:category_manage' %}"><span class="tool-list__name">Kategorie</span><span class="tool-list__desc">Drzewo kategorii: dodawanie, edycja, kolejność, ukrywanie, przydział nauczycieli.</span></a></li>
+        <li><a class="tool-list__link" href="{% url 'catalog:moderation_submissions' %}"><span class="tool-list__name">Moderacja kursów</span><span class="tool-list__desc">Zgłoszenia kursów, komentarze i testy do oceny we wszystkich kategoriach.</span></a></li>
+        <li><a class="tool-list__link" href="{% url 'orders:manage' %}"><span class="tool-list__name">Zamówienia</span><span class="tool-list__desc">Statusy zamówień, realizacja opłaconych, kody dostępu.</span></a></li>
+        <li><a class="tool-list__link" href="{% url 'core:stats' %}"><span class="tool-list__name">Statystyki</span><span class="tool-list__desc">Użytkownicy, ukończenia kursów, testy, style uczenia się, asystent, sprzedaż.</span></a></li>
+        <li><a class="tool-list__link" href="{% url 'gallery:slider_configurator' %}"><span class="tool-list__name">Galeria i slajder</span><span class="tool-list__desc">Zdjęcia i układy slajdera strony galerii.</span></a></li>
+        <li><a class="tool-list__link" href="{% url 'admin:core_colortheme_changelist' %}"><span class="tool-list__name">Motywy kolorów</span><span class="tool-list__desc">Pięć kolorów bazowych każdego motywu (panel Django).</span></a></li>
+        <li><a class="tool-list__link" href="{% url 'admin:accounts_customuser_changelist' %}"><span class="tool-list__name">Konta i role</span><span class="tool-list__desc">Nadawanie ról ucznia, nauczyciela i administratora (panel Django).</span></a></li>
+        <li><a class="tool-list__link" href="{% url 'admin:learning_learningstyle_changelist' %}"><span class="tool-list__name">Style uczenia się</span><span class="tool-list__desc">Style i pytania ankiety (panel Django).</span></a></li>
+    </ul>
+</section>
+
+{% include "core/includes/dashboard_queues.html" with number="02" %}
+
+<section aria-labelledby="dash-categories-heading">
+    <h2 id="dash-categories-heading" class="section-title">03 Kategorie główne</h2>
+    <p class="section-lead">{% if uncovered_count %}{{ uncovered_count }} {{ uncovered_count|pl_plural:"kategoria nie ma,kategorie nie mają,kategorii nie ma" }} przypisanego nauczyciela — zgłoszenia z nich trafiają do administratorów.{% else %}Każda kategoria główna ma przypisanego nauczyciela.{% endif %}</p>
+    {% if category_rows %}
+    <ul class="row-list">
+        {% for row in category_rows %}
+        <li class="row-list__item">
+            <div class="row-list__main">
+                <p class="row-list__title"><a href="{% url 'catalog:category_manage' %}#category-{{ row.category.pk }}">{{ row.category.name }}</a>{% if not row.category.is_active %} <span class="tag">ukryta</span>{% endif %}{% if not row.teachers %} <span class="tag tag--danger">bez nauczyciela</span>{% endif %}</p>
+                <p class="row-list__meta">{{ row.course_count }} {{ row.course_count|pl_plural:"kurs,kursy,kursów" }} · {{ row.subcategory_count }} {{ row.subcategory_count|pl_plural:"podkategoria,podkategorie,podkategorii" }}{% if row.teachers %} · {% for teacher in row.teachers %}{{ teacher.get_full_name|default:teacher.username }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</p>
+            </div>
+            <div class="curriculum-actions">
+                <a href="{% url 'catalog:category_create' %}?rodzic={{ row.category.pk }}" class="btn btn--outline btn--sm">Dodaj podkategorię<span class="sr-only"> do {{ row.category.name }}</span></a>
+                <a href="{% url 'catalog:category_edit' row.category.pk %}" class="btn btn--ghost btn--sm">Edytuj<span class="sr-only"> kategorię {{ row.category.name }}</span></a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="section-lead">Nie ma jeszcze kategorii.</p>
+    {% endif %}
+    <p class="dashboard__more"><a href="{% url 'catalog:category_create' %}">Dodaj kategorię główną</a> · <a href="{% url 'catalog:category_manage' %}">Całe drzewo kategorii</a></p>
+</section>
+
+<div class="dash-columns dash-columns--two">
+    <section aria-labelledby="dash-orders-heading">
+        <h2 id="dash-orders-heading" class="section-title">04 Ostatnie zamówienia</h2>
+        {% if recent_orders %}
+        <ul class="row-list">
+            {% for order in recent_orders %}
+            <li class="row-list__item">
+                <div class="row-list__main">
+                    <p class="row-list__title"><a href="{% url 'orders:order_detail' order.number %}">{{ order.number }}</a> <span class="tag{% if order.status == 'paid' or order.status == 'completed' %} tag--ok{% elif order.status == 'cancelled' %} tag--danger{% endif %}">{{ order.get_status_display|lower }}</span></p>
+                    <p class="row-list__meta">{{ order.user.get_full_name|default:order.user.username }} · {{ order.total|pln }} · <time datetime="{{ order.created_at|date:'c' }}">{{ order.created_at|time_ago }}</time></p>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="dashboard__more"><a href="{% url 'orders:manage' %}">Obsługa zamówień</a></p>
+        {% else %}
+        <p class="section-lead">Nie ma jeszcze zamówień.</p>
+        {% endif %}
+    </section>
+
+    <section aria-labelledby="dash-users-heading">
+        <h2 id="dash-users-heading" class="section-title">05 Nowe konta</h2>
+        <ul class="row-list">
+            {% for member in recent_users %}
+            <li class="row-list__item">
+                <div class="row-list__main">
+                    <p class="row-list__title">{{ member.get_full_name|default:member.username }}</p>
+                    <p class="row-list__meta">{{ member.get_role_display }} · dołączył(a) <time datetime="{{ member.date_joined|date:'c' }}">{{ member.date_joined|time_ago }}</time></p>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="dashboard__more"><a href="{% url 'admin:accounts_customuser_changelist' %}">Wszystkie konta (panel Django)</a></p>
+    </section>
+</div>

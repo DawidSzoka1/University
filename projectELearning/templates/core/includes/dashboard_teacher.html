@@ -1,0 +1,60 @@
+{% load core_tags %}
+{# Panel nauczyciela (moderatora): liczby, kolejki, moje kursy, moje kategorie #}
+<section aria-labelledby="dash-figures-heading">
+    <h2 id="dash-figures-heading" class="sr-only">Twoja praca w liczbach</h2>
+    <dl class="stat-grid">
+        <div class="stat-grid__item"><dt>Zgłoszenia do akceptacji</dt><dd>{{ submission_count }}</dd></div>
+        <div class="stat-grid__item"><dt>Komentarze do akceptacji</dt><dd>{{ comment_count }}</dd></div>
+        <div class="stat-grid__item"><dt>Testy do oceny</dt><dd>{{ grading_count }}</dd></div>
+        <div class="stat-grid__item"><dt>Moje kursy</dt><dd>{{ authored_count }}</dd></div>
+        <div class="stat-grid__item"><dt>Zapisy na moje kursy</dt><dd>{{ student_total }}</dd></div>
+    </dl>
+</section>
+
+{% include "core/includes/dashboard_queues.html" with number="01" %}
+
+<section aria-labelledby="dash-authored-heading">
+    <h2 id="dash-authored-heading" class="section-title">02 Moje kursy</h2>
+    {% if authored %}
+    <ul class="row-list">
+        {% for course in authored %}
+        <li class="row-list__item">
+            <div class="row-list__main">
+                <p class="row-list__title">
+                    <a href="{% url 'catalog:course_detail' course.slug %}">{{ course.title }}</a>
+                    <span class="tag{% if course.status == 'approved' %} tag--ok{% elif course.status == 'rejected' %} tag--danger{% endif %}">{{ course.get_status_display|lower }}</span>
+                </p>
+                <p class="row-list__meta">{{ course.category.name|default:"Bez kategorii" }} · {{ course.student_total }} {{ course.student_total|pl_plural:"zapis,zapisy,zapisów" }} · {{ course.done_total }} {{ course.done_total|pl_plural:"ukończenie,ukończenia,ukończeń" }}</p>
+            </div>
+            <div class="curriculum-actions">
+                <a href="{% url 'learning:curriculum_edit' course.slug %}" class="btn btn--primary btn--sm">Program<span class="sr-only"> kursu {{ course.title }}</span></a>
+                <a href="{% url 'learning:course_students' course.slug %}" class="btn btn--outline btn--sm">Uczniowie<span class="sr-only"> kursu {{ course.title }}</span></a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    <p class="dashboard__more"><a href="{% url 'learning:my_courses' %}#authored-heading">Wszystkie moje kursy ({{ authored_count }})</a>{% if learning_count %} · <a href="{% url 'learning:my_courses' %}">Kursy, których się uczę ({{ learning_count }})</a>{% endif %}</p>
+    {% else %}
+    <p class="section-lead">Nie prowadzisz jeszcze kursów. <a href="{% url 'catalog:course_create' %}">Utwórz pierwszy kurs</a> — w swoich kategoriach publikujesz bez akceptacji.</p>
+    {% endif %}
+</section>
+
+<section aria-labelledby="dash-categories-heading">
+    <h2 id="dash-categories-heading" class="section-title">03 Moje kategorie</h2>
+    {% if category_rows %}
+    <p class="section-lead">Moderujesz te kategorie z podkategoriami — możesz dodawać w nich podkategorie.</p>
+    <ul class="index-list">
+        {% for row in category_rows %}
+        <li>
+            <a class="index-list__link" href="{% url 'catalog:category_manage' %}#category-{{ row.category.pk }}">
+                <span class="index-list__name">{{ row.category.name }}</span>
+                <span class="index-list__count">{{ row.course_count }} {{ row.course_count|pl_plural:"kurs,kursy,kursów" }} · {{ row.subcategory_count }} {{ row.subcategory_count|pl_plural:"podkategoria,podkategorie,podkategorii" }} <span aria-hidden="true">→</span></span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    <p class="dashboard__more"><a href="{% url 'catalog:category_manage' %}">Zarządzaj kategoriami</a> · <a href="{% url 'catalog:category_create' %}">Dodaj podkategorię</a></p>
+    {% else %}
+    <p class="section-lead">Administrator nie przypisał Ci jeszcze kategorii. Do tego czasu Twoje kursy przechodzą zwykłą akceptację.</p>
+    {% endif %}
+</section>
